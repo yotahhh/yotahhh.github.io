@@ -6,6 +6,7 @@ body {
 	margin: 0;
 	overflow: auto;
 	font-family: 'Source Code Pro', monospace;
+	font-variant: ExtraLight 200 ;
 	display: flex;
 	justify-content: center;
 	align-items: center;
@@ -20,7 +21,8 @@ body {
 	pointer-events: none;
 }
 h1 {
-	font-size: 3em;
+	font-size: 2em;
+	font-weight: normal;
 }
 ul {
 	list-style-type: none;
