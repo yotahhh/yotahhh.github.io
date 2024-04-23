@@ -26,7 +26,7 @@ function animate() {
             line.opacity = 0; // Reset opacity when line moves out of canvas
         }
         if (line.opacity < line.maxOpacity) {
-            line.opacity += 0.0001; // Increase opacity very gradually
+            line.opacity += 0.0003; // Increase opacity very gradually
         }
     });
     requestAnimationFrame(animate);
@@ -42,7 +42,7 @@ function init() {
             vx: (Math.random() - 0.5) * 0.045, // Slower animation
             vy: (Math.random() - 0.5) * 0.045,  // Slower animation
             opacity: 0, // Initial opacity is 0
-            maxOpacity: Math.random() * 0.45 // Maximum opacity
+            maxOpacity: Math.random() * 0.5 // Maximum opacity
         });
     }
     animate();
