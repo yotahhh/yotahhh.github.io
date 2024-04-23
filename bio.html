@@ -8,6 +8,25 @@
 	</head>
 	<body>
 		<canvas id="canvas"></canvas>
+		<canvas id="backArrow" width="50" height="50" style="position: absolute; left: 10px; top: 10px; cursor: pointer;"></canvas>
+			<script>
+				var canvas = document.getElementById('backArrow');
+				var ctx = canvas.getContext('2d');
+
+				// Draw the arrow
+				ctx.beginPath();
+				ctx.moveTo(30, 10);
+				ctx.lineTo(10, 25);
+				ctx.lineTo(30, 40);
+				ctx.strokeStyle = '#000000';
+				ctx.lineWidth = 2;
+				ctx.stroke();
+
+				// Add the click event
+				canvas.addEventListener('click', function() {
+					window.history.back();
+				});
+			</script>
 		<div id="text"></div>
 		<script>
 			// Store the English and German versions of the text

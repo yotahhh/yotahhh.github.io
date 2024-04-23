@@ -2,6 +2,10 @@
     font-family: 'Source Code Pro';
     src: url('font.ttf') format('truetype');
 }
+@keyframes fadeIn {
+    0% {opacity: 0;}
+    100% {opacity: 1;}
+}
 body {
 	margin: 0;
 	overflow: auto;
@@ -13,6 +17,7 @@ body {
 	height: 100vh;
 	color: black;
 	text-align: center; /* Center all the text */
+	animation: fadeIn 1s ease-in-out;
 }
 #canvas {
 	position: absolute;
