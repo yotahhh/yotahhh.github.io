@@ -5,7 +5,7 @@
 body {
 	margin: 0;
 	overflow: auto;
-	font-family: 'Source Code Pro', light;
+	font-family: 'Source Code Pro', monospace;
 	display: flex;
 	justify-content: center;
 	align-items: center;
