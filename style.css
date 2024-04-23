@@ -42,3 +42,10 @@ div {
 	text-align: left; /* Align the text to the left */
 	padding: 0 20px;
 }
+.center-text {
+    text-align: center;
+}
+
+.left-text {
+    text-align: left;
+}
