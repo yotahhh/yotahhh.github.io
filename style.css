@@ -1,0 +1,44 @@
+@font-face {
+    font-family: 'Source Code Pro';
+    src: url('font.ttf') format('truetype');
+}
+body {
+	margin: 0;
+	overflow: auto;
+	font-family: 'Source Code Pro', light;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	height: 100vh;
+	color: black;
+	text-align: center; /* Center all the text */
+}
+#canvas {
+	position: absolute;
+	top: 0;
+	left: 0;
+	pointer-events: none;
+}
+h1 {
+	font-size: 3em;
+}
+ul {
+	list-style-type: none;
+	padding: 0;
+}
+ul li {
+	margin: 1em 0;
+}
+ul li a {
+	color: black;
+	text-decoration: none;
+}
+ul li a:hover {
+	color: orange; /* Make links appear orange when hovered over */
+}
+div {
+	max-width: 800px; /* Limit the width of the div */
+	margin: auto; /* Center the div */
+	text-align: left; /* Align the text to the left */
+	padding: 0 20px;
+}
