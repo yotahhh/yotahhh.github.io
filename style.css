@@ -31,6 +31,10 @@ body {
     position: fixed;
     z-index: 2;
 }
+#text {
+    position: relative;
+    z-index: 3;
+}
 h1 {
 	font-size: 2em;
 	font-weight: normal;
