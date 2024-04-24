@@ -33,7 +33,9 @@ function animate() {
 }
 
 function init() {
-    for (let i = 0; i < 100; i++) {
+    const area = window.innerWidth * window.innerHeight;
+    const numLines = Math.floor(area / 50000);
+    for (let i = 0; i < numLines; i++) {
         lines.push({
             x: Math.random() * canvas.width,
             y: Math.random() * canvas.height,

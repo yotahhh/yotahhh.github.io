@@ -18,6 +18,7 @@ body {
 	color: black;
 	text-align: center; /* Center all the text */
 	animation: fadeIn 1s ease-in-out;
+	text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.5);
 }
 #canvas {
 	position: absolute;
