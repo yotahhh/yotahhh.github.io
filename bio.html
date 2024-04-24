@@ -8,7 +8,7 @@
 	</head>
 	<body>
 		<canvas id="canvas"></canvas>
-		<canvas id="backArrow" width="50" height="50" style="position: absolute; left: 10px; top: 10px; cursor: pointer;"></canvas>
+		<canvas id="backArrow" width="50" height="50" style="position: fixed; top: 10px; left: 50%; transform: translateX(-50%); cursor: pointer;"></canvas>
 			<script>
 				var canvas = document.getElementById('backArrow');
 				var ctx = canvas.getContext('2d');
