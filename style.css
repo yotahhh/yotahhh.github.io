@@ -10,7 +10,6 @@ body {
 	margin: 0;
 	overflow: auto;
 	font-family: 'Source Code Pro', monospace;
-	font-variant: ExtraLight 200 ;
 	display: flex;
 	justify-content: center;
 	align-items: center;
