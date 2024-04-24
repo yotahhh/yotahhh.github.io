@@ -34,7 +34,7 @@ function animate() {
 
 function init() {
     const area = window.innerWidth * window.innerHeight;
-    const numLines = Math.floor(area / 50000);
+    const numLines = Math.max(20, Math.floor(area / 50000)); // Ensure at least 20 lines
     for (let i = 0; i < numLines; i++) {
         lines.push({
             x: Math.random() * canvas.width,
