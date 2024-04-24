@@ -18,13 +18,18 @@ body {
 	color: black;
 	text-align: center; /* Center all the text */
 	animation: fadeIn 1s ease-in-out;
-	/* text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.5); */
+	text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.7);
 }
 #canvas {
 	position: absolute;
 	top: 0;
 	left: 0;
 	pointer-events: none;
+	z-index: 1;
+}
+#backArrow {
+    position: fixed;
+    z-index: 2;
 }
 h1 {
 	font-size: 2em;
