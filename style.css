@@ -81,6 +81,8 @@ div {
 }
 #player {
     display: none;
+	height: 250px; /* Adjust this value as needed */
+    overflow: auto; /* Add a scrollbar if the content exceeds the div's height */
 }
 
 .grid-item img {
