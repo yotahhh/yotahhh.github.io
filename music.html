@@ -66,19 +66,27 @@
         </div>
         
         <script>
-            function loadPlayer(lone_fluke) {
-                var text = "In collaboration with Candid Rütter, a friend and former Sound Arts classmate, the two composed the approximately ten-minute, multi-channel sound piece \"Lone Fluke\" + album";
-                var embed = '<iframe width="100%" height="300" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/971118847%3Fsecret_token%3Ds-RwepXlcAmVq&color=%2346595d&auto_play=false&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true"></iframe>';
+            var currentAlbum = null;
+
+            function loadPlayer(album) {
+                var text, embed;
+                if (album === currentAlbum) {
+                    document.getElementById('player').style.display = "none";
+                    currentAlbum = null;
+                    return;
+                }
+
+                if (album === 'lone_fluke') {
+                    text = "In collaboration with Candid Rütter, a friend and former Sound Arts classmate, the two composed the approximately ten-minute, multi-channel sound piece \"Lone Fluke\" + album";
+                    embed = '<iframe width="100%" height="300" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/971118847%3Fsecret_token%3Ds-RwepXlcAmVq&color=%2346595d&auto_play=false&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true"></iframe>';
+                } else if (album === 'is_like') {
+                    text = "Is Like blabla";
+                    embed = '<iframe width="100%" height="166" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/1707411753&color=%23ff5500&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false"></iframe>';
+                }
+
                 document.getElementById('player').innerHTML = text + embed;
                 document.getElementById('player').style.display = "block";
-            }
-        </script>
-        <script>
-            function loadPlayer(is_like) {
-                var text = "Is Like blabla";
-                var embed = '<iframe width="100%" height="166" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/1707411753&color=%23ff5500&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false"></iframe>';
-                document.getElementById('player').innerHTML = text + embed;
-                document.getElementById('player').style.display = "block";
+                currentAlbum = album;
             }
         </script>
 		<script src="animation.js"></script>

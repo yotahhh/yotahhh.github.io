@@ -81,3 +81,10 @@ div {
 #player {
     display: none;
 }
+
+.grid-item img {
+	max-width: 200px; /* Adjust as needed */
+	max-height: 200px; /* Adjust as needed */
+	width: 100%;
+	height: auto;
+}
