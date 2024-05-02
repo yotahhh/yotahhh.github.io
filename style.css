@@ -89,3 +89,8 @@ div {
 	width: 100%;
 	height: auto;
 }
+
+#text, .grid-container, #player {
+    text-align: center;
+    margin: 0;
+}
