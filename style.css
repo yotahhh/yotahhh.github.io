@@ -11,6 +11,7 @@ body {
 	overflow: auto;
 	font-family: 'Source Code Pro', monospace;
 	display: flex;
+	flex-direction: column;
 	justify-content: center;
 	align-items: center;
 	height: 100vh;
