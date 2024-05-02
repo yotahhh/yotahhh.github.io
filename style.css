@@ -90,7 +90,7 @@ div {
 	height: auto;
 }
 
-#text, .grid-container, #player {
+.grid-container, #player {
+    margin: 0 auto;
     text-align: center;
-    margin: 0;
 }
