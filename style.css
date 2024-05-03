@@ -91,6 +91,16 @@ div {
 	max-height: 200px; /* Adjust as needed */
 	width: 100%;
 	height: auto;
+	box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25); /* Add a slight shadow */
+}
+
+.grid-item figure {
+    text-align: center;
+}
+
+.grid-item figcaption {
+    font-size: 0.8em;
+    color: #666;
 }
 
 .grid-container, #player {
