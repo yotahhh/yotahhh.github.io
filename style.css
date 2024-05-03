@@ -115,10 +115,12 @@ div {
 
 .description {
     text-align: center; /* Center the text within the div */
-	height: 200px; /* Adjust this value as needed */
+	height: 100px; /* Adjust this value as needed */
     overflow: auto; /* Add a scrollbar if the text exceeds the div's height */
 }
 
 .player {
     text-align: center; /* Center the player within the div */
+    height: 150px; /* Adjust this value as needed */
+    overflow: hidden; /* Hide any content that exceeds the div's height */
 }
