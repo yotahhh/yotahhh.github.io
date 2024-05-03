@@ -87,6 +87,11 @@ div {
     transition: opacity 0.3s; /* Smooth transition */
 }
 
+.player-content {
+    margin: auto;
+    text-align: center; /* Center the text within the div */
+}
+
 .grid-item img {
 	width: 250px;
 	height: 250px;
