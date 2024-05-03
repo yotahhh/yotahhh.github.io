@@ -88,7 +88,8 @@ div {
 }
 
 .player-content {
-    margin: auto;
+	width: 80%; /* Adjust this value as needed */
+    margin: 0 auto;
     text-align: center; /* Center the text within the div */
 }
 
