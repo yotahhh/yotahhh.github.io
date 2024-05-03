@@ -99,8 +99,8 @@ div {
 }
 
 .grid-item figcaption {
-    font-size: 0.8em;
-    color: #666;
+    font-size: 0.6em;
+    color: black;
 }
 
 .grid-container, #player {
