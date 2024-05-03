@@ -90,7 +90,6 @@ div {
 .player-content {
 	width: 80%; /* Adjust this value as needed */
     margin: 0 auto;
-    text-align: center; /* Center the text within the div */
 }
 
 .grid-item img {
@@ -112,4 +111,12 @@ div {
 .grid-container, #player {
     margin: 0 auto;
     text-align: center;
+}
+
+.description {
+    text-align: center; /* Center the text within the div */
+}
+
+.player {
+    text-align: center; /* Center the player within the div */
 }
