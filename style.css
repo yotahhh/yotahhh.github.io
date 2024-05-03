@@ -80,8 +80,9 @@ div {
     cursor: pointer;
 }
 #player {
-    display: none;
-	height: 250px; /* Adjust this value as needed */
+    display: block; /* or 'flex' */
+    height: 300px; /* Adjust this value as needed */
+    visibility: hidden; /* Hide the content */
     overflow: auto; /* Add a scrollbar if the content exceeds the div's height */
 }
 
