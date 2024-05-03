@@ -48,14 +48,23 @@
 		</script>
         <div class="grid-container">
             <div class="grid-item" onclick="loadPlayer('lone_fluke')">
-                <img src="covers/lone_fluke.jpg" alt="Lone Fluke">
-            </div>
-            <div class="grid-item" onclick="loadPlayer('is_like')">
-                <img src="covers/is_like.jpg" alt="Is Like">
-            </div>
-            <div class="grid-item" onclick="loadPlayer('album3')">
-                <img src="path/to/album3.jpg" alt="Album 3 Cover Art">
-            </div>
+				<figure>
+					<img src="covers/lone_fluke.jpg" alt="Lone Fluke">
+					<figcaption>Lone Fluke</figcaption>
+				</figure>
+			</div>
+			<div class="grid-item" onclick="loadPlayer('is_like')">
+				<figure>
+					<img src="covers/is_like.jpg" alt="Is Like">
+					<figcaption>Is Like</figcaption>
+				</figure>
+			</div>
+			<div class="grid-item" onclick="loadPlayer('album3')">
+				<figure>
+					<img src="path/to/album3.jpg" alt="Album 3 Cover Art">
+					<figcaption>Album 3 Cover Art</figcaption>
+				</figure>
+			</div>
         </div>
         
         <div>
@@ -84,10 +93,10 @@
                     embed = '<iframe width="500" height="150" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/1707411753&color=%23ff5500&auto_play=false&hide_related=true&show_comments=false&show_user=false&show_reposts=false&show_teaser=false"></iframe>';
                 }
 
-                document.getElementById('player').innerHTML = text + embed;
-                document.getElementById('player').style.display = "block";
-				document.getElementById('player').style.visibility = 'visible';
-                currentAlbum = album;
+                document.getElementById('player').innerHTML = '<div>' + text + '</div><div>' + embed + '</div>';
+    			document.getElementById('player').style.display = "block";
+    			document.getElementById('player').style.visibility = 'visible';
+    			currentAlbum = album;
             }
         </script>
 		<script src="animation.js"></script>
