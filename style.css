@@ -82,15 +82,15 @@ div {
 #player {
     display: block; /* or 'flex' */
     height: 300px; /* Adjust this value as needed */
-    visibility: hidden; /* Hide the content */
+    opacity: 0; /* Hide the content */
     overflow: auto; /* Add a scrollbar if the content exceeds the div's height */
+    transition: opacity 0.3s; /* Smooth transition */
 }
 
 .grid-item img {
-	max-width: 200px; /* Adjust as needed */
-	max-height: 200px; /* Adjust as needed */
-	width: 100%;
-	height: auto;
+	width: 250px;
+	height: 250px;
+	object-fit: cover;
 	box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25); /* Add a slight shadow */
 }
 

@@ -77,7 +77,7 @@
             function loadPlayer(album) {
                 var text, embed;
                 if (album === currentAlbum) {
-                    document.getElementById('player').style.display = "none";
+                    document.getElementById('player').style.opacity = '0'; // Hide the player
                     currentAlbum = null;
                     return;
                 }
@@ -93,9 +93,8 @@
                     embed = '<iframe width="500" height="150" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/1707411753&color=%23ff5500&auto_play=false&hide_related=true&show_comments=false&show_user=false&show_reposts=false&show_teaser=false"></iframe>';
                 }
 
-                document.getElementById('player').innerHTML = '<div>' + text + '</div><div>' + embed + '</div>';
-    			document.getElementById('player').style.display = "block";
-    			document.getElementById('player').style.visibility = 'visible';
+				document.getElementById('player').innerHTML = '<div>' + text + '</div><div>' + embed + '</div>';
+    			document.getElementById('player').style.opacity = '1'; // Show the player
     			currentAlbum = album;
             }
         </script>
