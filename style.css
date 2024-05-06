@@ -7,13 +7,15 @@
     100% {opacity: 1;}
 }
 @media (max-width: 600px) {
-    .grid-container {
-        grid-template-columns: auto;
+    .grid-container > grid-item {
+        display: block;
+        width: 100%;
     }
 }
 body {
 	margin: 0;
 	overflow: auto;
+    overflow-x: hidden; /* add this line */
 	font-family: 'Source Code Pro', monospace;
 	display: flex;
 	flex-direction: column;
