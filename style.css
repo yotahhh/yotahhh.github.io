@@ -7,20 +7,19 @@
     100% {opacity: 1;}
 }
 body {
-	margin: 0;
-	overflow: auto;
-    overflow-x: hidden; /* add this line */
-	font-family: 'Source Code Pro', monospace;
-	display: block;
+    margin: 0;
+    overflow: auto;
+    overflow-x: hidden;
+    font-family: 'Source Code Pro', monospace;
+    display: flex;
+    justify-content: center;
     align-items: center;
-	flex-direction: column;
-	justify-content: flex-start;
-	align-items: center;
-	height: 100vh;
-	color: black;
-	text-align: center; /* Center all the text */
-	animation: fadeIn 1s ease-in-out;
-	text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.7);
+    flex-direction: column;
+    height: 100vh;
+    color: black;
+    text-align: center;
+    animation: fadeIn 1s ease-in-out;
+    text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.7);
 }
 #canvas {
 	position: absolute;

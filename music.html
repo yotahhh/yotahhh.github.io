@@ -27,26 +27,6 @@
 					window.history.back();
 				});
 			</script>
-		<div id="text"></div>
-		<script>
-			// Store the English and German versions of the text
-			var textGerman = `
-				<p>Music/Works</p>
-			`;
-
-			var textEnglish = `
-				<p>Music/Works</p>
-			`;
-		
-			// Get the user's language
-			var userLanguage = navigator.language || navigator.userLanguage;
-		
-			// Decide which version of the text to display
-			var textToDisplay = userLanguage.startsWith('de') ? textGerman : textEnglish;
-		
-			// Display the text
-			document.getElementById('text').innerHTML = textToDisplay;
-		</script>
         <div class="grid-container">
             <div class="grid-item" onclick="loadPlayer('lone_fluke')">
 				<figure>
