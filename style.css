@@ -8,6 +8,7 @@
 }
 body {
     margin: 0;
+    padding: 0;
     overflow: auto;
     overflow-x: hidden;
     font-family: 'Source Code Pro', monospace;
@@ -58,7 +59,7 @@ div {
 	max-width: 800px; /* Limit the width of the div */
 	margin: auto; /* Center the div */
 	text-align: left; /* Align the text to the left */
-	padding: 0 20px;
+	padding: 0;
 }
 .center-text {
     text-align: center;
