@@ -72,6 +72,9 @@ div {
     display: grid;
     grid-template-columns: auto auto auto;
     padding: 10px;
+    margin: 0 auto;
+    text-align: center;
+    justify-content: center;
 }
 .grid-item {
     background-color: rgba(255, 255, 255, 0.8);
@@ -126,16 +129,10 @@ div {
     overflow: hidden; /* Hide any content that exceeds the div's height */
 }
 @media (max-width: 600px) {
-    .grid-container {
-        grid-template-columns: 1fr;
-    }
-}
-@media (max-width: 600px) {
     body {
         align-items: flex-start;
     }
-    .grid-container > .grid-item {
-        display: block;
-        width: 100%;
+    .grid-container {
+        grid-template-columns: 1fr;
     }
 }
