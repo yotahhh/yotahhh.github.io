@@ -17,7 +17,8 @@ body {
 	overflow: auto;
     overflow-x: hidden; /* add this line */
 	font-family: 'Source Code Pro', monospace;
-	display: flex;
+	display: block;
+    align-items: initial;
 	flex-direction: column;
 	justify-content: flex-start;
 	align-items: center;
@@ -130,4 +131,9 @@ div {
     text-align: center; /* Center the player within the div */
     height: 150px; /* Adjust this value as needed */
     overflow: hidden; /* Hide any content that exceeds the div's height */
+}
+@media (max-width: 600px) {
+    .grid-container {
+        grid-template-columns: 1fr;
+    }
 }
