@@ -138,12 +138,12 @@ div {
         grid-template-columns: 1fr;
     }
     #player {
-        width: 90%; /* Adjust this value as needed */
+        width: 100; /* Adjust this value as needed */
         margin: 0 auto;
     }
     /* Add a selector for the description text if it's not inside the #player */
     .description {
-        width: 90%; /* Adjust this value as needed */
+        width: 100; /* Adjust this value as needed */
         margin: 0 auto;
     }
 }
