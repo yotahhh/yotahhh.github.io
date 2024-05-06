@@ -7,7 +7,7 @@
     100% {opacity: 1;}
 }
 @media (max-width: 600px) {
-    .grid-container > grid-item {
+    .grid-container > .grid-item {
         display: block;
         width: 100%;
     }
