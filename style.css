@@ -130,7 +130,9 @@ div {
 }
 @media (max-width: 600px) {
     body {
-        align-items: flex-start;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
     }
     .grid-container {
         grid-template-columns: 1fr;
