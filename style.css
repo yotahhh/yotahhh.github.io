@@ -7,10 +7,8 @@
     100% {opacity: 1;}
 }
 @media (max-width: 600px) {
-    .cover-art-grid {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
+    .grid-container {
+        grid-template-columns: auto;
     }
 }
 body {
