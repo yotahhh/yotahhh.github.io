@@ -152,3 +152,7 @@ div {
         margin-top: 300px; /* Adjust this value as needed */
     }
 }
+#player, .player-content, .description, .player {
+    margin: 0;
+    padding: 0;
+}
