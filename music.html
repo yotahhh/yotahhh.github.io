@@ -115,10 +115,9 @@
 				}
 
 				document.getElementById('player').innerHTML = '<div class="player-content"><div class="description">' + text + '</div><div class="player">' + embed + '</div></div>';
-				playerContainer.classList.add('active');
-
 				// Create a widget instance
 				widget = SC.Widget(document.querySelector('.player iframe'));
+				playerContainer.classList.add('active');
 
 				currentAlbum = album;
 			}
