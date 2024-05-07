@@ -26,7 +26,7 @@ function animate() {
             line.opacity = 0; // Reset opacity when line moves out of canvas
         }
         if (line.opacity < line.maxOpacity) {
-            line.opacity += 0.0003; // Increase opacity very gradually
+            line.opacity += 0.0005; // Increase opacity very gradually
         }
     });
     requestAnimationFrame(animate);
