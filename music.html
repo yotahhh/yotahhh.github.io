@@ -58,6 +58,18 @@
 					<figcaption>Momentum</figcaption>
 				</figure>
 			</div>
+			<div class="grid-item" onclick="loadPlayer('trnstn')">
+				<figure>
+					<img src="covers/trnstn.jpg" alt="TRNSTN">
+					<figcaption>TRNSTN Radio</figcaption>
+				</figure>
+			</div>
+			<div class="grid-item" onclick="loadPlayer('this_is_fine')">
+				<figure>
+					<img src="covers/this_is_fine.jpg" alt="TRNSTN">
+					<figcaption>This is Fine</figcaption>
+				</figure>
+			</div>
         </div>
         
         <div>
@@ -94,7 +106,14 @@
 				} else if (album === 'momentum') {
 					text = "\"Momentum\" is Yotah's contribution to the VA Compilation by 00effort, a label based in Warsaw, Poland";
 					embed = '<iframe width="100%" height="20" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/1651393896&color=%23ff5500&inverse=false&auto_play=true&show_user=true"></iframe>';
+				} else if (album === 'trnstn') {
+					text = "\"Crying on the Dancefloor\" was a show on TRNSTN Radio, a radio station based in Fribourg, Switzerland, for which Yotah played a 20 minutes long set consisting of his own tracks";
+					embed = '<iframe width="100%" height="20" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/1393563850&color=%23ff5500&inverse=false&auto_play=true&show_user=true"></iframe>';
+				} else if (album === 'this_is_fine') {
+					text = "\"This is Fine\" is a Yotah's contribution to the second VA Compilation by label and art collective CRTTR, \"I Wanna Be A Superstar Vol. 2\" ";
+					embed = '<iframe width="100%" height="20" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/1626788817&color=%23ff5500&inverse=false&auto_play=true&show_user=true"></iframe>';
 				}
+		
 		
 		
 				document.getElementById('player').innerHTML = '<div class="player-content"><div class="description">' + text + '</div><div class="player">' + embed + '</div></div>';
