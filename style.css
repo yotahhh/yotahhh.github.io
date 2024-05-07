@@ -172,3 +172,29 @@ div {
     width: 100%;
     height: 100%;
 }
+#player-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5); /* semi-transparent black */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s, visibility 0.3s;
+}
+
+#player-container.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+@media (min-width: 768px) { /* adjust this value based on your needs */
+    #player-container {
+        position: static;
+        background: transparent;
+    }
+}

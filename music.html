@@ -72,8 +72,9 @@
 			</div>
         </div>
         
-        <div>
+		<div id="player-container"></div>
             <div id="player"></div>
+			</div>
         </div>
         
         <script>
@@ -81,16 +82,15 @@
 			var widget = null;
 		
 			function loadPlayer(album) {
+				var playerContainer = document.getElementById('player-container');
 				var text, embed;
+
 				if (album === currentAlbum) {
-					document.getElementById('player').style.opacity = '0'; // Hide the player
-					if (widget !== null) {
-						widget.pause(); // Stop the player
-					}
+					playerContainer.classList.remove('active');
 					currentAlbum = null;
 					return;
 				}
-		
+
 				if (album === 'lone_fluke') {
 					text = "In collaboration with Candid Rütter, a friend and former Sound Arts Studies classmate, the two composed the approximately ten-minute, multi-channel sound piece \"Lone Fluke\" + album";
 					embed = '<iframe width="100%" height="20" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/971118847%3Fsecret_token%3Ds-RwepXlcAmVq&color=%23ff5500&auto_play=true&hide_related=true&show_comments=false&show_user=false&show_reposts=false&show_teaser=false"></iframe>';
@@ -113,12 +113,13 @@
 					text = "\"This is Fine\" is a Yotah's contribution to the second VA Compilation by label and art collective CRTTR, \"I Wanna Be A Superstar Vol. 2\" ";
 					embed = '<iframe width="100%" height="20" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/1626788817&color=%23ff5500&inverse=false&auto_play=true&show_user=true"></iframe>';
 				}
+
 				document.getElementById('player').innerHTML = '<div class="player-content"><div class="description">' + text + '</div><div class="player">' + embed + '</div></div>';
-				document.getElementById('player').style.opacity = '1'; // Show the player
-		
+				playerContainer.classList.add('active');
+
 				// Create a widget instance
 				widget = SC.Widget(document.querySelector('.player iframe'));
-		
+
 				currentAlbum = album;
 			}
 		</script>
