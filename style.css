@@ -120,7 +120,7 @@ div {
 
 .description {
     text-align: center; /* Center the text within the div */
-	height: 100px; /* Adjust this value as needed */
+	height: 150px; /* Adjust this value as needed */
     overflow: auto; /* Add a scrollbar if the text exceeds the div's height */
 }
 
