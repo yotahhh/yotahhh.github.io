@@ -193,8 +193,5 @@ div {
 }
 
 @media (min-width: 768px) { /* adjust this value based on your needs */
-    #player-container {
-        position: static;
-        background: transparent;
-    }
+    /* No changes needed here for the player to be fixed at the top */
 }
