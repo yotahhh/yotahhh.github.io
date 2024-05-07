@@ -40,9 +40,9 @@
 					<figcaption>Is Like</figcaption>
 				</figure>
 			</div>
-			<div class="grid-item" onclick="loadPlayer('album3')">
+			<div class="grid-item" onclick="loadPlayer('lidar')">
 				<figure>
-					<img src="path/to/album3.jpg" alt="Album 3 Cover Art">
+					<img src="covers/lidar.jpg" alt="LiDAR">
 					<figcaption>Album 3 Cover Art</figcaption>
 				</figure>
 			</div>
@@ -68,14 +68,14 @@
 				}
 		
 				if (album === 'lone_fluke') {
-					text = "In collaboration with Candid Rütter, a friend and former Sound Arts classmate, the two composed the approximately ten-minute, multi-channel sound piece \"Lone Fluke\" + album";
+					text = "In collaboration with Candid Rütter, a friend and former Sound Arts Studies classmate, the two composed the approximately ten-minute, multi-channel sound piece \"Lone Fluke\" + album";
 					embed = '<iframe width="100%" height="20" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/971118847%3Fsecret_token%3Ds-RwepXlcAmVq&color=%23ff5500&auto_play=true&hide_related=true&show_comments=false&show_user=false&show_reposts=false&show_teaser=false"></iframe>';
 				} else if (album === 'is_like') {
-					text = "Is Like blabla";
+					text = "The thrack \"Is Like\" appeared on the first iteration of CRTTR-CLB, a bi-monthly compilation series by the label and art collective CRTTR";
 					embed = '<iframe width="100%" height="20" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/1707411753&color=%23ff5500&inverse=false&auto_play=true&show_user=false"></iframe>';
-				} else if (album === 'album3') {
-					text = "Album 3 blabla";
-					embed = '<iframe width="100%" height="20" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/1707411753&color=%23ff5500&auto_play=true&hide_related=true&show_comments=false&show_user=false&show_reposts=false&show_teaser=false"></iframe>';
+				} else if (album === 'lidar') {
+					text = "\"LiDAR\" EP with VoicheckAfter experiencing numerous collective moments on dance floors, Yotah and Voicheck were inspired to share their own take on bass music. Blending fast-paced rhythms with gritty basslines and a touch of experimental sound design, 'LiDAR' carries a heavy, yet playful energy, originating from their deep-rooted friendship.";
+					embed = '<iframe width="100%" height="300" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/playlists/1809294550&color=%23ff5500&auto_play=true&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true&visual=true"></iframe>';
 				}
 		
 				document.getElementById('player').innerHTML = '<div class="player-content"><div class="description">' + text + '</div><div class="player">' + embed + '</div></div>';
