@@ -79,7 +79,7 @@ div {
 }
 .grid-item {
     background-color: rgba(255, 255, 255, 0.8);
-    padding: 20px;
+    padding: 15px;
     font-size: 30px;
     text-align: center;
     cursor: pointer;
@@ -98,8 +98,8 @@ div {
 }
 
 .grid-item img {
-	width: 250px;
-	height: 250px;
+	width: 200px;
+	height: 200px;
 	object-fit: cover;
 	box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25); /* Add a slight shadow */
 }
@@ -139,18 +139,18 @@ div {
         grid-template-columns: 1fr;
     }
     #player {
-        width: 100%; /* Adjust this value as needed */
+        width: 90%; /* Adjust this value as needed */
         margin: 0 auto;
     }
     /* Add a selector for the description text if it's not inside the #player */
     .description {
-        width: 100%; /* Adjust this value as needed */
+        width: 90%; /* Adjust this value as needed */
         margin: 0 auto;
     }
 }
 @media (min-width: 601px) {
     .grid-container {
-        margin-top: 300px; /* Adjust this value as needed */
+        margin-top: 200px; /* Adjust this value as needed */
     }
 }
 #player, .player-content, .description, .player {
@@ -169,6 +169,6 @@ div {
     position: absolute;
     top: 0;
     left: 0;
-    width: 100%;
+    width: 90%;
     height: 100%;
 }
