@@ -91,18 +91,16 @@
 					return;
 				}
 		
-				if (album === 'lone_fluke') {
-					text = "In collaboration with Candid Rütter, a friend and former Sound Arts Studies classmate, the two composed the approximately ten-minute, multi-channel sound piece \"Lone Fluke\" + album";
-					embed = '<iframe width="100%" height="20" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/971118847%3Fsecret_token%3Ds-RwepXlcAmVq&color=%23ff5500&auto_play=true&hide_related=true&show_comments=false&show_user=false&show_reposts=false&show_teaser=false"></iframe>';
-				} else if (album === 'is_like') {
+				
+				if (album === 'is_like') {
 					text = "The thrack \"Is Like\" appeared on the first iteration of CRTTR-CLB, a bi-monthly compilation series by the label and art collective CRTTR";
-					embed = '<iframe width="100%" height="20" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/1707411753&color=%23ff5500&inverse=false&auto_play=false&show_user=true"></iframe>';
+					embed = '<iframe width="100%" height="20" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/1707411753&color=%23ff5500&inverse=false&auto_play=true&show_user=true"></iframe>';
 				} else if (album === 'lidar') {
 					text = "\"LiDAR\" EP is a collaboration with Voicheck. After experiencing numerous collective moments on dance floors, Yotah and Voicheck were inspired to share their own take on bass music. Blending fast-paced rhythms with gritty basslines and a touch of experimental sound design, 'LiDAR' carries a heavy, yet playful energy, originating from their deep-rooted friendship.";
 					embed = '<iframe width="100%" height="20" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/1791667282&color=%23ff5500&inverse=false&auto_play=true&show_user=true"></iframe>';
 				} else if (album === 'rewiring') {
 					text = "\"Rewiring\" EP was Yotah's debut released on Nostro Hood System, a label based in Bristol UK: NHS's twentieth release introduces a newcomer, Yotah, with their debut EP \"Rewiring,\" showcasing four tracks blending chunky maximalism and intricate modulation. Yotah's creative process involved learning and unlearning various music styles, resulting in a sound that echoes past patterns reinterpreted and rewired in his mind. \"Rewiring\" delves into hybridized sonics, breaking through consolidated patterns to explore the unknown, reflecting Yotah's evolving musical journey.";
-					embed = '<iframe width="100%" height="20" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/1791667282&color=%23ff5500&inverse=false&auto_play=true&show_user=true"></iframe>';
+					embed = '<iframe width="100%" height="20" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/1368971116&color=%23ff5500&inverse=false&auto_play=true&show_user=true"></iframe>';
 				} else if (album === 'momentum') {
 					text = "\"Momentum\" is Yotah's contribution to the VA Compilation by 00effort, a label based in Warsaw, Poland";
 					embed = '<iframe width="100%" height="20" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/1651393896&color=%23ff5500&inverse=false&auto_play=true&show_user=true"></iframe>';
@@ -112,7 +110,11 @@
 				} else if (album === 'this_is_fine') {
 					text = "\"This is Fine\" is a Yotah's contribution to the second VA Compilation by label and art collective CRTTR, \"I Wanna Be A Superstar Vol. 2\" ";
 					embed = '<iframe width="100%" height="20" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/1626788817&color=%23ff5500&inverse=false&auto_play=true&show_user=true"></iframe>';
+				} else if (album === 'lone_fluke') {
+					text = "In collaboration with Candid Rütter, a friend and former Sound Arts Studies classmate, the two composed the approximately ten-minute, multi-channel sound piece \"Lone Fluke\" + album";
+					embed = '<iframe width="100%" height="20" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/971118847%3Fsecret_token%3Ds-RwepXlcAmVq&color=%23ff5500&auto_play=true&hide_related=true&show_comments=false&show_user=false&show_reposts=false&show_teaser=false"></iframe>';
 				}
+
 				document.getElementById('player').innerHTML = '<div class="player-content"><div class="description">' + text + '</div><div class="player">' + embed + '</div></div>';
 				document.getElementById('player').style.opacity = '1'; // Show the player
 		
