@@ -96,7 +96,7 @@
 					embed = '<iframe width="100%" height="20" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/971118847%3Fsecret_token%3Ds-RwepXlcAmVq&color=%23ff5500&auto_play=true&hide_related=true&show_comments=false&show_user=false&show_reposts=false&show_teaser=false"></iframe>';
 				} else if (album === 'is_like') {
 					text = "The thrack \"Is Like\" appeared on the first iteration of CRTTR-CLB, a bi-monthly compilation series by the label and art collective CRTTR";
-					embed = '<iframe width="100%" height="20" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/1707411753&color=%23ff5500&inverse=false&auto_play=true&show_user=false"></iframe>';
+					embed = '<iframe width="100%" height="20" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/1707411753&color=%23ff5500&inverse=false&auto_play=false&show_user=true"></iframe>';
 				} else if (album === 'lidar') {
 					text = "\"LiDAR\" EP is a collaboration with Voicheck. After experiencing numerous collective moments on dance floors, Yotah and Voicheck were inspired to share their own take on bass music. Blending fast-paced rhythms with gritty basslines and a touch of experimental sound design, 'LiDAR' carries a heavy, yet playful energy, originating from their deep-rooted friendship.";
 					embed = '<iframe width="100%" height="20" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/1791667282&color=%23ff5500&inverse=false&auto_play=true&show_user=true"></iframe>';
@@ -118,6 +118,8 @@
 		
 				// Create a widget instance
 				widget = SC.Widget(document.querySelector('.player iframe'));
+
+				document.getElementById('player').scrollIntoView({ behavior: 'smooth' });
 		
 				currentAlbum = album;
 			}
