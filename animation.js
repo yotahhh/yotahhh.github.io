@@ -21,8 +21,8 @@ function animate() {
         if (line.x < 0 || line.x > canvas.width || line.y < 0 || line.y > canvas.height) {
             line.x = Math.random() * canvas.width;
             line.y = Math.random() * canvas.height;
-            line.vx = (Math.random() - 0.5) * 0.065; // Slower animation
-            line.vy = (Math.random() - 0.5) * 0.065; // Slower animation
+            line.vx = (Math.random() - 0.5) * 0.085; // Slower animation
+            line.vy = (Math.random() - 0.5) * 0.085; // Slower animation
             line.opacity = 0; // Reset opacity when line moves out of canvas
         }
         if (line.opacity < line.maxOpacity) {
@@ -41,8 +41,8 @@ function init() {
             y: Math.random() * canvas.height,
             length: Math.random() * 100,
             angle: Math.random() * Math.PI * 2,
-            vx: (Math.random() - 0.5) * 0.065, // Slower animation
-            vy: (Math.random() - 0.5) * 0.065,  // Slower animation
+            vx: (Math.random() - 0.5) * 0.085, // Slower animation
+            vy: (Math.random() - 0.5) * 0.085,  // Slower animation
             opacity: 0, // Initial opacity is 0
             maxOpacity: Math.random() * 0.5 // Maximum opacity
         });
