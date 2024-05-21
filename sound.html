@@ -29,24 +29,29 @@
 			</script>
 		<div id="text"></div>
 		<script>
+			var vimeoPlayer = '<iframe src="https://player.vimeo.com/video/722502612?app_id=122963&h=e4ecb67fb0&referrer=https%3A%2F%2Fwww.vitamed-gmbh.ch%2F" width="640" height="360" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>';
 			// Store the English and German versions of the text
 			var textGerman = `
-				<p>Yves Spiri ist ein vielseitiger Klangkünstler aus Bern, Schweiz, mit Expertise in Sounddesign, Tontechnik und Musikproduktion. Sein akademischer Hintergrund in Sound Arts an der Hochschule der Künste Bern, kombiniert mit seiner umfangreichen Erfahrung, ermöglicht es ihm, eine einzigartige Mischung aus kreativen und technischen Fähigkeiten anzubieten.</p>
-				<p>Yves' Arbeit umfasst ein breites Spektrum an Anwendungen, darunter:</p>
+				<p>Yves Spiri ist ein Klangkünstler aus Bern, Schweiz, der gerne mit Sounddesign, Technik und Musikproduktion arbeitet. Er hat Sound Arts an der Hochschule der Künste Bern studiert und arbeitet stets an Projekten, die Kreativität und technisches Know-how kombinieren.</p>
+				<p>Yves' Arbeit umfasst:</p>
 				<ul>
-					<li><strong>Sounddesign für Marketing und Werbung:</strong> Er verfügt über eine nachweisliche Erfolgsbilanz bei der Erstellung von wirkungsvollem Sounddesign für Werbespots, insbesondere für Cleverclip, eine renommierte Marketingvideofirma in Bern.</li>
-					<li><strong>Audio-Mastering für experimentelle Musik:</strong> Er ist der bevorzugte Mastering-Engineer für den CRTTR Club, eine angesehene zweimonatliche Reihe, die experimentelle Clubmusik präsentiert.</li>
-					<li><strong>Maßgeschneidertes Sounddesign und Musikproduktion:</strong> Yves arbeitet mit Künstlern und Kunden zusammen, um maßgeschneiderte Klangerlebnisse zu schaffen, von Soundeffekten und Atmosphären bis hin zu origineller Musik.</li>
+					<li><strong>Sounddesign für Marketing und Werbung:</strong> Er kreiert eindrucksvolle Klänge für Werbespots, einschließlich Arbeiten für Cleverclip, eine bekannte Marketing-Video-Firma in Bern.</li>
+					<li><strong>Audio-Mastering für experimentelle Musik:</strong> Er ist der bevorzugte Mastering-Ingenieur für den CRTTR Club, eine zweiwöchentliche Veranstaltung, die experimentelle Clubmusik präsentiert.</li>
+					<li><strong>Maßgeschneidertes Sounddesign und Musikproduktion:</strong> Yves arbeitet mit Künstlern und Kunden zusammen, um einzigartige Klangerlebnisse zu schaffen, von Soundeffekten und Atmosphären bis hin zu Originalmusik.</li>
 				</ul>
+				<p>Yves ist für alle Arten von Projekten im Bereich Sounddesign und Komposition verfügbar. Sie können ihn per E-Mail erreichen.</p>
+				${vimeoPlayer}
 			`;
 			var textEnglish = `
-				<p>Yves Spiri is a versatile sound artist based in Bern, Switzerland, with expertise in sound design, engineering, and music production. His academic background in Sound Arts at the Bern University of the Arts, combined with extensive experience, allows him to offer a unique blend of creative and technical skills.</p>
-				<p>Yves' work spans a wide range of applications, including:</p>
+				<p>Yves Spiri is a sound artist from Bern, Switzerland, who loves working with sound design, engineering, and music production. He studied Sound Arts at the Bern University of the Arts and has built a career combining creativity and technical know-how.</p>
+				<p>Yves' work includes:</p>
 				<ul>
-					<li><strong>Sound Design for Marketing and Advertising:</strong> He has a proven track record creating impactful sound design for commercials, notably for Cleverclip, a prominent marketing video firm in Bern.</li>
-					<li><strong>Audio Mastering for Experimental Music:</strong> He is the go-to mastering engineer for CRTTR Club, a respected bi-monthly series showcasing experimental club music.</li>
-					<li><strong>Custom Sound Design and Music Production:</strong> Yves collaborates with artists and clients to create bespoke sonic experiences, from sound effects and atmospheres to original music.</li>
-				</ul>
+					<li><strong>Sound Design for Marketing and Advertising:</strong> He creates impactful sounds for commercials, including work for Cleverclip, a well-known marketing video firm in Bern.</li>
+					<li><strong>Audio Mastering for Experimental Music:</strong> He is the go-to mastering engineer for CRTTR Club, a bi-monthly event that features experimental club music.</li>
+					<li><strong>Custom Sound Design and Music Production:</strong> Yves works with artists and clients to make unique sound experiences, from sound effects and atmospheres to original music.</li>
+				/ul>
+				<p>Yves is available for all kinds of projects involving sound design and composition. You can reach him via email.</p>
+				${vimeoPlayer}
 			`;		
 			// Get the user's language
 			var userLanguage = navigator.language || navigator.userLanguage;
@@ -57,7 +62,6 @@
 			// Display the text
 			document.getElementById('text').innerHTML = textToDisplay;
 		</script>
-		<iframe src="https://player.vimeo.com/video/722502612?app_id=122963&h=e4ecb67fb0&referrer=https%3A%2F%2Fwww.vitamed-gmbh.ch%2F" width="640" height="360" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
 		<script src="animation.js"></script>
 	</body>
 </html>

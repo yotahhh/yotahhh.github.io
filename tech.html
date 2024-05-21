@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<script src="https://kit.fontawesome.com/bac5b34032.js" crossorigin="anonymous"></script>
+		<link rel="icon" href="favicon.ico">
+		<link rel="stylesheet" href="style.css">
+	</head>
+	<body>
+		<canvas id="canvas"></canvas>
+		<canvas id="backArrow" width="50" height="50" style="position: fixed; top: 10px; left: 50%; transform: translateX(-50%); cursor: pointer; width: 50px; height: 50px;"></canvas>
+			<script>
+				var canvas2 = document.getElementById('backArrow');
+				var ctx2 = canvas2.getContext('2d');
+
+				// Draw the arrow
+				ctx2.beginPath();
+				ctx2.moveTo(30, 10);
+				ctx2.lineTo(10, 25);
+				ctx2.lineTo(30, 40);
+				ctx2.strokeStyle = '#000000';
+				ctx2.lineWidth = 2;
+				ctx2.stroke();
+
+				// Add the click event
+				canvas2.addEventListener('click', function() {
+					window.history.back();
+				});
+			</script>
+		<div id="text"></div>
+		<script>
+			// Store the English and German versions of the text
+			var textGerman = `
+                <p>
+                    Yves ist ein zertifizierter IT-Spezialist, bereit, sich um Ihre technischen Bedürfnisse zu kümmern!
+                </p>
+                <p>
+                    Yves ist Experte für Webdesign und technischen Support und damit Ihre erste Anlaufstelle für eine Vielzahl von Dienstleistungen.
+                </p>
+                <p>
+                    Egal, ob Sie Unterstützung bei macOS, iOS, Android, Hardware-Reparaturen, Netzwerken, Hosting oder DNS benötigen, Yves steht Ihnen zur Verfügung.
+                </p>
+                <p>
+                    Kontaktieren Sie Yves per Mail für zuverlässigen und freundlichen Support.
+                </p>
+			`;
+			var textEnglish = `
+                <p>
+                    Meet Yves Spiri, a certified IT specialist ready to tackle your tech needs!
+                </p>
+                <p>
+                    Yves excels in web design and tech support, making him your go-to guy for a wide range of services.
+                </p>
+                <p>
+                    Whether you need help with macOS, iOS, Android, hardware repairs, networking, hosting, or DNS, Yves has got you covered.
+                </p>
+                <p>
+                    Reach out to Yves via email for reliable and friendly support.
+                </p>
+			`;		
+			// Get the user's language
+			var userLanguage = navigator.language || navigator.userLanguage;
+		
+			// Decide which version of the text to display
+			var textToDisplay = userLanguage.startsWith('de') ? textGerman : textEnglish;
+		
+			// Display the text
+			document.getElementById('text').innerHTML = textToDisplay;
+		</script>
+		<script src="animation.js"></script>
+	</body>
+</html>
