@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>yves spiri</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #1a1a1a;
+            color: #d4ceb8;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            line-height: 1.6;
+            padding: 20px;
+            position: relative;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.06'/%3E%3C/svg%3E");
+            z-index: 1;
+        }
+
+        .content {
+            max-width: 800px;
+            position: relative;
+            z-index: 2;
+            filter: url(#textNoise);
+        }
+
+        h1 {
+            font-size: 2em;
+            margin-bottom: 0.3em;
+            font-weight: normal;
+        }
+
+        h2 {
+            font-size: 1.2em;
+            margin: 2em 0 1em 0;
+            font-weight: normal;
+        }
+
+        p {
+            margin-bottom: 1em;
+        }
+
+        nav {
+            margin: 2em 0;
+        }
+
+        nav a {
+            color: #d4ceb8;
+            text-decoration: none;
+            margin-right: 1.5em;
+            transition: color 0.2s;
+        }
+
+        nav a:hover {
+            color: var(--hover-color);
+        }
+
+        nav a.active {
+            color: var(--active-color);
+        }
+
+        nav a:visited {
+            color: var(--visited-color);
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .projects {
+            margin-top: 2em;
+        }
+
+        .project {
+            margin-bottom: 3em;
+        }
+
+        .project img {
+            width: 100%;
+            max-width: 600px;
+            height: auto;
+            display: block;
+            margin-top: 0.5em;
+            border: 1px solid #d4ceb8;
+        }
+
+        .audio-player {
+            margin-top: 1em;
+            display: flex;
+            align-items: center;
+            gap: 1em;
+        }
+
+        .audio-player audio {
+            flex: 1;
+            max-width: 400px;
+        }
+
+        .category {
+            margin-top: 3em;
+        }
+
+        .category h3 {
+            font-size: 1.5em;
+            margin-bottom: 1.5em;
+            font-weight: normal;
+        }
+
+        iframe {
+            max-width: 100%;
+            margin-top: 1em;
+            border: 1px solid #d4ceb8;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 15px;
+                font-size: 14px;
+            }
+
+            h1 {
+                font-size: 1.5em;
+            }
+
+            nav a {
+                margin-right: 1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <svg style="position: absolute; width: 0; height: 0;" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <filter id="textNoise">
+                <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="1" result="noise" />
+                <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.4" />
+            </filter>
+        </defs>
+    </svg>
+
+    <div class="content">
+        <nav>
+            <a href="#about" onclick="showSection('about'); return false;">about</a>
+            <a href="#works" onclick="showSection('works'); return false;">works</a>
+        </nav>
+
+        <div id="about" class="section active">
+            <h1>yves spiri</h1>
+            <img src="images/yves.jpg" alt="yves spiri" style="max-width: 300px; margin: 2em 0; border: 1px solid #d4ceb8;">
+            
+            <p>yves spiri (he/him) lives in bern and currently studies MA sound design in zurich. he is obsessed with everything that involves sound, be it music, games, film, events, or other art forms.</p>
+            
+            <p>his approach has been to experience as many different roles and perspectives when working with sound: production, engineering, mixing, mastering, event organising, curration, booking, teaching, and sound design for advertisments and animation film. sound design for games is yet missing and probably his most anticipated role to date, as yves is a big game nerd who has been observing the industry by playing games and listening to countless hours of interviews with veterans and insiders.</p>
+            
+            <p>yves has been working with sound and media creatively and technically for over ten years now. at the same time, he feels like his journey only just begun and is more eager and excited than ever to work on projects, preferably film and games. yves has been releasing music under the pseudonym "Yotah" and is always working on the next piece, learning as he goes.</p>
+            
+            <p style="margin-top: 2em;">do you want to work with me? please check out my stuff and contact me right away, looking forward to it.</p>
+            
+            <p style="margin-top: 2em;">email: hi@yvesspiri.net<br>
+            instagram: @yotahmusic<br>
+            soundcloud: soundcloud.com/yotahhh</p>
+        </div>
+
+        <div id="works" class="section">
+            <h2>works</h2>
+            
+            <div class="category">
+                <h3>music</h3>
+                <div class="projects">
+                    <div class="project">
+                        <p><strong>LiDAR EP</strong></p>
+                        <p>"LiDAR" EP is a collaboration with Voicheck. After experiencing numerous collective moments on dance floors, Yotah and Voicheck were inspired to share their own take on bass music. Blending fast-paced rhythms with gritty basslines and a touch of experimental sound design, 'LiDAR' carries a heavy, yet playful energy, originating from their deep-rooted friendship.</p>
+                        <img src="images/LiDA.jpg" alt="LiDAR EP">
+                        <div class="audio-player">
+                            <audio controls>
+                                <source src="mp3/LiDA.mp3" type="audio/mpeg">
+                                Your browser does not support the audio element.
+                            </audio>
+                        </div>
+                    </div>
+                    
+                    <div class="project">
+                        <p><strong>Rewiring EP</strong></p>
+                        <p>"Rewiring" EP was Yotah's debut released on Nostro Hood System, a label based in Bristol UK: NHS's twentieth release introduces a newcomer, Yotah, with their debut EP "Rewiring," showcasing four tracks blending chunky maximalism and intricate modulation. Yotah's creative process involved learning and unlearning various music styles, resulting in a sound that echoes past patterns reinterpreted and rewired in his mind. "Rewiring" delves into hybridized sonics, breaking through consolidated patterns to explore the unknown, reflecting Yotah's evolving musical journey.</p>
+                        <img src="images/Rewi.jpg" alt="Rewiring EP">
+                        <div class="audio-player">
+                            <audio controls>
+                                <source src="mp3/Rewi.mp3" type="audio/mpeg">
+                                Your browser does not support the audio element.
+                            </audio>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="category">
+                <h3>film</h3>
+                <div class="projects">
+                    <div class="project">
+                        <p><strong>Animation Film</strong></p>
+                        <p>Sound Design for Cleverclip, Bern. Here is one of a few animated advertisement shorts that Yves did the sound design for:</p>
+                        <iframe src="https://player.vimeo.com/video/722502612?app_id=122963&h=e4ecb67fb0&referrer=https%3A%2F%2Fwww.vitamed-gmbh.ch%2F" width="640" height="360" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const neonColors = ['#ff00ff', '#00ffff', '#00ff00', '#ffff00', '#ff0080', '#0080ff', '#ff6600', '#ff0066'];
+        
+        const shuffled = [...neonColors].sort(() => Math.random() - 0.5);
+        document.documentElement.style.setProperty('--hover-color', shuffled[0]);
+        document.documentElement.style.setProperty('--active-color', shuffled[1]);
+        document.documentElement.style.setProperty('--visited-color', shuffled[2]);
+
+        function showSection(id) {
+            const sections = document.querySelectorAll('.section');
+            sections.forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            
+            const links = document.querySelectorAll('nav a');
+            links.forEach(l => l.classList.remove('active'));
+            document.querySelector(`nav a[href="#${id}"]`).classList.add('active');
+            
+            history.pushState(null, null, '#' + id);
+        }
+
+        // handle browser back/forward
+        window.addEventListener('hashchange', () => {
+            const hash = window.location.hash.slice(1) || 'about';
+            showSection(hash);
+        });
+
+        // load correct section on page load
+        window.addEventListener('load', () => {
+            const hash = window.location.hash.slice(1) || 'about';
+            showSection(hash);
+        });
+    </script>
+</body>
+</html>
