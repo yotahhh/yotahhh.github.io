@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>yves spiri - works</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: auto;
+            overflow-anchor: none;
+        }
+        
+        body {
+            background: #000000;
+            color: #d4ceb8;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            line-height: 1.6;
+            padding: 20px;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='2.5' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23grain)' opacity='0.15'/%3E%3C/svg%3E");
+            z-index: 1;
+        }
+
+
+
+        .content {
+            max-width: 900px;
+            position: relative;
+            z-index: 2;
+        }
+
+        nav {
+            margin: 2em 0;
+        }
+
+        nav a {
+            color: #d4ceb8;
+            text-decoration: none;
+            margin-right: 1.5em;
+            transition: color 0.2s;
+        }
+
+        nav a:hover {
+            color: var(--hover-color);
+        }
+
+        nav a.active {
+            color: var(--active-color);
+        }
+
+        a {
+            color: #d4ceb8;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--hover-color);
+        }
+
+        .projects {
+            margin-top: 2em;
+        }
+
+        .project {
+            margin-bottom: 1.5em;
+        }
+
+        .project p {
+            margin-bottom: 0.5em;
+        }
+
+        .cd-viewer {
+            width: 100%;
+            max-width: 700px;
+            height: 525px;
+            margin-top: 0.5em;
+            margin-bottom: 0.5em;
+            cursor: grab;
+        }
+
+        .cd-viewer:active {
+            cursor: grabbing;
+        }
+
+        .audio-player {
+            margin-top: 1em;
+            display: flex;
+            align-items: center;
+            gap: 1em;
+        }
+
+        .audio-player audio {
+            flex: 1;
+            max-width: 400px;
+        }
+
+        .category {
+            margin-top: 2em;
+        }
+
+        .category:first-child {
+            margin-top: 0;
+        }
+
+        .category h3 {
+            font-size: 1.5em;
+            margin-bottom: 1em;
+            font-weight: normal;
+        }
+
+        iframe {
+            max-width: 100%;
+            margin-top: 1em;
+            border: 1px solid #d4ceb8;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 15px;
+                font-size: 14px;
+            }
+
+            nav a {
+                margin-right: 1em;
+            }
+
+            .cd-viewer {
+                height: 350px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="content">
+        <nav>
+            <a href="index.html">about</a>
+            <a href="works.html" class="active">works</a>
+        </nav>
+
+        <div class="category">
+            <h3>music</h3>
+            <div class="projects">
+                <div class="project">
+                    <p><strong>LiDAR EP</strong></p>
+                    <p>"LiDAR" EP is a collaboration with Voicheck. After experiencing numerous collective moments on dance floors, Yotah and Voicheck were inspired to share their own take on bass music. Blending fast-paced rhythms with gritty basslines and a touch of experimental sound design, 'LiDAR' carries a heavy, yet playful energy, originating from their deep-rooted friendship.</p>
+                    <canvas class="cd-viewer" data-image="images/LiDA.jpg" data-tracklist="text/lida.txt"></canvas>
+                    <div class="audio-player">
+                        <audio controls>
+                            <source src="mp3/LiDA.mp3" type="audio/mpeg">
+                            Your browser does not support the audio element.
+                        </audio>
+                    </div>
+                </div>
+                
+                <div class="project">
+                    <p><strong>Rewiring EP</strong></p>
+                    <p>"Rewiring" EP was Yotah's debut released on Nostro Hood System, a label based in Bristol UK: NHS's twentieth release introduces a newcomer, Yotah, with their debut EP "Rewiring," showcasing four tracks blending chunky maximalism and intricate modulation. Yotah's creative process involved learning and unlearning various music styles, resulting in a sound that echoes past patterns reinterpreted and rewired in his mind. "Rewiring" delves into hybridized sonics, breaking through consolidated patterns to explore the unknown, reflecting Yotah's evolving musical journey.</p>
+                    <canvas class="cd-viewer" data-image="images/Rewi.jpg" data-tracklist="text/rewi.txt"></canvas>
+                    <div class="audio-player">
+                        <audio controls>
+                            <source src="mp3/Rewi.mp3" type="audio/mpeg">
+                            Your browser does not support the audio element.
+                        </audio>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="category">
+            <h3>film</h3>
+            <div class="projects">
+                <div class="project">
+                    <p><strong>Animation Film</strong></p>
+                    <p>Sound Design for Cleverclip, Bern. Here is one of a few animated advertisement shorts that Yves did the sound design for:</p>
+                    <iframe src="https://player.vimeo.com/video/722502612?app_id=122963&h=e4ecb67fb0&referrer=https%3A%2F%2Fwww.vitamed-gmbh.ch%2F" width="640" height="360" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const neonColors = ['#ff00ff', '#00ffff', '#00ff00', '#ffff00', '#ff0080', '#0080ff', '#ff6600', '#ff0066'];
+        
+        const shuffled = [...neonColors].sort(() => Math.random() - 0.5);
+        document.documentElement.style.setProperty('--hover-color', shuffled[0]);
+        document.documentElement.style.setProperty('--active-color', shuffled[1]);
+
+        // CD Viewer implementation
+        class CDViewer {
+            constructor(canvas) {
+                this.canvas = canvas;
+                this.gl = canvas.getContext('webgl');
+                
+                if (!this.gl) {
+                    console.error('WebGL not supported');
+                    return;
+                }
+
+                this.rotation = 0.3;
+                this.autoRotate = true;
+                this.lastTime = Date.now();
+                this.dragging = false;
+                this.lastX = 0;
+                this.texture = null;
+                this.backTexture = null;
+
+                this.setupShaders();
+                this.setupGeometry();
+                this.setupEventListeners();
+                this.loadAssets();
+                this.animate();
+            }
+
+            setupShaders() {
+                const gl = this.gl;
+                
+                const vsSource = `
+                    attribute vec4 aPosition;
+                    attribute vec2 aTexCoord;
+                    attribute vec3 aNormal;
+                    uniform mat4 uModelViewMatrix;
+                    uniform mat4 uProjectionMatrix;
+                    uniform mat4 uNormalMatrix;
+                    varying vec2 vTexCoord;
+                    varying vec3 vNormal;
+                    varying vec3 vViewPos;
+                    
+                    void main() {
+                        vec4 viewPos = uModelViewMatrix * aPosition;
+                        gl_Position = uProjectionMatrix * viewPos;
+                        vTexCoord = aTexCoord;
+                        vNormal = normalize((uNormalMatrix * vec4(aNormal, 0.0)).xyz);
+                        vViewPos = viewPos.xyz;
+                    }
+                `;
+
+                const fsSource = `
+                    precision highp float;
+                    varying vec2 vTexCoord;
+                    varying vec3 vNormal;
+                    varying vec3 vViewPos;
+                    uniform sampler2D uSampler;
+                    uniform sampler2D uBackSampler;
+                    uniform int uMaterial;
+                    uniform int uHasBack;
+                    
+                    void main() {
+                        vec3 normal = normalize(vNormal);
+                        vec3 viewDir = normalize(-vViewPos);
+                        vec3 light1 = normalize(vec3(2.0, 3.0, 4.0));
+                        vec3 light2 = normalize(vec3(-1.5, 1.0, 2.0));
+                        float diff1 = max(dot(normal, light1), 0.0);
+                        float diff2 = max(dot(normal, light2), 0.0) * 0.5;
+                        vec3 halfDir1 = normalize(light1 + viewDir);
+                        float spec1 = pow(max(dot(normal, halfDir1), 0.0), 64.0);
+                        float ambient = 0.3;
+                        
+                        if (uMaterial == 0) {
+                            vec4 tex = texture2D(uSampler, vTexCoord);
+                            float light = ambient + diff1 * 0.65 + diff2 * 0.35;
+                            gl_FragColor = vec4(tex.rgb * light, 1.0);
+                        } else if (uMaterial == 5) {
+                            vec4 tex;
+                            if (uHasBack == 1) {
+                                tex = texture2D(uBackSampler, vTexCoord);
+                            } else {
+                                tex = texture2D(uSampler, vTexCoord);
+                                tex.a = 1.0;
+                            }
+                            float light = ambient + diff1 * 0.65 + diff2 * 0.35;
+                            gl_FragColor = vec4(tex.rgb * light, tex.a);
+                        } else if (uMaterial == 1) {
+                            float ndotv = abs(dot(normal, viewDir));
+                            float fresnel = pow(1.0 - ndotv, 4.0);
+                            fresnel = mix(0.03, 0.25, fresnel);
+                            vec3 plasticTint = vec3(0.88, 0.90, 0.92);
+                            vec3 color = plasticTint * (ambient * 0.4 + diff1 * 0.25 + diff2 * 0.15);
+                            color += vec3(1.0) * spec1 * 0.9;
+                            gl_FragColor = vec4(color, 0.08 + fresnel);
+                        } else if (uMaterial == 2) {
+                            float ndotv = abs(dot(normal, viewDir));
+                            float fresnel = pow(1.0 - ndotv, 2.0);
+                            vec3 color = vec3(0.08, 0.08, 0.1) * (ambient * 0.7 + diff1 * 0.4 + diff2 * 0.25);
+                            color += vec3(1.0) * spec1 * 0.4;
+                            gl_FragColor = vec4(color, 0.5 + fresnel * 0.3);
+                        } else {
+                            float ndotv = abs(dot(normal, viewDir));
+                            float fresnel = pow(1.0 - ndotv, 3.0);
+                            vec3 color = vec3(0.9, 0.92, 0.94) * (ambient * 0.6 + diff1 * 0.3 + diff2 * 0.2);
+                            color += vec3(1.0) * spec1 * 0.6;
+                            gl_FragColor = vec4(color, 0.15 + fresnel * 0.25);
+                        }
+                    }
+                `;
+
+                const vs = gl.createShader(gl.VERTEX_SHADER);
+                gl.shaderSource(vs, vsSource);
+                gl.compileShader(vs);
+
+                const fs = gl.createShader(gl.FRAGMENT_SHADER);
+                gl.shaderSource(fs, fsSource);
+                gl.compileShader(fs);
+
+                this.program = gl.createProgram();
+                gl.attachShader(this.program, vs);
+                gl.attachShader(this.program, fs);
+                gl.linkProgram(this.program);
+
+                this.loc = {
+                    attr: {
+                        position: gl.getAttribLocation(this.program, 'aPosition'),
+                        texCoord: gl.getAttribLocation(this.program, 'aTexCoord'),
+                        normal: gl.getAttribLocation(this.program, 'aNormal'),
+                    },
+                    uni: {
+                        projection: gl.getUniformLocation(this.program, 'uProjectionMatrix'),
+                        modelView: gl.getUniformLocation(this.program, 'uModelViewMatrix'),
+                        normalMat: gl.getUniformLocation(this.program, 'uNormalMatrix'),
+                        sampler: gl.getUniformLocation(this.program, 'uSampler'),
+                        backSampler: gl.getUniformLocation(this.program, 'uBackSampler'),
+                        material: gl.getUniformLocation(this.program, 'uMaterial'),
+                        hasBack: gl.getUniformLocation(this.program, 'uHasBack'),
+                    },
+                };
+            }
+
+            setupGeometry() {
+                const gl = this.gl;
+                const w = 1.42, h = 1.25, d = 0.1, spineW = 0.14;
+
+                const quad = (p, t, n, v1, v2, v3, v4, norm, tex = false) => {
+                    p.push(...v1, ...v2, ...v3, ...v1, ...v3, ...v4);
+                    if (tex) t.push(0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0);
+                    else for (let i = 0; i < 6; i++) t.push(0, 0);
+                    for (let i = 0; i < 6; i++) n.push(...norm);
+                };
+
+                const createGeometry = () => {
+                    const geoms = [];
+                    
+                    // Front booklet
+                    {
+                        const p = [], t = [], n = [];
+                        const z = d/2 - 0.02;
+                        quad(p, t, n,
+                            [-w/2 + spineW + 0.015, -h/2 + 0.015, z],
+                            [w/2 - 0.015, -h/2 + 0.015, z],
+                            [w/2 - 0.015, h/2 - 0.015, z],
+                            [-w/2 + spineW + 0.015, h/2 - 0.015, z],
+                            [0, 0, 1], true);
+                        geoms.push({p, t, n, mat: 0});
+                    }
+                    
+                    // Back insert
+                    {
+                        const p = [], t = [], n = [];
+                        const z = -d/2 + 0.003;
+                        quad(p, t, n,
+                            [w/2, -h/2, z],
+                            [-w/2, -h/2, z],
+                            [-w/2, h/2, z],
+                            [w/2, h/2, z],
+                            [0, 0, -1], true);
+                        geoms.push({p, t, n, mat: 5});
+                    }
+                    
+                    // Plastic front
+                    {
+                        const p = [], t = [], n = [];
+                        quad(p, t, n, [-w/2, -h/2, d/2], [w/2, -h/2, d/2], [w/2, h/2, d/2], [-w/2, h/2, d/2], [0, 0, 1]);
+                        geoms.push({p, t, n, mat: 1});
+                    }
+                    
+                    // Plastic back
+                    {
+                        const p = [], t = [], n = [];
+                        quad(p, t, n, [w/2, -h/2, -d/2], [-w/2, -h/2, -d/2], [-w/2, h/2, -d/2], [w/2, h/2, -d/2], [0, 0, -1]);
+                        geoms.push({p, t, n, mat: 1});
+                    }
+                    
+                    // Edges
+                    const edges = [
+                        {v: [[w/2, -h/2, d/2], [w/2, -h/2, -d/2], [w/2, h/2, -d/2], [w/2, h/2, d/2]], n: [1, 0, 0]},
+                        {v: [[-w/2, h/2, d/2], [w/2, h/2, d/2], [w/2, h/2, -d/2], [-w/2, h/2, -d/2]], n: [0, 1, 0]},
+                        {v: [[-w/2, -h/2, -d/2], [w/2, -h/2, -d/2], [w/2, -h/2, d/2], [-w/2, -h/2, d/2]], n: [0, -1, 0]},
+                        {v: [[-w/2, -h/2, -d/2], [-w/2, -h/2, d/2], [-w/2, h/2, d/2], [-w/2, h/2, -d/2]], n: [-1, 0, 0]},
+                    ];
+                    edges.forEach(e => {
+                        const p = [], t = [], n = [];
+                        quad(p, t, n, ...e.v, e.n);
+                        geoms.push({p, t, n, mat: 4});
+                    });
+                    
+                    return geoms.map(g => {
+                        const buffers = [g.p, g.t, g.n].map(data => {
+                            const buf = gl.createBuffer();
+                            gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+                            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW);
+                            return buf;
+                        });
+                        return {pos: buffers[0], tex: buffers[1], norm: buffers[2], count: g.p.length / 3, mat: g.mat};
+                    });
+                };
+
+                this.buffers = createGeometry();
+            }
+
+            setupEventListeners() {
+                this.canvas.addEventListener('mousedown', e => {
+                    this.dragging = true;
+                    this.autoRotate = false;
+                    this.lastX = e.clientX;
+                });
+
+                this.canvas.addEventListener('mousemove', e => {
+                    if (this.dragging) {
+                        this.rotation += (e.clientX - this.lastX) * 0.01;
+                        this.lastX = e.clientX;
+                        this.lastTime = Date.now();
+                        this.draw();
+                    }
+                });
+
+                this.canvas.addEventListener('mouseup', () => {
+                    this.dragging = false;
+                    setTimeout(() => {
+                        if (!this.dragging) {
+                            this.autoRotate = true;
+                            this.lastTime = Date.now();
+                        }
+                    }, 2000);
+                });
+
+                this.canvas.addEventListener('mouseleave', () => {
+                    this.dragging = false;
+                    setTimeout(() => {
+                        if (!this.dragging) {
+                            this.autoRotate = true;
+                            this.lastTime = Date.now();
+                        }
+                    }, 2000);
+                });
+            }
+
+            loadAssets() {
+                const imagePath = this.canvas.dataset.image;
+                const tracklistPath = this.canvas.dataset.tracklist;
+
+                console.log('Loading assets:', { imagePath, tracklistPath });
+
+                // Load cover image
+                if (imagePath) {
+                    const img = new Image();
+                    img.crossOrigin = 'anonymous';
+                    img.onload = () => {
+                        console.log('Cover image loaded successfully:', imagePath);
+                        this.texture = this.loadTexture(img);
+                        this.draw();
+                    };
+                    img.onerror = (e) => {
+                        console.error('Failed to load cover image:', imagePath, e);
+                    };
+                    img.src = imagePath;
+                } else {
+                    console.warn('No image path provided');
+                }
+
+                // Load tracklist
+                if (tracklistPath) {
+                    fetch(tracklistPath)
+                        .then(response => {
+                            if (response.ok) {
+                                return response.text();
+                            }
+                            throw new Error(`Failed to fetch: ${response.status}`);
+                        })
+                        .then(text => {
+                            console.log('Tracklist loaded:', tracklistPath);
+                            this.createBackTexture(text);
+                        })
+                        .catch((error) => {
+                            console.log('No tracklist found for', tracklistPath, error);
+                        });
+                } else {
+                    console.log('No tracklist path provided');
+                }
+
+                // Initial draw even without textures to show the 3D case
+                this.draw();
+            }
+
+            loadTexture(img) {
+                const gl = this.gl;
+                try {
+                    const tex = gl.createTexture();
+                    gl.bindTexture(gl.TEXTURE_2D, tex);
+                    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+                    console.log('Texture created successfully');
+                    return tex;
+                } catch (error) {
+                    console.error('Error creating texture:', error);
+                    return null;
+                }
+            }
+
+            createBackTexture(text) {
+                const c = document.createElement('canvas');
+                c.width = c.height = 512;
+                const ctx = c.getContext('2d');
+                
+                ctx.clearRect(0, 0, 512, 512);
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+                ctx.fillRect(0, 0, 512, 512);
+                
+                ctx.fillStyle = 'rgba(255, 255, 255, 1.0)';
+                ctx.font = '24px Arial';
+                const lines = text.split('\n');
+                lines.forEach((line, i) => {
+                    if (line.trim()) ctx.fillText(line.trim(), 50, 50 + i * 32);
+                });
+                
+                const img = new Image();
+                img.onload = () => {
+                    this.backTexture = this.loadTexture(img);
+                    this.draw();
+                };
+                img.src = c.toDataURL();
+            }
+
+            perspective(fov, aspect, near, far) {
+                const f = 1 / Math.tan(fov / 2), nf = 1 / (near - far);
+                return [f / aspect, 0, 0, 0, 0, f, 0, 0, 0, 0, (far + near) * nf, -1, 0, 0, 2 * far * near * nf, 0];
+            }
+
+            mat4() {
+                return [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+            }
+
+            translate(m, v) {
+                const out = [...m];
+                out[12] = m[0] * v[0] + m[4] * v[1] + m[8] * v[2] + m[12];
+                out[13] = m[1] * v[0] + m[5] * v[1] + m[9] * v[2] + m[13];
+                out[14] = m[2] * v[0] + m[6] * v[1] + m[10] * v[2] + m[14];
+                return out;
+            }
+
+            rotateY(m, a) {
+                const s = Math.sin(a), c = Math.cos(a);
+                const out = [...m];
+                out[0] = m[0] * c - m[8] * s;
+                out[1] = m[1] * c - m[9] * s;
+                out[2] = m[2] * c - m[10] * s;
+                out[8] = m[0] * s + m[8] * c;
+                out[9] = m[1] * s + m[9] * c;
+                out[10] = m[2] * s + m[10] * c;
+                return out;
+            }
+
+            invert(m) {
+                const a = m, out = [], det = a[0] * (a[5] * a[10] - a[6] * a[9]) - a[1] * (a[4] * a[10] - a[6] * a[8]) + a[2] * (a[4] * a[9] - a[5] * a[8]);
+                const invDet = 1 / det;
+                out[0] = (a[5] * a[10] - a[6] * a[9]) * invDet;
+                out[1] = -(a[1] * a[10] - a[2] * a[9]) * invDet;
+                out[2] = (a[1] * a[6] - a[2] * a[5]) * invDet;
+                out[4] = -(a[4] * a[10] - a[6] * a[8]) * invDet;
+                out[5] = (a[0] * a[10] - a[2] * a[8]) * invDet;
+                out[6] = -(a[0] * a[6] - a[2] * a[4]) * invDet;
+                out[8] = (a[4] * a[9] - a[5] * a[8]) * invDet;
+                out[9] = -(a[0] * a[9] - a[1] * a[8]) * invDet;
+                out[10] = (a[0] * a[5] - a[1] * a[4]) * invDet;
+                return [out[0], out[1], out[2], 0, out[4], out[5], out[6], 0, out[8], out[9], out[10], 0, 0, 0, 0, 1];
+            }
+
+            transpose(m) {
+                return [m[0], m[4], m[8], m[12], m[1], m[5], m[9], m[13], m[2], m[6], m[10], m[14], m[3], m[7], m[11], m[15]];
+            }
+
+            draw() {
+                const gl = this.gl;
+                
+                // Set viewport to match canvas dimensions
+                gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+                
+                gl.clearColor(0, 0, 0, 0);
+                gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+                gl.enable(gl.DEPTH_TEST);
+                gl.enable(gl.BLEND);
+                gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
+                const proj = this.perspective(35 * Math.PI / 180, this.canvas.width / this.canvas.height, 0.1, 100);
+                const mv = this.rotateY(this.translate(this.mat4(), [0, 0, -2.8]), this.rotation);
+                const norm = this.transpose(this.invert(mv));
+
+                gl.useProgram(this.program);
+                gl.uniformMatrix4fv(this.loc.uni.projection, false, proj);
+                gl.uniformMatrix4fv(this.loc.uni.modelView, false, mv);
+                gl.uniformMatrix4fv(this.loc.uni.normalMat, false, norm);
+                gl.uniform1i(this.loc.uni.hasBack, this.backTexture ? 1 : 0);
+
+                if (this.texture) {
+                    gl.activeTexture(gl.TEXTURE0);
+                    gl.bindTexture(gl.TEXTURE_2D, this.texture);
+                    gl.uniform1i(this.loc.uni.sampler, 0);
+                }
+                if (this.backTexture) {
+                    gl.activeTexture(gl.TEXTURE1);
+                    gl.bindTexture(gl.TEXTURE_2D, this.backTexture);
+                    gl.uniform1i(this.loc.uni.backSampler, 1);
+                }
+
+                // Opaque
+                this.buffers.forEach(b => {
+                    if (b.mat === 0 || (b.mat === 5 && !this.backTexture)) {
+                        gl.bindBuffer(gl.ARRAY_BUFFER, b.pos);
+                        gl.vertexAttribPointer(this.loc.attr.position, 3, gl.FLOAT, false, 0, 0);
+                        gl.enableVertexAttribArray(this.loc.attr.position);
+                        gl.bindBuffer(gl.ARRAY_BUFFER, b.tex);
+                        gl.vertexAttribPointer(this.loc.attr.texCoord, 2, gl.FLOAT, false, 0, 0);
+                        gl.enableVertexAttribArray(this.loc.attr.texCoord);
+                        gl.bindBuffer(gl.ARRAY_BUFFER, b.norm);
+                        gl.vertexAttribPointer(this.loc.attr.normal, 3, gl.FLOAT, false, 0, 0);
+                        gl.enableVertexAttribArray(this.loc.attr.normal);
+                        gl.uniform1i(this.loc.uni.material, b.mat);
+                        gl.drawArrays(gl.TRIANGLES, 0, b.count);
+                    }
+                });
+
+                // Transparent
+                gl.depthMask(false);
+                this.buffers.forEach(b => {
+                    if (b.mat === 1 || b.mat === 4 || (b.mat === 5 && this.backTexture)) {
+                        gl.bindBuffer(gl.ARRAY_BUFFER, b.pos);
+                        gl.vertexAttribPointer(this.loc.attr.position, 3, gl.FLOAT, false, 0, 0);
+                        gl.enableVertexAttribArray(this.loc.attr.position);
+                        gl.bindBuffer(gl.ARRAY_BUFFER, b.tex);
+                        gl.vertexAttribPointer(this.loc.attr.texCoord, 2, gl.FLOAT, false, 0, 0);
+                        gl.enableVertexAttribArray(this.loc.attr.texCoord);
+                        gl.bindBuffer(gl.ARRAY_BUFFER, b.norm);
+                        gl.vertexAttribPointer(this.loc.attr.normal, 3, gl.FLOAT, false, 0, 0);
+                        gl.enableVertexAttribArray(this.loc.attr.normal);
+                        gl.uniform1i(this.loc.uni.material, b.mat);
+                        gl.drawArrays(gl.TRIANGLES, 0, b.count);
+                    }
+                });
+                gl.depthMask(true);
+            }
+
+            animate() {
+                if (this.autoRotate) {
+                    const now = Date.now();
+                    this.rotation += ((now - this.lastTime) / 1000) * 0.3;
+                    this.lastTime = now;
+                    this.draw();
+                }
+                requestAnimationFrame(() => this.animate());
+            }
+        }
+
+        // Initialize CD viewers when DOM is ready
+        function initViewers() {
+            const canvases = document.querySelectorAll('.cd-viewer');
+            console.log('Found', canvases.length, 'CD viewers');
+            canvases.forEach(canvas => {
+                const rect = canvas.getBoundingClientRect();
+                canvas.width = rect.width * window.devicePixelRatio;
+                canvas.height = rect.height * window.devicePixelRatio;
+                canvas.style.width = rect.width + 'px';
+                canvas.style.height = rect.height + 'px';
+
+                new CDViewer(canvas);
+            });
+        }
+
+        // Run immediately and on load to ensure it works
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initViewers);
+        } else {
+            initViewers();
+        }
+    </script>
+</body>
+</html>
