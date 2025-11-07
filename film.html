@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>yves spiri</title>
+    <title>yves spiri - film</title>
     <style>
         * {
             margin: 0;
@@ -15,7 +15,7 @@
             scroll-behavior: auto;
             overflow-anchor: none;
         }
-        
+
         body {
             background: #000000;
             color: #d4ceb8;
@@ -41,19 +41,9 @@
 
 
         .content {
-            max-width: 800px;
+            max-width: 900px;
             position: relative;
             z-index: 2;
-        }
-
-        h1 {
-            font-size: 2em;
-            margin-bottom: 0.3em;
-            font-weight: normal;
-        }
-
-        p {
-            margin-bottom: 1em;
         }
 
         nav {
@@ -84,14 +74,42 @@
             color: var(--hover-color);
         }
 
+        .projects {
+            margin-top: 2em;
+        }
+
+        .project {
+            margin-bottom: 1.5em;
+        }
+
+        .project p {
+            margin-bottom: 0.5em;
+        }
+
+        .category {
+            margin-top: 2em;
+        }
+
+        .category:first-child {
+            margin-top: 0;
+        }
+
+        .category h3 {
+            font-size: 1.5em;
+            margin-bottom: 1em;
+            font-weight: normal;
+        }
+
+        iframe {
+            max-width: 100%;
+            margin-top: 1em;
+            border: 1px solid #d4ceb8;
+        }
+
         @media (max-width: 600px) {
             body {
                 padding: 15px;
                 font-size: 14px;
-            }
-
-            h1 {
-                font-size: 1.5em;
             }
 
             nav a {
@@ -103,30 +121,26 @@
 <body>
     <div class="content">
         <nav>
-            <a href="index.html" class="active">about</a>
+            <a href="index.html">about</a>
             <a href="works.html">works</a>
-            <a href="film.html">film</a>
+            <a href="film.html" class="active">film</a>
         </nav>
 
-        <h1>yves spiri</h1>
-        <img src="images/yves.jpg" alt="yves spiri" style="max-width: 300px; margin: 2em 0; border: 1px solid #d4ceb8;">
-        
-        <p>Yves Spiri (he/him) lives in Bern and currently studies MA Sound Design in Zurich. He is obsessed with everything that involves sound, be it music, games, film, events, or other art forms.</p>
-        
-        <p>His approach has been to experience as many different roles and perspectives when working with sound: production, engineering, mixing, mastering, event organizing, curation, booking, teaching, and sound design for advertisements and animation films. Sound design for games is still missing and is probably his most anticipated role to date, as Yves is a big game nerd who has been observing the industry by playing games and listening to countless hours of interviews with veterans and insiders.</p>
-        
-        <p>Yves has been working with sound and media creatively and technically for over ten years. At the same time, he feels his journey has only just begun and is more eager and excited than ever to work on projects, preferably film and games. Yves has been releasing music under the pseudonym "Yotah" and is always working on the next piece, learning as he goes.</p>
-        
-        <p style="margin-top: 2em;">Want to work together? Check out his work and get in touch.</p>
-        
-        <p style="margin-top: 2em;">Email: <a href="mailto:hi@yvesspiri.net">hi@yvesspiri.net</a><br>
-        Instagram: <a href="https://instagram.com/yotahmusic" target="_blank">@yotahmusic</a><br>
-        SoundCloud: <a href="https://soundcloud.com/yotahhh" target="_blank">soundcloud.com/yotahhh</a></p>
+        <div class="category">
+            <h3>film</h3>
+            <div class="projects">
+                <div class="project">
+                    <p><strong>Animation Film</strong></p>
+                    <p>Sound Design for Cleverclip, Bern. Here is one of a few animated advertisement shorts that Yves did the sound design for:</p>
+                    <iframe src="https://player.vimeo.com/video/722502612?app_id=122963&h=e4ecb67fb0&referrer=https%3A%2F%2Fwww.vitamed-gmbh.ch%2F" width="640" height="360" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
         const neonColors = ['#ff00ff', '#00ffff', '#00ff00', '#ffff00', '#ff0080', '#0080ff', '#ff6600', '#ff0066'];
-        
+
         const shuffled = [...neonColors].sort(() => Math.random() - 0.5);
         document.documentElement.style.setProperty('--hover-color', shuffled[0]);
         document.documentElement.style.setProperty('--active-color', shuffled[1]);
