@@ -298,7 +298,7 @@ Sound Piece"></canvas>
                 this.lastY = 0;
                 this.texture = null;
                 this.backTexture = null;
-                this.scrollOffset = 0;
+
 
                 this.setupShaders();
                 this.setupGeometry();
@@ -567,17 +567,7 @@ Sound Piece"></canvas>
                     }, 2000);
                 }, { passive: false });
 
-                // Scroll effect
-                window.addEventListener('scroll', () => {
-                    const rect = this.canvas.getBoundingClientRect();
-                    const viewportHeight = window.innerHeight;
 
-                    // Only apply scroll effect if canvas is in viewport
-                    if (rect.top < viewportHeight && rect.bottom > 0) {
-                        const centerOffset = (rect.top + rect.height / 2) - viewportHeight / 2;
-                        this.scrollOffset = centerOffset * 0.001; // Subtle effect
-                    }
-                });
             }
 
             loadAssets() {
@@ -718,7 +708,7 @@ Sound Piece"></canvas>
                 gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
                 const proj = this.perspective(35 * Math.PI / 180, this.canvas.width / this.canvas.height, 0.1, 100);
-                const mv = this.rotateY(this.translate(this.mat4(), [0, 0, -2.8]), this.rotation + this.scrollOffset);
+                const mv = this.rotateY(this.translate(this.mat4(), [0, 0, -2.8]), this.rotation);
                 const norm = this.transpose(this.invert(mv));
 
                 gl.useProgram(this.program);
