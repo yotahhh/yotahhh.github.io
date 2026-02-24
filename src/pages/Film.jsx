@@ -29,8 +29,8 @@ const Film = () => {
               />
             </div>
             <div className="p-8 space-y-4 bg-background">
-              <h3 className="text-2xl font-bold font-mono tracking-tighter text-white">{project.title}</h3>
-              <p className="font-mono text-zinc-400 text-sm leading-relaxed max-w-2xl">{project.description}</p>
+              <h3 className="text-2xl font-bold font-sans tracking-tighter text-white">{project.title}</h3>
+              <p className="font-sans text-zinc-400 text-sm leading-relaxed max-w-2xl">{project.description}</p>
             </div>
           </motion.div>
         ))}

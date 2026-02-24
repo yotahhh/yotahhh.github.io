@@ -13,8 +13,8 @@ export default {
         accent: '#ff00ff', // Will be dynamic later
       },
       fontFamily: {
-        mono: ['"Space Mono"', 'monospace'],
-        sans: ['Inter', 'sans-serif'],
+        mono: ['"Noto Sans"', 'sans-serif'], // Remapping mono to Noto Sans so I don't have to edit every file
+        sans: ['"Noto Sans"', 'sans-serif'],
       },
       animation: {
         'spin-slow': 'spin 8s linear infinite',

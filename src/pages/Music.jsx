@@ -36,7 +36,7 @@ const Music = () => {
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-80 group-hover:opacity-100"
                 />
                 <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center text-center p-4 backdrop-blur-sm">
-                  <h3 className="text-xl font-bold font-mono tracking-tighter mb-2 text-white">{project.title}</h3>
+                  <h3 className="text-xl font-bold font-sans tracking-tighter mb-2 text-white">{project.title}</h3>
                   <span className="text-xs uppercase tracking-widest text-[var(--hover-color)] border border-[var(--hover-color)] px-2 py-1">View Project</span>
                 </div>
               </motion.div>
@@ -85,13 +85,13 @@ const Music = () => {
                   transition={{ delay: 0.3 }}
                   className="max-w-xl mx-auto space-y-8"
                 >
-                  <h2 className="text-4xl md:text-6xl font-bold font-mono tracking-tighter text-white mb-2 leading-none">
+                  <h2 className="text-4xl md:text-6xl font-bold font-sans tracking-tighter text-white mb-2 leading-none">
                     {activeProject.title}
                   </h2>
                   
                   <div className="w-20 h-1 bg-[var(--hover-color)]" />
 
-                  <div className="prose prose-invert prose-sm md:prose-base font-mono text-zinc-400">
+                  <div className="prose prose-invert prose-sm md:prose-base font-sans text-zinc-400">
                     <p>{activeProject.description}</p>
                     {activeProject.extendedDescription && (
                       <p className="mt-4 text-sm italic border-l-2 border-white/10 pl-4">{activeProject.extendedDescription}</p>
@@ -123,7 +123,7 @@ const Music = () => {
                     </div>
                   )}
 
-                  <div className="grid grid-cols-2 gap-8 text-xs font-mono uppercase tracking-wider text-zinc-500 pt-8 border-t border-white/5">
+                  <div className="grid grid-cols-2 gap-8 text-xs font-sans uppercase tracking-wider text-zinc-500 pt-8 border-t border-white/5">
                     <div>
                        <span className="block mb-2 text-[var(--hover-color)]">Platform</span>
                        {activeProject.bandcampLink ? (

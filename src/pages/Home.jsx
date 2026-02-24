@@ -6,7 +6,7 @@ const Home = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
-      className="container mx-auto px-6 py-24 md:py-32 max-w-4xl text-primary font-mono leading-relaxed"
+      className="container mx-auto px-6 py-24 md:py-32 max-w-4xl text-primary font-sans leading-relaxed"
     >
       <div className="flex flex-col md:flex-row gap-12 items-start">
         <div className="w-full md:w-1/3 relative group">
@@ -23,8 +23,8 @@ const Home = () => {
 
         <div className="w-full md:w-2/3 space-y-8 text-sm md:text-base">
           <h1 className="text-4xl md:text-6xl font-bold tracking-tighter mb-8">
-            hello,<br />
-            <span className="text-secondary/50">i'm yves.</span>
+            Hello,<br />
+            <span className="text-secondary/50">I'm Yves.</span>
           </h1>
 
           <p>
@@ -44,7 +44,7 @@ const Home = () => {
             Yves has been releasing music under the pseudonym "Yotah" and is always working on the next piece, learning as he goes.
           </p>
 
-          <div className="pt-8 border-t border-primary/10 grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs tracking-wider uppercase">
+          <div className="pt-8 border-t border-primary/10 grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs tracking-wider uppercase font-mono">
             <div>
               <span className="text-secondary block mb-1">Email</span>
               <a href="mailto:hi@yvesspiri.net" className="hover:text-[var(--hover-color)] transition-colors">hi@yvesspiri.net</a>

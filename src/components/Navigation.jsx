@@ -15,22 +15,22 @@ const Navigation = () => {
   }, []);
 
   const links = [
-    { to: "/", label: "about" },
-    { to: "/music", label: "music" },
-    { to: "/film", label: "film" },
-    { to: "/mixing", label: "mixing & mastering" },
+    { to: "/", label: "About" },
+    { to: "/music", label: "Music" },
+    { to: "/film", label: "Film" },
+    { to: "/mixing", label: "Mixing & Mastering" },
   ];
 
   const toggleMenu = () => setIsOpen(!isOpen);
 
   return (
-    <nav className="fixed top-0 left-0 w-full z-50 p-6 md:p-8 flex justify-between items-center mix-blend-difference text-primary">
-      <NavLink to="/" className="text-xl md:text-2xl font-mono font-bold tracking-tight hover:text-[var(--hover-color)] transition-colors">
-        yves spiri
+    <nav className="fixed top-0 left-0 w-full z-50 p-6 md:p-8 flex justify-between items-center mix-blend-difference text-primary font-sans">
+      <NavLink to="/" className="text-xl md:text-2xl font-bold tracking-tight hover:text-[var(--hover-color)] transition-colors">
+        Yves Spiri
       </NavLink>
 
       {/* Desktop Menu */}
-      <div className="hidden md:flex gap-8 font-mono text-sm">
+      <div className="hidden md:flex gap-8 text-sm font-medium">
         {links.map((link) => (
           <NavLink
             key={link.to}
@@ -60,7 +60,7 @@ const Navigation = () => {
               to={link.to}
               onClick={() => setIsOpen(false)}
               className={({ isActive }) =>
-                `text-2xl font-mono transition-colors duration-200 hover:text-[var(--hover-color)] ${
+                `text-2xl font-bold transition-colors duration-200 hover:text-[var(--hover-color)] ${
                   isActive ? 'text-[var(--hover-color)]' : ''
                 }`
               }
