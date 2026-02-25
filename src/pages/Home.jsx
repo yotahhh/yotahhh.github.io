@@ -59,7 +59,7 @@ const Home = () => {
             </div>
             <div>
               <span className="text-secondary block mb-1">SoundCloud</span>
-              <a href="https://soundcloud.com/yotahhh" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--hover-color)] transition-colors">soundcloud.com/yotahhh</a>
+              <a href="https://soundcloud.com/yotahh" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--hover-color)] transition-colors">soundcloud.com/yotahh</a>
             </div>
           </div>
         </div>
