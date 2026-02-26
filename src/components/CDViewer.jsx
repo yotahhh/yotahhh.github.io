@@ -250,9 +250,24 @@ class CDViewerGL {
             }, 2000);
         };
 
+        const handleResize = () => {
+             const rect = this.canvas.getBoundingClientRect();
+             const dpr = window.devicePixelRatio || 1;
+             // Only resize if dimensions actually changed to avoid loop
+             if (this.canvas.width !== rect.width * dpr || this.canvas.height !== rect.height * dpr) {
+                 this.canvas.width = rect.width * dpr;
+                 this.canvas.height = rect.height * dpr;
+                 this.draw();
+             }
+        };
+
+        // Use ResizeObserver for robust element sizing
+        this.resizeObserver = new ResizeObserver(() => handleResize());
+        this.resizeObserver.observe(this.canvas);
+
         // Mouse
         this.canvas.addEventListener('mousedown', e => handleDown(e.clientX));
-        window.addEventListener('mousemove', e => handleMove(e.clientX)); // Attach to window for smooth drag outside canvas
+        window.addEventListener('mousemove', e => handleMove(e.clientX)); 
         window.addEventListener('mouseup', handleUp);
 
         // Touch
@@ -271,9 +286,8 @@ class CDViewerGL {
             handleUp();
         }, { passive: false });
 
-        // Cleanup function for listeners is tricky in class, handled via destroyed flag mostly
-        // but for window listeners we should remove them ideally.
         this.cleanupListeners = () => {
+            this.resizeObserver.disconnect();
             window.removeEventListener('mousemove', handleMove);
             window.removeEventListener('mouseup', handleUp);
         };
@@ -473,18 +487,26 @@ const CDViewer = ({ image, tracks }) => {
     const viewerRef = useRef(null);
 
     useEffect(() => {
-        if (canvasRef.current) {
-            // Initialize
-            const rect = canvasRef.current.getBoundingClientRect();
-            // High DPI support
-            const dpr = window.devicePixelRatio || 1;
-            canvasRef.current.width = rect.width * dpr;
-            canvasRef.current.height = rect.height * dpr;
-            
-            viewerRef.current = new CDViewerGL(canvasRef.current, image, tracks);
-        }
+        const initViewer = () => {
+            if (canvasRef.current) {
+                // Initialize
+                const rect = canvasRef.current.getBoundingClientRect();
+                // High DPI support
+                const dpr = window.devicePixelRatio || 1;
+                canvasRef.current.width = rect.width * dpr;
+                canvasRef.current.height = rect.height * dpr;
+                
+                if (!viewerRef.current) {
+                    viewerRef.current = new CDViewerGL(canvasRef.current, image, tracks);
+                }
+            }
+        };
+        
+        // Small delay to ensure layout is computed
+        const timer = setTimeout(initViewer, 100);
 
         return () => {
+            clearTimeout(timer);
             if (viewerRef.current) {
                 viewerRef.current.destroy();
                 viewerRef.current = null;

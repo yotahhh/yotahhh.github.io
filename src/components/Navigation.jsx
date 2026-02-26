@@ -53,15 +53,15 @@ const Navigation = () => {
 
       {/* Mobile Menu Overlay */}
       {isOpen && (
-        <div className="fixed inset-0 bg-background/95 backdrop-blur-sm z-40 flex flex-col items-center justify-center gap-8 md:hidden">
+        <div className="fixed inset-0 bg-black z-40 flex flex-col items-center justify-center gap-8 md:hidden">
           {links.map((link) => (
             <NavLink
               key={link.to}
               to={link.to}
               onClick={() => setIsOpen(false)}
               className={({ isActive }) =>
-                `text-2xl font-bold transition-colors duration-200 hover:text-[var(--hover-color)] ${
-                  isActive ? 'text-[var(--hover-color)]' : ''
+                `text-3xl font-bold tracking-tight transition-colors duration-200 hover:text-[var(--hover-color)] ${
+                  isActive ? 'text-[var(--hover-color)]' : 'text-primary'
                 }`
               }
             >
