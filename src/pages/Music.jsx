@@ -77,7 +77,7 @@ const Music = () => {
             className="fixed inset-0 z-50 bg-background/95 backdrop-blur-xl overflow-y-auto"
           >
             {/* Top Navigation Bar for Detail View */}
-            <div className="fixed top-0 left-0 w-full z-[60] p-6 flex justify-between items-center pointer-events-none">
+            <div className="fixed top-24 left-0 w-full z-[60] px-6 md:px-8 flex justify-between items-center pointer-events-none">
                 <button 
                   onClick={closeProject} 
                   className="pointer-events-auto p-2 bg-black/50 backdrop-blur-md border border-white/10 rounded-full text-white hover:text-[var(--hover-color)] hover:border-[var(--hover-color)] transition-all"
@@ -101,6 +101,19 @@ const Music = () => {
                     >
                       <ChevronRight size={24} />
                     </button>
+                </div>
+            </div>
+
+            <div className="min-h-screen flex flex-col md:flex-row pt-0">
+              {/* Left: CD Viewer */}
+              <div className="w-full md:w-1/2 h-[50vh] md:h-screen md:sticky md:top-0 bg-gradient-to-br from-black to-zinc-900 flex items-center justify-center relative overflow-hidden order-1 md:order-none">
+                <div className="w-full h-full relative z-10 flex items-center justify-center p-8 md:p-12">
+                  <div className="w-full h-full relative flex items-center justify-center">
+                    <CDViewer image={activeProject.image} tracks={activeProject.tracks} />
+                    <p className="absolute bottom-4 left-0 right-0 text-center text-xs text-white/30 animate-pulse pointer-events-none">
+                      DRAG TO ROTATE
+                    </p>
+                  </div>
                 </div>
             </div>
 
