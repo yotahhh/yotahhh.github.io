@@ -104,24 +104,11 @@ const Music = () => {
                 </div>
             </div>
 
-            <div className="min-h-screen flex flex-col md:flex-row pt-0">
-              {/* Left: CD Viewer */}
-              <div className="w-full md:w-1/2 h-[50vh] md:h-screen md:sticky md:top-0 bg-gradient-to-br from-black to-zinc-900 flex items-center justify-center relative overflow-hidden order-1 md:order-none">
-                <div className="w-full h-full relative z-10 flex items-center justify-center p-8 md:p-12">
-                  <div className="w-full h-full relative flex items-center justify-center">
-                    <CDViewer image={activeProject.image} tracks={activeProject.tracks} />
-                    <p className="absolute bottom-4 left-0 right-0 text-center text-xs text-white/30 animate-pulse pointer-events-none">
-                      DRAG TO ROTATE
-                    </p>
-                  </div>
-                </div>
-            </div>
-
             <div className="min-h-screen flex flex-col md:flex-row pt-20 md:pt-0">
               {/* Left: CD Viewer */}
               <div className="w-full md:w-1/2 h-[50vh] md:h-screen md:sticky md:top-0 bg-gradient-to-br from-black to-zinc-900 flex items-center justify-center relative overflow-hidden order-1 md:order-none">
                 <div className="w-full h-full relative z-10 flex items-center justify-center p-8 md:p-12">
-                  <div className="aspect-square w-full h-full max-w-lg max-h-lg relative flex items-center justify-center">
+                  <div className="w-full h-full relative flex items-center justify-center">
                     <CDViewer image={activeProject.image} tracks={activeProject.tracks} />
                     <p className="absolute bottom-4 left-0 right-0 text-center text-xs text-white/30 animate-pulse pointer-events-none">
                       DRAG TO ROTATE
