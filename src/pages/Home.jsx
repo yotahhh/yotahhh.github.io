@@ -22,9 +22,9 @@ const Home = () => {
         </div>
 
         <div className="w-full md:w-2/3 space-y-8 text-sm md:text-base">
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tighter mb-8">
-            Hello,<br />
-            <span className="text-secondary/50">I'm Yves.</span>
+          <h1 className="text-4xl md:text-6xl font-bold tracking-tighter mb-8 text-primary">
+            Sound, Music,<br />
+            <span className="text-secondary/50">Engineering.</span>
           </h1>
 
           <p>
