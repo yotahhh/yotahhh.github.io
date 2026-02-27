@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
+import { createPortal } from 'react-dom';
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -23,37 +24,51 @@ const Navigation = () => {
 
   const toggleMenu = () => setIsOpen(!isOpen);
 
+  // Prevent body scroll when menu is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
   return (
-    <nav className="fixed top-0 left-0 w-full z-50 p-6 md:p-8 flex justify-between items-center mix-blend-difference text-primary font-sans">
-      <NavLink to="/" className="text-xl md:text-2xl font-bold tracking-tight hover:text-[var(--hover-color)] transition-colors">
-        Yves Spiri
-      </NavLink>
+    <>
+      <nav className="fixed top-0 left-0 w-full z-50 p-6 md:p-8 flex justify-between items-center text-primary font-sans mix-blend-difference pointer-events-none">
+        <NavLink to="/" className="text-xl md:text-2xl font-bold tracking-tight hover:text-[var(--hover-color)] transition-colors pointer-events-auto">
+          Yves Spiri
+        </NavLink>
 
-      {/* Desktop Menu */}
-      <div className="hidden md:flex gap-8 text-sm font-medium">
-        {links.map((link) => (
-          <NavLink
-            key={link.to}
-            to={link.to}
-            className={({ isActive }) =>
-              `transition-colors duration-200 hover:text-[var(--hover-color)] ${
-                isActive ? 'text-[var(--hover-color)] underline decoration-wavy underline-offset-4' : ''
-              }`
-            }
-          >
-            {link.label}
-          </NavLink>
-        ))}
-      </div>
+        {/* Desktop Menu */}
+        <div className="hidden md:flex gap-8 text-sm font-medium pointer-events-auto">
+          {links.map((link) => (
+            <NavLink
+              key={link.to}
+              to={link.to}
+              className={({ isActive }) =>
+                `transition-colors duration-200 hover:text-[var(--hover-color)] ${
+                  isActive ? 'text-[var(--hover-color)] underline decoration-wavy underline-offset-4' : ''
+                }`
+              }
+            >
+              {link.label}
+            </NavLink>
+          ))}
+        </div>
 
-      {/* Mobile Menu Button */}
-      <button onClick={toggleMenu} className="md:hidden z-50 hover:text-[var(--hover-color)] transition-colors">
-        {isOpen ? <X size={24} /> : <Menu size={24} />}
-      </button>
+        {/* Mobile Menu Button */}
+        <button onClick={toggleMenu} className="md:hidden z-50 hover:text-[var(--hover-color)] transition-colors pointer-events-auto">
+          {isOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
+      </nav>
 
-      {/* Mobile Menu Overlay */}
-      {isOpen && (
-        <div className="fixed inset-0 bg-black z-40 flex flex-col items-center justify-center gap-8 md:hidden">
+      {/* Mobile Menu Overlay - Portaled out to avoid mix-blend-difference issues */}
+      {isOpen && createPortal(
+        <div className="fixed inset-0 bg-black z-[100] flex flex-col items-center justify-center gap-8 md:hidden font-sans">
           {links.map((link) => (
             <NavLink
               key={link.to}
@@ -68,9 +83,10 @@ const Navigation = () => {
               {link.label}
             </NavLink>
           ))}
-        </div>
+        </div>,
+        document.body
       )}
-    </nav>
+    </>
   );
 };
 
