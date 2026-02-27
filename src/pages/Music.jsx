@@ -1,13 +1,41 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { musicProjects } from '../data/projects';
 import CDViewer from '../components/CDViewer';
-import { X, Play, Info } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const Music = () => {
+  const { projectId } = useParams();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [activeProject, setActiveProject] = useState(null);
 
-  const closeProject = () => setActiveProject(null);
+  useEffect(() => {
+    if (projectId) {
+      const project = musicProjects.find(p => p.id === projectId);
+      setActiveProject(project || null);
+      if (!project) navigate('/music', { replace: true });
+    } else {
+      setActiveProject(null);
+    }
+  }, [projectId, navigate]);
+
+  const closeProject = () => navigate('/music');
+
+  const navigateProject = (direction) => {
+    if (!activeProject) return;
+    const currentIndex = musicProjects.findIndex(p => p.id === activeProject.id);
+    let nextIndex;
+    
+    if (direction === 'next') {
+      nextIndex = (currentIndex + 1) % musicProjects.length;
+    } else {
+      nextIndex = (currentIndex - 1 + musicProjects.length) % musicProjects.length;
+    }
+    
+    navigate(`/music/${musicProjects[nextIndex].id}`);
+  };
 
   return (
     <div className="container mx-auto px-6 py-24 min-h-screen">
@@ -24,7 +52,7 @@ const Music = () => {
               <motion.div
                 key={project.id}
                 layoutId={`project-${project.id}`}
-                onClick={() => setActiveProject(project)}
+                onClick={() => navigate(`/music/${project.id}`)}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
@@ -48,17 +76,39 @@ const Music = () => {
             layoutId={`project-${activeProject.id}`}
             className="fixed inset-0 z-50 bg-background/95 backdrop-blur-xl overflow-y-auto"
           >
-            <div className="min-h-screen flex flex-col md:flex-row">
-              {/* Left: CD Viewer */}
-              <div className="w-full md:w-1/2 h-[50vh] md:h-screen sticky top-0 bg-gradient-to-br from-black to-zinc-900 flex items-center justify-center relative overflow-hidden">
-                <div className="absolute top-4 left-4 z-20 md:hidden">
-                  <button onClick={closeProject} className="p-2 bg-white/10 rounded-full text-white hover:bg-[var(--hover-color)] transition-colors">
-                    <X size={24} />
-                  </button>
+            {/* Top Navigation Bar for Detail View */}
+            <div className="fixed top-0 left-0 w-full z-[60] p-6 flex justify-between items-center pointer-events-none">
+                <button 
+                  onClick={closeProject} 
+                  className="pointer-events-auto p-2 bg-black/50 backdrop-blur-md border border-white/10 rounded-full text-white hover:text-[var(--hover-color)] hover:border-[var(--hover-color)] transition-all"
+                  aria-label="Close project"
+                >
+                  <X size={24} />
+                </button>
+
+                <div className="flex gap-4 pointer-events-auto">
+                    <button 
+                      onClick={() => navigateProject('prev')}
+                      className="p-2 bg-black/50 backdrop-blur-md border border-white/10 rounded-full text-white hover:text-[var(--hover-color)] hover:border-[var(--hover-color)] transition-all"
+                      aria-label="Previous project"
+                    >
+                      <ChevronLeft size={24} />
+                    </button>
+                    <button 
+                      onClick={() => navigateProject('next')}
+                      className="p-2 bg-black/50 backdrop-blur-md border border-white/10 rounded-full text-white hover:text-[var(--hover-color)] hover:border-[var(--hover-color)] transition-all"
+                      aria-label="Next project"
+                    >
+                      <ChevronRight size={24} />
+                    </button>
                 </div>
-                
-                <div className="w-full h-full relative z-10 flex items-center justify-center p-8">
-                  <div className="aspect-square w-full h-full max-w-full max-h-full relative flex items-center justify-center">
+            </div>
+
+            <div className="min-h-screen flex flex-col md:flex-row pt-20 md:pt-0">
+              {/* Left: CD Viewer */}
+              <div className="w-full md:w-1/2 h-[50vh] md:h-screen md:sticky md:top-0 bg-gradient-to-br from-black to-zinc-900 flex items-center justify-center relative overflow-hidden order-1 md:order-none">
+                <div className="w-full h-full relative z-10 flex items-center justify-center p-8 md:p-12">
+                  <div className="aspect-square w-full h-full max-w-lg max-h-lg relative flex items-center justify-center">
                     <CDViewer image={activeProject.image} tracks={activeProject.tracks} />
                     <p className="absolute bottom-4 left-0 right-0 text-center text-xs text-white/30 animate-pulse pointer-events-none">
                       DRAG TO ROTATE
@@ -74,16 +124,12 @@ const Music = () => {
               </div>
 
               {/* Right: Content */}
-              <div className="w-full md:w-1/2 min-h-screen p-8 md:p-16 flex flex-col justify-center bg-background border-l border-white/5 relative">
-                <button onClick={closeProject} className="absolute top-8 right-8 hidden md:block p-3 hover:bg-white/5 rounded-full text-white/50 hover:text-[var(--hover-color)] transition-all">
-                  <X size={32} />
-                </button>
-
+              <div className="w-full md:w-1/2 min-h-screen p-8 md:p-16 flex flex-col justify-center bg-background border-l border-white/5 relative order-2 md:order-none z-10">
                 <motion.div 
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.3 }}
-                  className="max-w-xl mx-auto space-y-8"
+                  className="max-w-xl mx-auto space-y-8 pb-20 md:pb-0"
                 >
                   <h2 className="text-4xl md:text-6xl font-bold font-sans tracking-tighter text-white mb-2 leading-none">
                     {activeProject.title}

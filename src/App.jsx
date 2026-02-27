@@ -20,6 +20,7 @@ function App() {
           <Routes location={location} key={location.pathname}>
             <Route path="/" element={<Home />} />
             <Route path="/music" element={<Music />} />
+            <Route path="/music/:projectId" element={<Music />} />
             <Route path="/film" element={<Film />} />
             <Route path="/mixing" element={<Mixing />} />
           </Routes>
