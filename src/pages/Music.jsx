@@ -58,7 +58,7 @@ const Music = () => {
                 </div>
                 
                 <div className="w-full h-full relative z-10 flex items-center justify-center p-8">
-                  <div className="w-full h-full max-w-lg max-h-[50vh] relative flex items-center justify-center">
+                  <div className="aspect-square w-full h-full max-w-full max-h-full relative flex items-center justify-center">
                     <CDViewer image={activeProject.image} tracks={activeProject.tracks} />
                     <p className="absolute bottom-4 left-0 right-0 text-center text-xs text-white/30 animate-pulse pointer-events-none">
                       DRAG TO ROTATE
