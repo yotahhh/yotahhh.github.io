@@ -1,13 +1,10 @@
 import { useEffect, useRef } from 'react';
 
+// Original CDViewer implementation from music.html (Renamed to CDViewerGL to avoid conflict)
 class CDViewerGL {
-    constructor(canvas, imagePath, tracks) {
+    constructor(canvas) {
         this.canvas = canvas;
-        this.gl = canvas.getContext('webgl', { alpha: true, preserveDrawingBuffer: false });
-        this.imagePath = imagePath;
-        this.tracks = tracks;
-        this.animationFrameId = null;
-        this.destroyed = false;
+        this.gl = canvas.getContext('webgl');
 
         if (!this.gl) {
             console.error('WebGL not supported');
@@ -20,8 +17,10 @@ class CDViewerGL {
         this.lastTime = Date.now();
         this.dragging = false;
         this.lastX = 0;
+        this.lastY = 0;
         this.texture = null;
         this.backTexture = null;
+        this.destroyed = false;
 
         this.setupShaders();
         this.setupGeometry();
@@ -225,22 +224,52 @@ class CDViewerGL {
     }
 
     setupEventListeners() {
-        const handleDown = (x) => {
+        this.handleDown = (e) => {
             this.dragging = true;
             this.autoRotate = false;
-            this.lastX = x;
+            this.lastX = e.clientX;
         };
 
-        const handleMove = (x) => {
+        this.handleMoveWrapper = (e) => {
             if (this.dragging) {
-                this.rotation += (x - this.lastX) * 0.01;
-                this.lastX = x;
+                this.rotation += (e.clientX - this.lastX) * 0.01;
+                this.lastX = e.clientX;
                 this.lastTime = Date.now();
                 this.draw();
             }
         };
 
-        const handleUp = () => {
+        this.handleUpWrapper = () => {
+            if (this.dragging) {
+                this.dragging = false;
+                setTimeout(() => {
+                    if (!this.dragging && !this.destroyed) {
+                        this.autoRotate = true;
+                        this.lastTime = Date.now();
+                    }
+                }, 2000);
+            }
+        };
+
+        this.handleTouchStart = (e) => {
+            e.preventDefault();
+            this.dragging = true;
+            this.autoRotate = false;
+            this.lastX = e.touches[0].clientX;
+        };
+
+        this.handleTouchMove = (e) => {
+            e.preventDefault();
+            if (this.dragging) {
+                this.rotation += (e.touches[0].clientX - this.lastX) * 0.01;
+                this.lastX = e.touches[0].clientX;
+                this.lastTime = Date.now();
+                this.draw();
+            }
+        };
+
+        this.handleTouchEnd = (e) => {
+            e.preventDefault();
             this.dragging = false;
             setTimeout(() => {
                 if (!this.dragging && !this.destroyed) {
@@ -250,51 +279,22 @@ class CDViewerGL {
             }, 2000);
         };
 
-        const handleResize = () => {
-             const rect = this.canvas.getBoundingClientRect();
-             const dpr = window.devicePixelRatio || 1;
-             // Only resize if dimensions actually changed to avoid loop
-             if (this.canvas.width !== rect.width * dpr || this.canvas.height !== rect.height * dpr) {
-                 this.canvas.width = rect.width * dpr;
-                 this.canvas.height = rect.height * dpr;
-                 this.draw();
-             }
-        };
-
-        // Use ResizeObserver for robust element sizing
-        this.resizeObserver = new ResizeObserver(() => handleResize());
-        this.resizeObserver.observe(this.canvas);
-
         // Mouse
-        this.canvas.addEventListener('mousedown', e => handleDown(e.clientX));
-        window.addEventListener('mousemove', e => handleMove(e.clientX)); 
-        window.addEventListener('mouseup', handleUp);
+        this.canvas.addEventListener('mousedown', this.handleDown);
+        window.addEventListener('mousemove', this.handleMoveWrapper); 
+        window.addEventListener('mouseup', this.handleUpWrapper);
 
         // Touch
-        this.canvas.addEventListener('touchstart', e => {
-            e.preventDefault();
-            handleDown(e.touches[0].clientX);
-        }, { passive: false });
-        
-        this.canvas.addEventListener('touchmove', e => {
-            e.preventDefault();
-            handleMove(e.touches[0].clientX);
-        }, { passive: false });
-        
-        this.canvas.addEventListener('touchend', e => {
-            e.preventDefault();
-            handleUp();
-        }, { passive: false });
-
-        this.cleanupListeners = () => {
-            this.resizeObserver.disconnect();
-            window.removeEventListener('mousemove', handleMove);
-            window.removeEventListener('mouseup', handleUp);
-        };
+        this.canvas.addEventListener('touchstart', this.handleTouchStart, { passive: false });
+        this.canvas.addEventListener('touchmove', this.handleTouchMove, { passive: false });
+        this.canvas.addEventListener('touchend', this.handleTouchEnd, { passive: false });
     }
 
     loadAssets() {
-        if (this.imagePath) {
+        const imagePath = this.canvas.dataset.image;
+        const tracks = this.canvas.dataset.tracks;
+
+        if (imagePath) {
             const img = new Image();
             img.crossOrigin = 'anonymous';
             img.onload = () => {
@@ -302,12 +302,14 @@ class CDViewerGL {
                 this.texture = this.loadTexture(img);
                 this.draw();
             };
-            img.src = this.imagePath;
+            img.src = imagePath;
         }
 
-        if (this.tracks) {
-            this.createBackTexture(this.tracks);
+        if (tracks) {
+            this.createBackTexture(tracks);
         }
+
+        this.draw();
     }
 
     loadTexture(img) {
@@ -467,18 +469,23 @@ class CDViewerGL {
     destroy() {
         this.destroyed = true;
         if (this.animationFrameId) cancelAnimationFrame(this.animationFrameId);
-        if (this.cleanupListeners) this.cleanupListeners();
         
+        // Remove event listeners
+        window.removeEventListener('mousemove', this.handleMoveWrapper);
+        window.removeEventListener('mouseup', this.handleUpWrapper);
+
         // Basic GL cleanup could go here (delete buffers, textures, program)
         const gl = this.gl;
         if(this.program) gl.deleteProgram(this.program);
         if(this.texture) gl.deleteTexture(this.texture);
         if(this.backTexture) gl.deleteTexture(this.backTexture);
-        this.buffers.forEach(b => {
-             gl.deleteBuffer(b.pos);
-             gl.deleteBuffer(b.tex);
-             gl.deleteBuffer(b.norm);
-        });
+        if (this.buffers) {
+            this.buffers.forEach(b => {
+                 gl.deleteBuffer(b.pos);
+                 gl.deleteBuffer(b.tex);
+                 gl.deleteBuffer(b.norm);
+            });
+        }
     }
 }
 
@@ -488,25 +495,47 @@ const CDViewer = ({ image, tracks }) => {
 
     useEffect(() => {
         const initViewer = () => {
-            if (canvasRef.current) {
-                // Initialize
+            if (canvasRef.current && !viewerRef.current) {
+                // Pass data via dataset to match original implementation's expectations
+                if (image) canvasRef.current.dataset.image = image;
+                if (tracks) canvasRef.current.dataset.tracks = tracks;
+                
+                // Initialize size
                 const rect = canvasRef.current.getBoundingClientRect();
-                // High DPI support
                 const dpr = window.devicePixelRatio || 1;
                 canvasRef.current.width = rect.width * dpr;
                 canvasRef.current.height = rect.height * dpr;
-                
-                if (!viewerRef.current) {
-                    viewerRef.current = new CDViewerGL(canvasRef.current, image, tracks);
-                }
+
+                viewerRef.current = new CDViewerGL(canvasRef.current);
             }
         };
-        
+
         // Small delay to ensure layout is computed
         const timer = setTimeout(initViewer, 100);
 
+        const handleResize = () => {
+             if (canvasRef.current && viewerRef.current) {
+                 const rect = canvasRef.current.getBoundingClientRect();
+                 const dpr = window.devicePixelRatio || 1;
+                 // Check if size changed significantly
+                 if (canvasRef.current.width !== Math.round(rect.width * dpr) || 
+                     canvasRef.current.height !== Math.round(rect.height * dpr)) {
+                     
+                     canvasRef.current.width = rect.width * dpr;
+                     canvasRef.current.height = rect.height * dpr;
+                     viewerRef.current.draw();
+                 }
+             }
+        };
+
+        const resizeObserver = new ResizeObserver(handleResize);
+        if (canvasRef.current) {
+            resizeObserver.observe(canvasRef.current);
+        }
+
         return () => {
             clearTimeout(timer);
+            resizeObserver.disconnect();
             if (viewerRef.current) {
                 viewerRef.current.destroy();
                 viewerRef.current = null;
