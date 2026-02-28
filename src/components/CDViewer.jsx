@@ -489,23 +489,44 @@ class CDViewerGL {
     }
 }
 
+// Fixed aspect ratio matching the original music.html (700:525 = 4:3)
+const CD_ASPECT_RATIO = 700 / 525;
+
 const CDViewer = ({ image, tracks }) => {
+    const containerRef = useRef(null);
     const canvasRef = useRef(null);
     const viewerRef = useRef(null);
 
     useEffect(() => {
+        const sizeCanvas = () => {
+            if (!containerRef.current || !canvasRef.current) return;
+            const container = containerRef.current.getBoundingClientRect();
+            const dpr = window.devicePixelRatio || 1;
+
+            // Fit canvas within container while preserving the CD aspect ratio
+            let w = container.width;
+            let h = container.height;
+
+            if (w / h > CD_ASPECT_RATIO) {
+                // Container is wider than needed — constrain by height
+                w = h * CD_ASPECT_RATIO;
+            } else {
+                // Container is taller than needed — constrain by width
+                h = w / CD_ASPECT_RATIO;
+            }
+
+            canvasRef.current.style.width = w + 'px';
+            canvasRef.current.style.height = h + 'px';
+            canvasRef.current.width = Math.round(w * dpr);
+            canvasRef.current.height = Math.round(h * dpr);
+        };
+
         const initViewer = () => {
             if (canvasRef.current && !viewerRef.current) {
-                // Pass data via dataset to match original implementation's expectations
                 if (image) canvasRef.current.dataset.image = image;
                 if (tracks) canvasRef.current.dataset.tracks = tracks;
-                
-                // Initialize size
-                const rect = canvasRef.current.getBoundingClientRect();
-                const dpr = window.devicePixelRatio || 1;
-                canvasRef.current.width = rect.width * dpr;
-                canvasRef.current.height = rect.height * dpr;
 
+                sizeCanvas();
                 viewerRef.current = new CDViewerGL(canvasRef.current);
             }
         };
@@ -514,23 +535,15 @@ const CDViewer = ({ image, tracks }) => {
         const timer = setTimeout(initViewer, 100);
 
         const handleResize = () => {
-             if (canvasRef.current && viewerRef.current) {
-                 const rect = canvasRef.current.getBoundingClientRect();
-                 const dpr = window.devicePixelRatio || 1;
-                 // Check if size changed significantly
-                 if (canvasRef.current.width !== Math.round(rect.width * dpr) || 
-                     canvasRef.current.height !== Math.round(rect.height * dpr)) {
-                     
-                     canvasRef.current.width = rect.width * dpr;
-                     canvasRef.current.height = rect.height * dpr;
-                     viewerRef.current.draw();
-                 }
-             }
+            if (canvasRef.current && viewerRef.current) {
+                sizeCanvas();
+                viewerRef.current.draw();
+            }
         };
 
         const resizeObserver = new ResizeObserver(handleResize);
-        if (canvasRef.current) {
-            resizeObserver.observe(canvasRef.current);
+        if (containerRef.current) {
+            resizeObserver.observe(containerRef.current);
         }
 
         return () => {
@@ -544,10 +557,12 @@ const CDViewer = ({ image, tracks }) => {
     }, [image, tracks]);
 
     return (
-        <canvas 
-            ref={canvasRef} 
-            className="w-full h-full cursor-grab active:cursor-grabbing touch-none"
-        />
+        <div ref={containerRef} className="w-full h-full flex items-center justify-center">
+            <canvas 
+                ref={canvasRef} 
+                className="cursor-grab active:cursor-grabbing touch-none"
+            />
+        </div>
     );
 };
 
