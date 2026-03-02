@@ -406,7 +406,7 @@ class CDViewerGL {
         gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
         const proj = this.perspective(35 * Math.PI / 180, this.canvas.width / this.canvas.height, 0.1, 100);
-        const mv = this.rotateY(this.translate(this.mat4(), [0, 0, -2.8]), this.rotation);
+        const mv = this.rotateY(this.translate(this.mat4(), [0, 0, -2.3]), this.rotation);
         const norm = this.transpose(this.invert(mv));
 
         gl.useProgram(this.program);
