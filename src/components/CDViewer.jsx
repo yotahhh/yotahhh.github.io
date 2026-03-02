@@ -499,8 +499,10 @@ const CDViewer = ({ image, tracks }) => {
 
     useEffect(() => {
         const sizeCanvas = () => {
-            if (!containerRef.current || !canvasRef.current) return;
+            if (!containerRef.current || !canvasRef.current) return false;
             const container = containerRef.current.getBoundingClientRect();
+            // Skip if container has no size yet (layout not computed)
+            if (container.width < 1 || container.height < 1) return false;
             const dpr = window.devicePixelRatio || 1;
 
             // Fit canvas within container while preserving the CD aspect ratio
@@ -508,35 +510,32 @@ const CDViewer = ({ image, tracks }) => {
             let h = container.height;
 
             if (w / h > CD_ASPECT_RATIO) {
-                // Container is wider than needed — constrain by height
                 w = h * CD_ASPECT_RATIO;
             } else {
-                // Container is taller than needed — constrain by width
                 h = w / CD_ASPECT_RATIO;
             }
 
+            const newW = Math.round(w * dpr);
+            const newH = Math.round(h * dpr);
+
             canvasRef.current.style.width = w + 'px';
             canvasRef.current.style.height = h + 'px';
-            canvasRef.current.width = Math.round(w * dpr);
-            canvasRef.current.height = Math.round(h * dpr);
+            canvasRef.current.width = newW;
+            canvasRef.current.height = newH;
+            return true;
         };
-
-        const initViewer = () => {
-            if (canvasRef.current && !viewerRef.current) {
-                if (image) canvasRef.current.dataset.image = image;
-                if (tracks) canvasRef.current.dataset.tracks = tracks;
-
-                sizeCanvas();
-                viewerRef.current = new CDViewerGL(canvasRef.current);
-            }
-        };
-
-        // Small delay to ensure layout is computed
-        const timer = setTimeout(initViewer, 100);
 
         const handleResize = () => {
-            if (canvasRef.current && viewerRef.current) {
-                sizeCanvas();
+            if (!canvasRef.current) return;
+            const sized = sizeCanvas();
+            if (!sized) return;
+
+            // Initialize viewer on first valid size
+            if (!viewerRef.current) {
+                if (image) canvasRef.current.dataset.image = image;
+                if (tracks) canvasRef.current.dataset.tracks = tracks;
+                viewerRef.current = new CDViewerGL(canvasRef.current);
+            } else {
                 viewerRef.current.draw();
             }
         };
@@ -547,7 +546,6 @@ const CDViewer = ({ image, tracks }) => {
         }
 
         return () => {
-            clearTimeout(timer);
             resizeObserver.disconnect();
             if (viewerRef.current) {
                 viewerRef.current.destroy();
