@@ -6,7 +6,7 @@ const Home = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
-      className="container mx-auto px-6 py-24 md:py-32 max-w-4xl text-primary font-sans leading-relaxed"
+      className="container mx-auto px-6 py-12 md:py-32 max-w-4xl text-primary font-sans leading-relaxed"
     >
       <div className="flex flex-col md:flex-row gap-12 items-start">
         <div className="w-full md:w-1/3 relative group">

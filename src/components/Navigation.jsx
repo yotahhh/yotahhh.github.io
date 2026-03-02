@@ -6,6 +6,7 @@ import { createPortal } from 'react-dom';
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [neonColor, setNeonColor] = useState('#ff00ff');
+  const [navOpacity, setNavOpacity] = useState(1);
 
   const neonColors = ['#ff00ff', '#00ffff', '#00ff00', '#ffff00', '#ff0080', '#0080ff', '#ff6600', '#ff0066'];
 
@@ -13,6 +14,18 @@ const Navigation = () => {
     const randomColor = neonColors[Math.floor(Math.random() * neonColors.length)];
     setNeonColor(randomColor);
     document.documentElement.style.setProperty('--hover-color', randomColor);
+  }, []);
+
+  // Fade out nav on scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollY = window.scrollY;
+      // Start fading at 50px, fully hidden by 200px
+      const opacity = Math.max(0, 1 - (scrollY - 50) / 150);
+      setNavOpacity(Math.min(1, opacity));
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const links = [
@@ -38,7 +51,10 @@ const Navigation = () => {
 
   return (
     <>
-      <nav className="fixed top-0 left-0 w-full z-50 p-6 md:p-8 flex justify-between items-center text-primary font-sans mix-blend-difference pointer-events-none">
+      <nav 
+        className="fixed top-0 left-0 w-full z-50 p-6 md:p-8 flex justify-between items-center text-primary font-sans mix-blend-difference pointer-events-none transition-opacity duration-150"
+        style={{ opacity: navOpacity, pointerEvents: navOpacity < 0.1 ? 'none' : undefined }}
+      >
         <NavLink to="/" className="text-xl md:text-2xl font-bold tracking-tight hover:text-[var(--hover-color)] transition-colors pointer-events-auto">
           Yves Spiri
         </NavLink>
