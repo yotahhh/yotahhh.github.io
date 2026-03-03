@@ -500,14 +500,17 @@ const CDViewer = ({ image, tracks }) => {
     useEffect(() => {
         const sizeCanvas = () => {
             if (!containerRef.current || !canvasRef.current) return false;
-            const container = containerRef.current.getBoundingClientRect();
+            // Use clientWidth/clientHeight which reflect CSS layout size,
+            // unaffected by the canvas's own dimensions
+            const cw = containerRef.current.clientWidth;
+            const ch = containerRef.current.clientHeight;
             // Skip if container has no size yet (layout not computed)
-            if (container.width < 1 || container.height < 1) return false;
+            if (cw < 1 || ch < 1) return false;
             const dpr = window.devicePixelRatio || 1;
 
             // Fit canvas within container while preserving the CD aspect ratio
-            let w = container.width;
-            let h = container.height;
+            let w = cw;
+            let h = ch;
 
             if (w / h > CD_ASPECT_RATIO) {
                 w = h * CD_ASPECT_RATIO;
@@ -515,13 +518,10 @@ const CDViewer = ({ image, tracks }) => {
                 h = w / CD_ASPECT_RATIO;
             }
 
-            const newW = Math.round(w * dpr);
-            const newH = Math.round(h * dpr);
-
-            canvasRef.current.style.width = w + 'px';
-            canvasRef.current.style.height = h + 'px';
-            canvasRef.current.width = newW;
-            canvasRef.current.height = newH;
+            canvasRef.current.style.width = Math.round(w) + 'px';
+            canvasRef.current.style.height = Math.round(h) + 'px';
+            canvasRef.current.width = Math.round(w * dpr);
+            canvasRef.current.height = Math.round(h * dpr);
             return true;
         };
 
@@ -555,7 +555,7 @@ const CDViewer = ({ image, tracks }) => {
     }, [image, tracks]);
 
     return (
-        <div ref={containerRef} className="w-full h-full flex items-center justify-center">
+        <div ref={containerRef} className="w-full h-full flex items-center justify-center absolute inset-0">
             <canvas 
                 ref={canvasRef} 
                 className="cursor-grab active:cursor-grabbing touch-none"
