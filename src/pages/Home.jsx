@@ -28,15 +28,15 @@ const Home = () => {
           </h1>
 
           <p>
-            Based in Bern, Yves Spiri (he/him) is an MA Sound Design student in Zurich with a deep obsession for all things audio. His work spans over a decade of creative and technical exploration across music, film, and events.
+            Based in Bern, I am an artist and MA Sound Design student in Zurich with a deep obsession for all things audio. My work spans over a decade of creative and technical exploration across music, film, and events.
           </p>
           
           <p>
-            He has experienced sound through diverse roles: from production, engineering, curation, and teaching to performing live and DJing.
+            I have experienced sound through diverse roles: from production, engineering, curation, and teaching to performing live and DJing.
           </p>
           
           <p>
-            Releasing music as "Yotah", he is always eager to evolve and collaborate.
+            Releasing music as "Yotah", I am always eager to evolve and collaborate.
           </p>
           
           <p>
