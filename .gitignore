@@ -1,3 +1,6 @@
+# PDF documentation
+*.pdf
+
 # Logs
 logs
 *.log
