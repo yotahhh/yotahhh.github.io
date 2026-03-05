@@ -32,11 +32,11 @@ const Home = () => {
           </p>
           
           <p>
-            Yves has experienced sound through diverse roles: from production, engineering, curation, and teaching to performing live and DJing.
+            He has experienced sound through diverse roles: from production, engineering, curation, and teaching to performing live and DJing.
           </p>
           
           <p>
-            Yves has been releasing music as "Yotah" and is always eager to evolve, collaborate.
+            Releasing music as "Yotah", he is always eager to evolve and collaborate.
           </p>
           
           <p>
