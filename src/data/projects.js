@@ -124,6 +124,14 @@ export const musicProjects = [
 
 export const filmProjects = [
   {
+    id: "terminarch",
+    title: "Terminarch",
+    description: "Sound Design for the upcoming HSLU graduation film by Lea Glitsch, Janine Varga, and Ella Cattaneo. In a world threatened by rising tides and a looming planet, Gaia struggles with the loss of her mentor and her own creative voice.",
+    image: "/images/terminarch.jpg",
+    status: "Work in Progress (2026)",
+    platform: "ongoing"
+  },
+  {
     id: "animation-film",
     title: "Animation Film",
     description: "Sound Design for Cleverclip, Bern. Here is one of a few animated advertisement shorts that Yves did the sound design for:",
