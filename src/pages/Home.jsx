@@ -32,11 +32,7 @@ const Home = () => {
           </p>
           
           <p>
-            I have experienced sound through diverse roles: from production, engineering, curation, and teaching to performing live and DJing.
-          </p>
-          
-          <p>
-            Releasing music as "Yotah", I am always eager to evolve and collaborate.
+            I have experienced sound through diverse roles: from production, engineering, curation, and teaching to performing live and DJing. Releasing music as "Yotah", I am always eager to evolve and collaborate.
           </p>
           
           <p>
