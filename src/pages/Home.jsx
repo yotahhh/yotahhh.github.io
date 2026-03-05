@@ -32,11 +32,19 @@ const Home = () => {
           </p>
           
           <p>
-            Yves has experienced sound through diverse roles: from production, engineering, curation, and teaching to performing live and DJing. While he has designed sound for ads and animation, his sights are set on film and game audio—combining his technical skills with a lifelong passion for audiovisual storytelling.
+            Yves has experienced sound through diverse roles: from production, engineering, curation, and teaching to performing live and DJing.
           </p>
           
           <p>
-            Currently releasing music as "Yotah", Yves is constantly learning and evolving. He approaches every project with fresh enthusiasm, eager to collaborate on compelling narratives in film and games.
+            Yves has been releasing music as "Yotah" and is always eager to evolve, collaborate.
+          </p>
+          
+          <p>
+            Please contact me if you need sound/music for a film or game, have music to be mixed and/or mastered or want to collaborate in other artistic/technical ways.
+          </p>
+          
+          <p>
+            Also I’m offering one to one courses in music production, be it online or IRL.
           </p>
 
           <div className="pt-8 border-t border-primary/10 grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs tracking-wider uppercase font-mono">
