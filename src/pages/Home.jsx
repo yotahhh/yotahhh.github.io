@@ -9,7 +9,7 @@ const Home = () => {
       className="container mx-auto px-6 py-12 md:py-32 max-w-4xl text-primary font-sans leading-relaxed"
     >
       <div className="flex flex-col md:flex-row gap-12 items-start">
-        <div className="w-full md:w-1/3 relative group">
+        <div className="w-full md:w-1/3 relative group md:mt-2">
           <div className="aspect-[3/4] overflow-hidden border border-primary/30 relative">
             <img 
               src="/images/yves.jpg" 
@@ -22,7 +22,7 @@ const Home = () => {
         </div>
 
         <div className="w-full md:w-2/3 space-y-8 text-sm md:text-base">
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tighter mb-8 text-primary">
+          <h1 className="text-4xl md:text-6xl font-bold tracking-tighter mb-8 text-primary leading-none">
             Sound, Music,<br />
             <span className="text-secondary/50">Engineering.</span>
           </h1>
