@@ -28,20 +28,15 @@ const Home = () => {
           </h1>
 
           <p>
-            Yves Spiri (he/him) lives in Bern and currently studies MA Sound Design in Zurich. 
-            He is obsessed with everything that involves sound, be it music, games, film, events, or other art forms.
+            Based in Bern, Yves Spiri (he/him) is an MA Sound Design student in Zurich with a deep obsession for all things audio. His work spans over a decade of creative and technical exploration across music, film, and events.
           </p>
           
           <p>
-            His approach has been to experience as many different roles and perspectives when working with sound: 
-            production, engineering, mixing, mastering, event organizing, curation, booking, teaching, and sound design for advertisements and animation films. 
-            Sound design for games is still missing and is probably his most anticipated role to date, as Yves is a big game nerd who has been observing the industry by playing games and listening to countless hours of interviews with veterans and insiders.
+            Yves has experienced sound through diverse roles: from production, engineering, curation, and teaching to performing live and DJing. While he has designed sound for ads and animation, his sights are set on film and game audio—combining his technical skills with a lifelong passion for audiovisual storytelling.
           </p>
           
           <p>
-            Yves has been working with sound and media creatively and technically for over ten years. 
-            At the same time, he feels his journey has only just begun and is more eager and excited than ever to work on projects, preferably film and games. 
-            Yves has been releasing music under the pseudonym "Yotah" and is always working on the next piece, learning as he goes.
+            Currently releasing music as "Yotah", Yves is constantly learning and evolving. He approaches every project with fresh enthusiasm, eager to collaborate on compelling narratives in film and games.
           </p>
 
           <div className="pt-8 border-t border-primary/10 grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs tracking-wider uppercase font-mono">
