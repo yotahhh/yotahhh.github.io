@@ -479,27 +479,8 @@ class CDViewerGL {
         // Remove event listeners
         window.removeEventListener('mousemove', this.handleMoveWrapper);
         window.removeEventListener('mouseup', this.handleUpWrapper);
-        
-        // Touch listeners on canvas are removed automatically when canvas is removed/unmounted?
-        // No, we should remove them if we added them manually to the element and the element persists but the class instance is destroyed?
-        // In this React component, the canvas is unmounted when the component is unmounted, so listeners on it are gone.
-        // But `window` listeners must be removed.
-        // We only added mousemove/up to window.
-        // So the original destroy was fine for window listeners.
-        // However, I added `this.handleTouchCancel` and `addEventListener` to `this.canvas`.
-        // Since `CDViewer` component unmounts the canvas, we don't strictly need to remove listeners from `this.canvas`.
-        // But if `CDViewer` re-instantiates `CDViewerGL` on the *same* canvas (e.g. on resize?), then we accumulate listeners.
-        // `resize` calls `new CDViewerGL` only if `!viewerRef.current`.
-        // If `viewerRef.current` exists, it reuses it.
-        // So we only destroy when unmounting.
-        // So `destroy` is called when unmounting.
-        // So canvas is also removed.
-        // So listeners on canvas are removed.
-        // So `destroy` is fine as it was.
-        
-        // Wait, `resizeObserver` might trigger a re-creation? No.
-        // So I'll leave `destroy` alone.
-    }
+
+        // Basic GL cleanup
         const gl = this.gl;
         if(this.program) gl.deleteProgram(this.program);
         if(this.texture) gl.deleteTexture(this.texture);
