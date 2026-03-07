@@ -252,14 +252,14 @@ class CDViewerGL {
         };
 
         this.handleTouchStart = (e) => {
-            e.preventDefault();
+            // Allow browser to handle scrolling (don't preventDefault)
             this.dragging = true;
             this.autoRotate = false;
             this.lastX = e.touches[0].clientX;
         };
 
         this.handleTouchMove = (e) => {
-            e.preventDefault();
+             // Don't preventDefault, let touch-action CSS handle it
             if (this.dragging) {
                 this.rotation += (e.touches[0].clientX - this.lastX) * 0.01;
                 this.lastX = e.touches[0].clientX;
@@ -269,7 +269,6 @@ class CDViewerGL {
         };
 
         this.handleTouchEnd = (e) => {
-            e.preventDefault();
             this.dragging = false;
             setTimeout(() => {
                 if (!this.dragging && !this.destroyed) {
@@ -278,6 +277,12 @@ class CDViewerGL {
                 }
             }, 2000);
         };
+        
+        this.handleTouchCancel = (e) => {
+            this.dragging = false;
+            this.autoRotate = true;
+            this.lastTime = Date.now();
+        };
 
         // Mouse
         this.canvas.addEventListener('mousedown', this.handleDown);
@@ -285,9 +290,10 @@ class CDViewerGL {
         window.addEventListener('mouseup', this.handleUpWrapper);
 
         // Touch
-        this.canvas.addEventListener('touchstart', this.handleTouchStart, { passive: false });
-        this.canvas.addEventListener('touchmove', this.handleTouchMove, { passive: false });
-        this.canvas.addEventListener('touchend', this.handleTouchEnd, { passive: false });
+        this.canvas.addEventListener('touchstart', this.handleTouchStart, { passive: true });
+        this.canvas.addEventListener('touchmove', this.handleTouchMove, { passive: true });
+        this.canvas.addEventListener('touchend', this.handleTouchEnd, { passive: true });
+        this.canvas.addEventListener('touchcancel', this.handleTouchCancel, { passive: true });
     }
 
     loadAssets() {
@@ -473,8 +479,27 @@ class CDViewerGL {
         // Remove event listeners
         window.removeEventListener('mousemove', this.handleMoveWrapper);
         window.removeEventListener('mouseup', this.handleUpWrapper);
-
-        // Basic GL cleanup could go here (delete buffers, textures, program)
+        
+        // Touch listeners on canvas are removed automatically when canvas is removed/unmounted?
+        // No, we should remove them if we added them manually to the element and the element persists but the class instance is destroyed?
+        // In this React component, the canvas is unmounted when the component is unmounted, so listeners on it are gone.
+        // But `window` listeners must be removed.
+        // We only added mousemove/up to window.
+        // So the original destroy was fine for window listeners.
+        // However, I added `this.handleTouchCancel` and `addEventListener` to `this.canvas`.
+        // Since `CDViewer` component unmounts the canvas, we don't strictly need to remove listeners from `this.canvas`.
+        // But if `CDViewer` re-instantiates `CDViewerGL` on the *same* canvas (e.g. on resize?), then we accumulate listeners.
+        // `resize` calls `new CDViewerGL` only if `!viewerRef.current`.
+        // If `viewerRef.current` exists, it reuses it.
+        // So we only destroy when unmounting.
+        // So `destroy` is called when unmounting.
+        // So canvas is also removed.
+        // So listeners on canvas are removed.
+        // So `destroy` is fine as it was.
+        
+        // Wait, `resizeObserver` might trigger a re-creation? No.
+        // So I'll leave `destroy` alone.
+    }
         const gl = this.gl;
         if(this.program) gl.deleteProgram(this.program);
         if(this.texture) gl.deleteTexture(this.texture);
@@ -555,10 +580,10 @@ const CDViewer = ({ image, tracks }) => {
     }, [image, tracks]);
 
     return (
-        <div ref={containerRef} className="w-full h-full flex items-center justify-center absolute inset-0">
+        <div ref={containerRef} className="w-full h-full flex items-center justify-center absolute inset-0 overflow-hidden">
             <canvas 
                 ref={canvasRef} 
-                className="cursor-grab active:cursor-grabbing touch-none"
+                className="cursor-grab active:cursor-grabbing touch-pan-y block w-full h-full object-contain"
             />
         </div>
     );

@@ -28,19 +28,11 @@ const Home = () => {
           </h1>
 
           <p>
-            Based in Bern, I am an artist and MA Sound Design student in Zurich with a deep obsession for all things audio. My work spans over a decade of creative and technical exploration across music, film, and events.
+            I am a Bern-based artist and MA Sound Design student at ZHdK, working across music, film, and live performance. With over ten years of practice spanning engineering, curation, composition, and DJing, my work moves fluidly between technical and creative roles. Yotah is my experimental club music project, one expression of a broader obsession with sound in all its forms.
           </p>
           
           <p>
-            I have experienced sound through diverse roles: from production, engineering, curation, and teaching to performing live and DJing. Releasing music as "Yotah", I am always eager to evolve and collaborate.
-          </p>
-          
-          <p>
-            Please contact me if you need sound/music for a film or game, have music to be mixed and/or mastered or want to collaborate in other artistic/technical ways.
-          </p>
-          
-          <p>
-            Also I’m offering one to one courses in music production, be it online or IRL.
+            I am available for film and game scoring, mixing and mastering, and music production tutoring, online or in person.
           </p>
 
           <div className="pt-8 border-t border-primary/10 grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs tracking-wider uppercase font-mono">
