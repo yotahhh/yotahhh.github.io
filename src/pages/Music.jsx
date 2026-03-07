@@ -106,7 +106,7 @@ const Music = () => {
 
             <div className="min-h-screen flex flex-col md:flex-row pt-20 md:pt-0">
               {/* Left: CD Viewer */}
-              <div className="w-full md:w-1/2 h-[50vh] md:h-screen md:sticky md:top-0 bg-gradient-to-br from-black to-zinc-900 flex items-center justify-center relative order-1 md:order-none">
+              <div className="w-full md:w-1/2 h-[50vh] md:h-screen md:sticky md:top-0 bg-gradient-to-br from-black to-zinc-900 flex items-center justify-center relative order-1 md:order-none overflow-hidden">
                 <div className="w-full h-full relative z-10 flex items-center justify-center p-4 md:p-4">
                   <div className="w-full h-full relative flex items-center justify-center">
                     <CDViewer image={activeProject.image} tracks={activeProject.tracks} />
