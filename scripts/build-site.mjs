@@ -662,6 +662,24 @@ h1 {
 	font-weight: ${displayFont.weight};
 	letter-spacing: ${displayFont.letterSpacing};
 }
+
+/*
+ * The WebGL treatment of that name (scripts/hero-effect.js). The .hero-gl class
+ * is only added once a GL context exists, so without WebGL the plain text shows.
+ */
+h1.hero-gl {
+	position: relative;
+}
+
+h1.hero-gl a {
+	color: transparent;
+}
+
+.hero-gl-canvas {
+	position: absolute;
+	pointer-events: none;
+	z-index: 1;
+}
 `;
 
 /* ------------------------------------------------------------------- build */
@@ -687,9 +705,14 @@ if (!baseStylesheet.includes(TEMPLATE_DISPLAY_FONT)) {
 }
 const stylesheet =
   baseStylesheet.replaceAll(TEMPLATE_DISPLAY_FONT, `"${displayFont.family}"`) + EXTRA_CSS;
-const fonts = base.site.fonts.map((f) =>
-  f.family === TEMPLATE_DISPLAY_FONT ? { family: displayFont.family, provider: "google" } : f
-);
+const fonts = base.site.fonts
+  .map((f) =>
+    f.family === TEMPLATE_DISPLAY_FONT
+      ? { family: displayFont.family, provider: displayFont.provider || "google" }
+      : f
+  )
+  // A Cargo family may already be listed — the runtime must not load it twice.
+  .filter((f, i, all) => all.findIndex((o) => o.family === f.family) === i);
 
 const state = {
   ...base,
@@ -848,7 +871,13 @@ const BOOT_SCRIPT = `<script>(function(){
 	}
 })();</script>`;
 
-html = html.replace("</body>", `\t\t${BOOT_SCRIPT}\n\t</body>`);
+const heroEffect = readFileSync(resolve(root, "scripts/hero-effect.js"), "utf8");
+if (heroEffect.includes("</script")) throw new Error("hero-effect.js cannot contain </script");
+
+html = html.replace(
+  "</body>",
+  `\t\t${BOOT_SCRIPT}\n\t\t<script>\n${heroEffect}\n\t\t</script>\n\t</body>`
+);
 
 if (html.includes("Curzio") || html.includes("Kaputt") || html.includes("cargoworld")) {
   throw new Error("Template placeholder content leaked into the output");

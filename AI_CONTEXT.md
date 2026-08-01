@@ -51,6 +51,8 @@ page) and scrolls to the cover scroll itself.
 - **`scripts/`**
   - `build-site.mjs`: generates `index.html` and assembles `dist/`.
   - `dev-server.mjs`: static preview server with a root-path fallback.
+  - `hero-effect.js`: the WebGL treatment of the name on the home page, inlined
+    into the built page. Raw WebGL, no dependencies.
 - **`src/data/`**: **content lives here.**
   - `projects.js`: `musicProjects` and `filmProjects` arrays.
   - `site.js`: header/nav, hero, about, mixing & mastering, footer.
@@ -96,12 +98,20 @@ page) and scrolls to the cover scroll itself.
   extends with an "additions" block (`EXTRA_CSS` in `scripts/build-site.mjs`) for the
   pieces the template has no components for: cover scroll, track lists, panels,
   embeds, buttons.
-- Typography: Gaisyr (`h2`), Repro Variable (body), Diatype Variable (track lists)
-  — all Cargo fonts embedded in the shell. The big name on the home page (`h1`)
-  uses `displayFont` from `src/data/site.js`; the template's own face there was
-  UnifrakturMaguntia. Any Google Fonts family works: the generator swaps the name
-  in the stylesheet and in `site.fonts`, and the Cargo runtime injects the
-  matching `fonts.googleapis.com` link at load time.
+- Typography: Gaisyr (`h1`, `h2`), Repro Variable (body), Diatype Variable (track
+  lists) — all Cargo fonts embedded in the shell, no external font request. The
+  face for the big name is `displayFont` in `src/data/site.js` (the template's own
+  was UnifrakturMaguntia). A Google Fonts family also works: set
+  `provider: "google"`, and the generator swaps the name in the stylesheet and in
+  `site.fonts`, which makes the Cargo runtime inject the `fonts.googleapis.com`
+  link at load time.
+- The name's character comes from `scripts/hero-effect.js` rather than the
+  typeface: the h1's glyphs are drawn to a 2D canvas in that same font, uploaded
+  as a texture, and sampled through a drifting flow field plus a soft lens that
+  follows the pointer, with a little chromatic split. Tuning knobs are the `uAmp`
+  (ambient warp, ~0.4% of the width), lens multiplier and `uSplit` uniforms in
+  `frame()`. It only takes over once a GL context exists, honours
+  `prefers-reduced-motion`, pauses off-screen, and caps device pixel ratio at 2.
 - Sizes are in `rem`, and Cargo scales the root font size per viewport — prefer `rem`
   over `px` so mobile scaling keeps working.
 - The stylesheet exists twice in the output (in the state JSON *and* as a `<style>`

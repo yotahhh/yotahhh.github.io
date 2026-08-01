@@ -18,14 +18,16 @@ export const hero = {
   subtitle: "Zürich-based artist &#x26; MA Sound Design student at ZHdK<br />\nYotah — experimental club music",
 };
 
-// Typeface for the big name on the home page (the h1). Any Google Fonts family
-// works — the Cargo runtime loads whatever is declared here. Alternatives worth
-// trying: "Instrument Serif" (400), "Bodoni Moda" (700), "Big Shoulders Display"
-// (800), "Space Grotesk" (700).
+// Typeface for the big name on the home page (the h1). Gaisyr is one of the
+// template's own fonts, so it needs no external request; the character comes
+// from the WebGL treatment in scripts/hero-effect.js instead of the face itself.
+// Any Google Fonts family also works — set provider: "google" and the Cargo
+// runtime loads it (e.g. "Instrument Serif", "Bodoni Moda", "Space Grotesk").
 export const displayFont = {
-  family: "Syne",
-  weight: 800,
-  letterSpacing: "-0.03em",
+  family: "Gaisyr",
+  provider: "cargo",
+  weight: 400,
+  letterSpacing: "-0.02em",
 };
 
 export const links = [
