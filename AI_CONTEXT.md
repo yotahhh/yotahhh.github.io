@@ -96,8 +96,12 @@ page) and scrolls to the cover scroll itself.
   extends with an "additions" block (`EXTRA_CSS` in `scripts/build-site.mjs`) for the
   pieces the template has no components for: cover scroll, track lists, panels,
   embeds, buttons.
-- Typography is the template's: UnifrakturMaguntia (`h1`), Gaisyr (`h2`),
-  Repro Variable (body), Diatype Variable (track lists).
+- Typography: Gaisyr (`h2`), Repro Variable (body), Diatype Variable (track lists)
+  — all Cargo fonts embedded in the shell. The big name on the home page (`h1`)
+  uses `displayFont` from `src/data/site.js`; the template's own face there was
+  UnifrakturMaguntia. Any Google Fonts family works: the generator swaps the name
+  in the stylesheet and in `site.fonts`, and the Cargo runtime injects the
+  matching `fonts.googleapis.com` link at load time.
 - Sizes are in `rem`, and Cargo scales the root font size per viewport — prefer `rem`
   over `px` so mobile scaling keeps working.
 - The stylesheet exists twice in the output (in the state JSON *and* as a `<style>`

@@ -1,5 +1,25 @@
 export const musicProjects = [
   {
+    id: "slow-brained-remix",
+    title: "Slow Brained (Yotah Remix)",
+    description: "A remix of Flower B's \"Slow Brained\", featured on \"Flagrant Déni\" — breaks, jungle and techno by Ethos Records.",
+    credits: "Remix by Yotah\nReleased by Ethos Records",
+    image: "/images/slow_brained_remix.jpg",
+    tracks: "1. Slow Brained (Yotah Remix) 02:51",
+    bandcampLink: "https://ethosrecords.bandcamp.com/track/slow-brained-yotah-remix",
+    embedUrl: "https://bandcamp.com/EmbeddedPlayer/track=533839500/size=small/bgcol=ffffff/linkcol=0687f5/transparent=true/"
+  },
+  {
+    id: "5ug",
+    title: "5μg",
+    description: "Featured on \"Idiosyncratic Bass Music Vol. 1\", a compilation of leftfield and experimental bass music from sama recordings.",
+    credits: "Music & Production by Yves Spiri\nReleased by sama recordings",
+    image: "/images/5ug.jpg",
+    tracks: "1. 5μg 04:40",
+    bandcampLink: "https://samarecordings.bandcamp.com/track/yotah-5-g",
+    embedUrl: "https://bandcamp.com/EmbeddedPlayer/track=2213514743/size=small/bgcol=ffffff/linkcol=0687f5/transparent=true/"
+  },
+  {
     id: "forever-chemicals",
     title: "Forever Chemicals",
     description: "Featured on \"Waystation: Sequence II\" by Nostro Hood System. Returning to the Waystation once again, Sequence II is another snapshot of this moment in time, where fourteen audio artists present their works for the Nostro Hood.",

@@ -6,16 +6,26 @@ export const siteMeta = {
   name: "Yves Spiri",
   title: "Yves Spiri — Sound, Music, Engineering",
   description:
-    "Yves Spiri is a Bern-based artist and MA Sound Design student at ZHdK, working across music, film, and live performance. Also releasing as Yotah.",
+    "Yves Spiri is a Zürich-based artist and MA Sound Design student at ZHdK, working across music, film, and live performance. Also releasing as Yotah.",
   email: "hi@yvesspiri.net",
-  place: "BERN/CH",
+  place: "ZÜRICH/CH",
   year: "2026",
 };
 
 export const hero = {
   eyebrow: "SOUND · MUSIC · ENGINEERING",
   title: "Yves Spiri",
-  subtitle: "Bern-based artist &#x26; MA Sound Design student at ZHdK<br />\nYotah — experimental club music",
+  subtitle: "Zürich-based artist &#x26; MA Sound Design student at ZHdK<br />\nYotah — experimental club music",
+};
+
+// Typeface for the big name on the home page (the h1). Any Google Fonts family
+// works — the Cargo runtime loads whatever is declared here. Alternatives worth
+// trying: "Instrument Serif" (400), "Bodoni Moda" (700), "Big Shoulders Display"
+// (800), "Space Grotesk" (700).
+export const displayFont = {
+  family: "Syne",
+  weight: 800,
+  letterSpacing: "-0.03em",
 };
 
 export const links = [
@@ -30,7 +40,7 @@ export const about = {
   photoCredit: { display: "@zoec.lemence", href: "https://instagram.com/zoec.lemence" },
   heading: "Sound, Music, Engineering.",
   paragraphs: [
-    "I am a Bern-based artist and MA Sound Design student at ZHdK, working across music, film, and live performance. With over ten years of practice spanning engineering, curation, composition, and DJing, my work moves fluidly between technical and creative roles. Yotah is my experimental club music project, one expression of a broader obsession with sound in all its forms.",
+    "I am a Zürich-based artist and MA Sound Design student at ZHdK, working across music, film, and live performance. With over ten years of practice spanning engineering, curation, composition, and DJing, my work moves fluidly between technical and creative roles. Yotah is my experimental club music project, one expression of a broader obsession with sound in all its forms.",
     "I am available for film and game scoring, mixing and mastering, and music production tutoring, online or in person.",
   ],
 };

@@ -24,7 +24,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { musicProjects, filmProjects } from "../src/data/projects.js";
-import { siteMeta, hero, links, about, mixing } from "../src/data/site.js";
+import { siteMeta, hero, links, about, mixing, displayFont } from "../src/data/site.js";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const SHELL = resolve(root, "template.html");
@@ -656,6 +656,12 @@ body.mobile .scroll-item {
 .button:hover {
 	background: rgba(255, 255, 255, 0.24);
 }
+
+/* Display face for the name on the home page — see displayFont in src/data/site.js */
+h1 {
+	font-weight: ${displayFont.weight};
+	letter-spacing: ${displayFont.letterSpacing};
+}
 `;
 
 /* ------------------------------------------------------------------- build */
@@ -669,6 +675,22 @@ const base = JSON.parse(stateMatch[1]);
 const pages = buildPages();
 const stacked = pages.filter((p) => p.__stacked);
 
+/*
+ * The template's h1 face (UnifrakturMaguntia) is a Google font the Cargo runtime
+ * loads from site.fonts, so swapping the display face means swapping it in both
+ * the stylesheet and that list.
+ */
+const TEMPLATE_DISPLAY_FONT = "UnifrakturMaguntia";
+const baseStylesheet = base.css.stylesheet;
+if (!baseStylesheet.includes(TEMPLATE_DISPLAY_FONT)) {
+  throw new Error(`Expected ${TEMPLATE_DISPLAY_FONT} in the template stylesheet`);
+}
+const stylesheet =
+  baseStylesheet.replaceAll(TEMPLATE_DISPLAY_FONT, `"${displayFont.family}"`) + EXTRA_CSS;
+const fonts = base.site.fonts.map((f) =>
+  f.family === TEMPLATE_DISPLAY_FONT ? { family: displayFont.family, provider: "google" } : f
+);
+
 const state = {
   ...base,
   structure: {
@@ -681,6 +703,7 @@ const state = {
   },
   site: {
     ...base.site,
+    fonts,
     website_title: siteMeta.title,
     has_site_description: true,
     site_description: siteMeta.description,
@@ -705,12 +728,15 @@ const state = {
     },
   },
   media: { data: [] },
-  css: { ...base.css, stylesheet: base.css.stylesheet + EXTRA_CSS },
+  css: { ...base.css, stylesheet },
   frontendState: {
     ...base.frontendState,
     hostname: "yvesspiri.net",
     activePID: "root",
     renderedPages: [],
+    fontsLoaded: base.frontendState.fontsLoaded.map((f) =>
+      f === TEMPLATE_DISPLAY_FONT ? displayFont.family : f
+    ),
   },
 };
 
