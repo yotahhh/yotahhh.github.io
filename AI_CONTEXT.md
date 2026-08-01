@@ -108,9 +108,11 @@ page) and scrolls to the cover scroll itself.
 - The name's character comes from `scripts/hero-effect.js` rather than the
   typeface: the h1's glyphs are drawn to a 2D canvas in that same font, uploaded
   as a texture, and sampled through a drifting flow field plus a soft lens that
-  follows the pointer, with a little chromatic split. Tuning knobs are the `uAmp`
-  (ambient warp, ~0.4% of the width), lens multiplier and `uSplit` uniforms in
-  `frame()`. It only takes over once a GL context exists, honours
+  follows the pointer, with a little chromatic split. The same distortion also
+  ramps up as the title scrolls off the top — 0 at rest, 7× once it has cleared
+  the viewport. Tuning knobs are all in `frame()`: `uAmp` (ambient warp, ~0.4% of
+  the width), the lens multiplier, `uSplit`, and the `exit` curve (`1.6` exponent,
+  `* 6` amplitude and `* 4` split factors). It only takes over once a GL context exists, honours
   `prefers-reduced-motion`, pauses off-screen, and caps device pixel ratio at 2.
 - Sizes are in `rem`, and Cargo scales the root font size per viewport — prefer `rem`
   over `px` so mobile scaling keeps working.

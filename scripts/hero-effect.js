@@ -229,11 +229,25 @@
 			el.__heroFrames = (el.__heroFrames || 0) + 1; // handy when debugging
 
 			pointer += (targetPointer - pointer) * 0.06;
+
+			/*
+			 * Scrolling away distorts the name the same way the cursor does, but
+			 * across the whole wordmark. Measured against the title's own position
+			 * rather than a viewport fraction: 0 with the page at rest, 1 once it
+			 * has scrolled clear of the top edge, whatever the viewport height.
+			 */
+			var rect = el.getBoundingClientRect();
+			var scrolled = window.scrollY || document.documentElement.scrollTop || 0;
+			var travel = rect.bottom + scrolled; // the title's bottom in page space
+			var exit = travel > 0 ? scrolled / travel : 0;
+			exit = exit < 0 ? 0 : exit > 1 ? 1 : exit;
+			exit = reduce ? 0 : Math.pow(exit, 1.6);
+
 			gl.useProgram(pr);
 			gl.uniform1f(u.uTime, reduce ? 0 : (now - start) / 1000);
 			gl.uniform1f(u.uAspect, aspect);
-			gl.uniform1f(u.uAmp, reduce ? 0.0016 : 0.0042);
-			gl.uniform1f(u.uSplit, 0.0014);
+			gl.uniform1f(u.uAmp, (reduce ? 0.0016 : 0.0042) * (1 + exit * 6));
+			gl.uniform1f(u.uSplit, 0.0014 * (1 + exit * 4));
 			gl.uniform1f(u.uPointer, reduce ? 0 : pointer);
 			gl.uniform2f(u.uMouse, mouse[0], mouse[1]);
 			gl.activeTexture(gl.TEXTURE0);
