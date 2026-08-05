@@ -40,6 +40,51 @@ const esc = (s = "") =>
 
 const nl2br = (s = "") => esc(s).replace(/\n/g, "<br />\n");
 
+/**
+ * Intrinsic pixel size of a JPEG or PNG, read straight from its header.
+ *
+ * Every <img> is emitted with width/height so the browser can reserve the right
+ * box before the file arrives. Without them a cover is 0px tall until it loads,
+ * and since the covers are lazy-loaded that growth happens *while* you scroll
+ * past them: the scroll range keeps extending under the finger and the page
+ * feels like it stalls. Cheap header parse, no dependency.
+ */
+const imageSize = (src) => {
+  const buf = readFileSync(resolve(root, src.replace(/^\//, "")));
+
+  // PNG: 8-byte signature, then an IHDR whose first two fields are the size.
+  if (buf.length > 24 && buf.readUInt32BE(0) === 0x89504e47)
+    return { width: buf.readUInt32BE(16), height: buf.readUInt32BE(20) };
+
+  // JPEG: walk the marker segments until the start-of-frame, which carries it.
+  if (buf.readUInt16BE(0) === 0xffd8) {
+    let off = 2;
+    while (off + 9 < buf.length) {
+      if (buf[off] !== 0xff) {
+        off += 1;
+        continue;
+      }
+      const marker = buf[off + 1];
+      // SOF0–SOF15, minus the markers in that range that are not frame headers.
+      const isFrame =
+        marker >= 0xc0 && marker <= 0xcf && ![0xc4, 0xc8, 0xcc].includes(marker);
+      if (isFrame) return { height: buf.readUInt16BE(off + 5), width: buf.readUInt16BE(off + 7) };
+      off += 2 + buf.readUInt16BE(off + 2);
+    }
+  }
+
+  throw new Error(`Could not read image dimensions: ${src}`);
+};
+
+/** <img> with its intrinsic size baked in, so it reserves space before loading. */
+const img = (src, alt, { cls = "", lazy = false } = {}) => {
+  const { width, height } = imageSize(src);
+  return (
+    `<img${cls ? ` class="${cls}"` : ""} src="${esc(src)}" alt="${esc(alt)}"` +
+    ` width="${width}" height="${height}"${lazy ? ` loading="lazy"` : ""} />`
+  );
+};
+
 /** Deterministic Cargo-style page id: one letter + 10 digits. */
 const pageId = (seed) => {
   let h = 2166136261;
@@ -110,7 +155,7 @@ const embed = (project) => {
  * working deep links for free.
  */
 const closeRow = () =>
-  `<div class="panel-close"><a class="caption" href="/" rel="history">(Close)</a></div>`;
+  `<div class="panel-close"><a class="caption" href="/" rel="history">← Back</a></div>`;
 
 /* ------------------------------------------------------------- page bodies */
 
@@ -152,11 +197,13 @@ const mainScroll = () =>
   musicProjects
     .map((p) => {
       const label = labelOf(p);
-      return `<div class="scroll-item"><a href="${esc(p.id)}" rel="history"><img src="${esc(
-        p.image
-      )}" alt="${esc(p.title)}" loading="lazy" /></a><span class="caption"><b>${esc(
-        p.title
-      )}</b>${label ? ` — ${esc(label)}` : ""}</span></div>`;
+      return `<div class="scroll-item"><a href="${esc(p.id)}" rel="history">${img(
+        p.image,
+        p.title,
+        { lazy: true }
+      )}</a><span class="caption"><b>${esc(p.title)}</b>${
+        label ? ` — ${esc(label)}` : ""
+      }</span></div>`;
     })
     .join("\n");
 
@@ -204,9 +251,9 @@ const releasePanel = (project, prev, next) => {
     .join("\n");
 
   return `${closeRow()}<column-set gutter="2.5rem" mobile-gutter="2rem" mobile-stack="true">
-<column-unit slot="0" span="5"><img class="cover" src="${esc(project.image)}" alt="${esc(
-    project.title
-  )}" /></column-unit>
+<column-unit slot="0" span="5">${img(project.image, project.title, {
+    cls: "cover",
+  })}</column-unit>
 <column-unit slot="1" span="7">${body}</column-unit>
 </column-set><br />
 <hr /><column-set gutter="1" mobile-stack="false">
@@ -220,9 +267,9 @@ const releasePanel = (project, prev, next) => {
 };
 
 const aboutPanel = () => `${closeRow()}<column-set gutter="2.5rem" mobile-gutter="2rem" mobile-stack="true">
-<column-unit slot="0" span="4"><img class="cover" src="${esc(about.image)}" alt="${esc(
-  siteMeta.name
-)}" /><span class="caption photo-credit">Photo by <a href="${esc(
+<column-unit slot="0" span="4">${img(about.image, siteMeta.name, {
+  cls: "cover",
+})}<span class="caption photo-credit">Photo by <a href="${esc(
   about.photoCredit.href
 )}" target="_blank">${esc(about.photoCredit.display)}</a></span></column-unit>
 <column-unit slot="1" span="8"><h2 style="--font-scale: 0.6;">${esc(about.heading)}</h2><br />
@@ -260,9 +307,9 @@ ${nl2br(p.description)}`;
 ${caption}`;
 
       return `<column-set gutter="2.5rem" mobile-gutter="2rem" mobile-stack="true">
-<column-unit slot="0" span="5"><img class="cover" src="${esc(p.image)}" alt="${esc(
-        p.title
-      )}" /></column-unit>
+<column-unit slot="0" span="5">${img(p.image, p.title, {
+        cls: "cover",
+      })}</column-unit>
 <column-unit slot="1" span="7">${caption}</column-unit>
 </column-set>`;
     })
@@ -284,28 +331,54 @@ ${nl2br(mixing.closing)}<br />
 
 /* ------------------------------------------------------------- page models */
 
-const panelCss = (id, maxWidth = "68rem") => `[id="${id}"].page {
-	justify-content: center;
+/*
+ * Panels read as part of the page, not as a modal on top of it: no surface of
+ * their own, and the content column starts on the same left margin as the
+ * header's INDEX column (the header's .page-content carries 1rem of padding).
+ * They are top-aligned rather than centred — centring a short panel in a
+ * viewport-height page strands it in dead space with the header and footer far
+ * away, which is what made them look detached on wide screens.
+ */
+const panelCss = (id, measure = "max(50%, 36rem)") => `[id="${id}"].page {
+	justify-content: flex-start;
 	min-height: var(--viewport-height);
 }
 
 [id="${id}"] .page-layout {
-	max-width: ${maxWidth};
+	max-width: 100%;
 	align-items: flex-start;
-	padding-top: 8rem;
+	padding-top: 7rem;
 	padding-bottom: 8rem;
-	padding-left: 1rem;
-	padding-right: 1rem;
+	padding-left: 0;
+	padding-right: 0;
 }
 
 [id="${id}"] .page-content {
 	text-align: left;
 	height: auto;
-	padding: 2rem;
-	background-color: #0d0d0d;
-	border: 1px solid rgba(255, 255, 255, 0.12);
-	border-radius: 0.4rem;
-	box-shadow: 0rem 0rem 3rem 0rem rgba(0, 0, 0, 0.6);
+	padding: 0 1rem;
+}
+
+/*
+ * Cap the measure without re-centring: the column stays on the left margin.
+ * The header's four columns sit at fixed fractions of the width, not at fixed
+ * rem (the template scales rem with the viewport), so the cap is a percentage:
+ * at 50% the panel ends exactly where the header's third column begins, which
+ * puts it on the header's grid instead of at some width of its own. The rem
+ * floor keeps the measure readable on narrow desktop windows, where half the
+ * viewport would be too tight a column.
+ */
+[id="${id}"] .page-content > * {
+	max-width: ${measure};
+}
+
+body.mobile [id="${id}"] .page-content > * {
+	max-width: 100%;
+}
+
+body.mobile [id="${id}"] .page-layout {
+	padding-top: 3rem;
+	padding-bottom: 5rem;
 }`;
 
 const makePage = ({
@@ -477,13 +550,13 @@ const buildPages = () => {
       purl: "film",
       title: "Film",
       content: filmPanel(),
-      localCss: panelCss(pageId("film"), "56rem"),
+      localCss: panelCss(pageId("film")),
     }),
     makePage({
       purl: "mixing",
       title: "Mixing & Mastering",
       content: mixingPanel(),
-      localCss: panelCss(pageId("mixing"), "48rem"),
+      localCss: panelCss(pageId("mixing")),
     })
   );
 
@@ -523,8 +596,10 @@ bodycopy img {
 	margin-bottom: 0;
 }
 
+/* width/height attributes give the intrinsic ratio; height:auto keeps it. */
 .scroll-item img {
 	width: 100%;
+	height: auto;
 	transition: opacity 300ms ease-in-out;
 }
 
@@ -541,13 +616,15 @@ body.mobile .scroll-item {
 }
 
 /* Panels (release / about / film / mixing) */
+/* Sits on the content's left margin, matching the release pages' prev/next. */
 .panel-close {
-	text-align: right;
-	margin-bottom: 1.5rem;
+	text-align: left;
+	margin-bottom: 2rem;
 }
 
 .cover {
 	width: 100%;
+	height: auto;
 }
 
 .contact-item + .contact-item {
