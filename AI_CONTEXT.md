@@ -9,7 +9,7 @@ This file is intended to help AI coding assistants and developers quickly unders
   - **Site:** a single generated `index.html` built on a Cargo site template (`template.html`), rendered client-side by the Cargo frontend (`build.cargo.site`).
   - **Generator:** plain Node ESM script, no bundler (`scripts/build-site.mjs`).
   - **Content:** JS data modules in `src/data/`.
-  - **Deployment:** GitHub Pages (`gh-pages`).
+  - **Deployment:** GitHub Pages, serving the repo root of `main` directly.
 
 ## How the site works
 `template.html` is an export of the Cargo template "Graphic F992". Cargo sites render
@@ -89,9 +89,9 @@ page) and scrolls to the cover scroll itself.
 
 ### 2. Development commands
 - **Preview:** `npm run dev` (builds, then serves `http://127.0.0.1:5173`)
-- **Build:** `npm run build` (writes `index.html` and `dist/`)
+- **Build:** `npm run build` (writes `index.html` and `404.html`)
 - **Preview the built output:** `npm run preview`
-- **Deploy:** `npm run deploy` (pushes `dist/` to the `gh-pages` branch)
+- **Deploy:** none — commit the build and push `main`.
 
 ## Design System & Styling
 - All styling comes from the Cargo template's stylesheet, which the generator
@@ -120,9 +120,17 @@ page) and scrolls to the cover scroll itself.
   in the body); the generator writes both, and asserts it did.
 
 ## Deployment
-Hosted on GitHub Pages via the `gh-pages` package, deploying `dist/`.
+Hosted on GitHub Pages, serving the repo root of `main` directly — there is no
+build step on the server and no separate deploy branch.
 - **URL:** [https://yvesspiri.net/](https://yvesspiri.net/)
-- Pushing to `main` does not change the live site; `npm run deploy` does.
+- **Publishing a change:** `npm run build`, commit the regenerated `index.html`
+  and `404.html`, then push `main`. The push *is* the deploy.
+- The served files are committed at the root: `index.html`, `404.html`,
+  `images/`, `CNAME`, and `.nojekyll`. Everything else in the repo (`src/`,
+  `scripts/`, `template.html`) is build input that happens to sit alongside them.
+- `404.html` is a byte-for-byte copy of `index.html`: Pages has no history
+  fallback, so deep links (`/about`, `/true-bug`, …) are served the 404, which
+  boots the same app and resolves the route client-side.
 
 ## Recent Updates (as of July 2026)
 - Rebuilt the site on the Cargo "Graphic F992" template, with release panels modelled

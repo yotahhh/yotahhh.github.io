@@ -3,11 +3,11 @@
  *
  * The Cargo frontend resolves pages against location.pathname, so the site
  * must be served from the root of an origin: unknown paths fall back to
- * index.html (the same trick dist/404.html plays on GitHub Pages).
+ * index.html (the same trick 404.html plays on GitHub Pages).
  *
  *   node scripts/dev-server.mjs [dir] [--port 5173]
  *
- * With no dir, serves the repo root and maps /images/* to public/images/*.
+ * With no dir, serves the repo root — the same layout GitHub Pages publishes.
  */
 
 import { createServer } from "node:http";
@@ -22,7 +22,6 @@ const portArg = args.indexOf("--port");
 const port = portArg !== -1 ? Number(args[portArg + 1]) : 5173;
 const dirArg = args.find((a) => !a.startsWith("--") && a !== String(port));
 const base = dirArg ? resolve(root, dirArg) : root;
-const imagesFallback = dirArg ? null : resolve(root, "public");
 
 const TYPES = {
   ".html": "text/html; charset=utf-8",
@@ -56,9 +55,6 @@ const server = createServer(async (req, res) => {
   const safe = normalize(pathname).replace(/^(\.\.[/\\])+/, "");
 
   let file = safe === "/" ? null : await tryFile(join(base, safe));
-  if (!file && imagesFallback && safe.startsWith("/images/")) {
-    file = await tryFile(join(imagesFallback, safe));
-  }
   // Client-side routes (/about, /true-bug, …) boot from index.html.
   if (!file) file = await tryFile(join(base, "index.html"));
 

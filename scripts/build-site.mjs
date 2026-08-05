@@ -13,13 +13,15 @@
  * for extra notes, embedded player — follow the layout of player.html
  * (Cargo "~Template K999").
  *
- * Also assembles dist/ (index.html, 404.html, images/, CNAME) for gh-pages.
+ * Writes index.html and 404.html to the repo root. GitHub Pages serves that
+ * root directly off main, so images/ and CNAME are committed there as-is and
+ * a build is published simply by pushing.
  *
  * NOTE: the Cargo router resolves pages against location.pathname, so the
  * generated page only renders when served from the root of a domain.
  */
 
-import { readFileSync, writeFileSync, mkdirSync, rmSync, cpSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -29,7 +31,7 @@ import { siteMeta, hero, links, about, mixing, displayFont } from "../src/data/s
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const SHELL = resolve(root, "template.html");
 const OUT = resolve(root, "index.html");
-const DIST = resolve(root, "dist");
+const NOT_FOUND = resolve(root, "404.html");
 
 /* ------------------------------------------------------------------ utils */
 
@@ -885,20 +887,11 @@ if (html.includes("Curzio") || html.includes("Kaputt") || html.includes("cargowo
 
 writeFileSync(OUT, html);
 
-/* --------------------------------------------------------------- dist copy */
-
-rmSync(DIST, { recursive: true, force: true });
-mkdirSync(DIST, { recursive: true });
-writeFileSync(resolve(DIST, "index.html"), html);
 // GitHub Pages has no history fallback: deep links (/about, /true-bug, …)
 // are served 404.html, which boots the same app and resolves the route.
-writeFileSync(resolve(DIST, "404.html"), html);
-cpSync(resolve(root, "public/images"), resolve(DIST, "images"), { recursive: true });
-if (existsSync(resolve(root, "public/CNAME"))) {
-  cpSync(resolve(root, "public/CNAME"), resolve(DIST, "CNAME"));
-}
+writeFileSync(NOT_FOUND, html);
 
 console.log(
-  `built index.html + dist/ — ${pages.length} pages ` +
+  `built index.html + 404.html — ${pages.length} pages ` +
     `(${stacked.length} stacked, ${musicProjects.length} releases, ${filmProjects.length} film)`
 );

@@ -116,8 +116,5 @@ typings/
 .yarn/install-state.gz
 .pnp.*
 
-# Vite
-dist
-
 # Backup
 backup/
