@@ -333,13 +333,17 @@ ${nl2br(mixing.closing)}<br />
 
 /*
  * Panels read as part of the page, not as a modal on top of it: no surface of
- * their own, and the content column starts on the same left margin as the
- * header's INDEX column (the header's .page-content carries 1rem of padding).
- * They are top-aligned rather than centred — centring a short panel in a
- * viewport-height page strands it in dead space with the header and footer far
- * away, which is what made them look detached on wide screens.
+ * their own, no border and no shadow.
+ *
+ * They are top-aligned but horizontally centred, which is the rest of the
+ * site's axis — the cover scroll on the home page is a centred column too.
+ * Only the vertical centring goes: in a viewport-height page it stranded a
+ * short panel in the middle of empty space, which is what made these look
+ * detached on wide screens. The measure stays per-page because the single-
+ * column pages (film, mixing) set their body text at full width and need a
+ * tighter column than the ones that split into a photo and a text column.
  */
-const panelCss = (id, measure = "max(50%, 36rem)") => `[id="${id}"].page {
+const panelCss = (id, measure = "68rem") => `[id="${id}"].page {
 	justify-content: flex-start;
 	min-height: var(--viewport-height);
 }
@@ -359,17 +363,11 @@ const panelCss = (id, measure = "max(50%, 36rem)") => `[id="${id}"].page {
 	padding: 0 1rem;
 }
 
-/*
- * Cap the measure without re-centring: the column stays on the left margin.
- * The header's four columns sit at fixed fractions of the width, not at fixed
- * rem (the template scales rem with the viewport), so the cap is a percentage:
- * at 50% the panel ends exactly where the header's third column begins, which
- * puts it on the header's grid instead of at some width of its own. The rem
- * floor keeps the measure readable on narrow desktop windows, where half the
- * viewport would be too tight a column.
- */
+/* Centred column, matching the centred cover scroll on the home page. */
 [id="${id}"] .page-content > * {
 	max-width: ${measure};
+	margin-left: auto;
+	margin-right: auto;
 }
 
 body.mobile [id="${id}"] .page-content > * {
@@ -550,13 +548,13 @@ const buildPages = () => {
       purl: "film",
       title: "Film",
       content: filmPanel(),
-      localCss: panelCss(pageId("film")),
+      localCss: panelCss(pageId("film"), "56rem"),
     }),
     makePage({
       purl: "mixing",
       title: "Mixing & Mastering",
       content: mixingPanel(),
-      localCss: panelCss(pageId("mixing")),
+      localCss: panelCss(pageId("mixing"), "48rem"),
     })
   );
 
@@ -566,7 +564,7 @@ const buildPages = () => {
 /* -------------------------------------------------------------- stylesheet */
 
 /** Styles for the plain-HTML pieces the Cargo template has no components for. */
-const EXTRA_CSS = `
+const extraCss = (pageBackground) => `
 
 /* ---------------- Yves Spiri: site additions ---------------- */
 
@@ -759,6 +757,17 @@ h1.hero-gl a {
 	pointer-events: none;
 	z-index: 1;
 }
+
+/*
+ * The footer is pinned with position: fixed, so page content scrolls underneath
+ * it. Without a background of its own the two sets of text overlapped — most
+ * visible near the end of the longer panels. It carries the page's own
+ * background colour, lifted from the template's body rule at build time so the
+ * two cannot drift apart.
+ */
+.page.pinned-bottom.fixed {
+	background-color: ${pageBackground};
+}
 `;
 
 /* ------------------------------------------------------------------- build */
@@ -782,8 +791,14 @@ const baseStylesheet = base.css.stylesheet;
 if (!baseStylesheet.includes(TEMPLATE_DISPLAY_FONT)) {
   throw new Error(`Expected ${TEMPLATE_DISPLAY_FONT} in the template stylesheet`);
 }
+/* The page background, so the pinned footer can be painted the same colour. */
+const backgroundMatch = /body\s*\{[^{}]*?background-color:\s*([^;]+);/.exec(baseStylesheet);
+if (!backgroundMatch) throw new Error("Could not find the body background in the template stylesheet");
+const pageBackground = backgroundMatch[1].trim();
+
 const stylesheet =
-  baseStylesheet.replaceAll(TEMPLATE_DISPLAY_FONT, `"${displayFont.family}"`) + EXTRA_CSS;
+  baseStylesheet.replaceAll(TEMPLATE_DISPLAY_FONT, `"${displayFont.family}"`) +
+  extraCss(pageBackground);
 const fonts = base.site.fonts
   .map((f) =>
     f.family === TEMPLATE_DISPLAY_FONT
