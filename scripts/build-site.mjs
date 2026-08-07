@@ -323,7 +323,9 @@ const mixingPanel = () => `${closeRow()}<h2 style="--font-scale: 0.7;">${mixing.
 ${nl2br(mixing.lead)}<br />
 <br />
 <hr /><br />
-<span class="circled">${esc(mixing.referenceLabel.toUpperCase())}</span>${mixing.reference}<br />
+<span class="circled">${esc(mixing.referenceLabel.toUpperCase())}</span>${mixing.references.join(
+  "<br />\n<br />\n",
+)}<br />
 <br />
 ${nl2br(mixing.closing)}<br />
 <br />

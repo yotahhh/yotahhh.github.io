@@ -51,9 +51,11 @@ export const mixing = {
   heading: "Mixing &#x26; Mastering",
   lead:
     "I offer professional mixing and mastering services for musicians, podcasts, film, and any media involving sound.",
-  referenceLabel: "Reference",
-  reference:
+  referenceLabel: "References",
+  references: [
     'Check out the <a href="https://crttrcollective.bandcamp.com/album/crttr-clb-009" target="_blank"><u>CRTTR-CLB</u></a> project, where I mastered all ten releases so far.',
+    'I mixed and mastered <a href="https://daneitte.bandcamp.com/album/artificial-landscapes" target="_blank"><u>Artificial Landscapes</u></a>, the twelve-track album by Dane Itte.',
+  ],
   closing:
     "Please contact me for a free initial master and to discuss individual pricing.",
   ctaLabel: "Get in touch ↗",
