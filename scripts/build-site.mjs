@@ -193,19 +193,36 @@ const mainTitle = () => `<h2>${esc(hero.eyebrow)}</h2><br />
 <br />
 <h2 style="--font-scale: 0.55;"><i>${hero.subtitle}</i></h2>`;
 
+/*
+ * The releases, in the same cover-beside-text row the panels use. The row is
+ * a way in, not the release itself: the players stay on the release pages,
+ * which is where the track list and the embed live.
+ */
 const mainScroll = () =>
   musicProjects
     .map((p) => {
       const label = labelOf(p);
-      return `<div class="scroll-item"><a href="${esc(p.id)}" rel="history">${img(
-        p.image,
-        p.title,
-        { lazy: true }
-      )}</a><span class="caption"><b>${esc(p.title)}</b>${
-        label ? ` — ${esc(label)}` : ""
-      }</span></div>`;
+      const rows = parseTracks(p.tracks);
+      const meta = [label, rows ? `${rows.length} track${rows.length > 1 ? "s" : ""}` : ""]
+        .filter(Boolean)
+        .join(" · ");
+
+      const body = [
+        `<h2 style="--font-scale: 0.5;"><a href="${esc(p.id)}" rel="history">${esc(
+          p.title
+        )}</a></h2>`,
+        meta ? `<br /><span class="caption">${esc(meta)}</span>` : "",
+        `<br />`,
+        `${nl2br(p.description)}<br />`,
+        `<br />`,
+        `<a class="button" href="${esc(p.id)}" rel="history">Listen →</a>`,
+      ]
+        .filter(Boolean)
+        .join("\n");
+
+      return coverRow(p.image, p.title, body, { href: p.id, lazy: true });
     })
-    .join("\n");
+    .join(ROW_SEPARATOR);
 
 const footer = () => `<column-set gutter="1" mobile-stack="false">
 <column-unit slot="0" span="9">${esc(siteMeta.name)} — Sound, Music, Engineering — ${esc(
@@ -215,6 +232,27 @@ const footer = () => `<column-set gutter="1" mobile-stack="false">
   siteMeta.place
 )}</span></div></column-unit>
 </column-set>`;
+
+/*
+ * The site's one repeating unit: a cover in a 5/7 split beside its text,
+ * stacking on mobile. Releases, film entries, the mixing references and the
+ * home scroll all render through this, so the views cannot drift apart.
+ *
+ * `href` makes the cover a link (the home scroll); `below` hangs a caption
+ * under it (the about photo's credit).
+ */
+const coverRow = (image, alt, body, { href = "", below = "", lazy = false } = {}) => {
+  const cover = img(image, alt, { cls: "cover", lazy });
+  return `<column-set gutter="2.5rem" mobile-gutter="2rem" mobile-stack="true">
+<column-unit slot="0" span="5">${
+    href ? `<a class="cover-link" href="${esc(href)}" rel="history">${cover}</a>` : cover
+  }${below}</column-unit>
+<column-unit slot="1" span="7">${body}</column-unit>
+</column-set>`;
+};
+
+/** Entries are separated by a rule, the same way up and down the site. */
+const ROW_SEPARATOR = "<br />\n<br />\n<hr /><br />\n";
 
 const releasePanel = (project, prev, next) => {
   const label = labelOf(project);
@@ -232,7 +270,7 @@ const releasePanel = (project, prev, next) => {
     : "";
 
   const body = [
-    `<h2 style="--font-scale: 0.6;">${esc(project.title)}</h2><br />`,
+    `<h2 style="--font-scale: 0.5;">${esc(project.title)}</h2><br />`,
     meta ? `<span class="caption">${esc(meta)}</span><br />` : "",
     `${nl2br(project.description)}<br />`,
     notes,
@@ -250,12 +288,7 @@ const releasePanel = (project, prev, next) => {
     .filter(Boolean)
     .join("\n");
 
-  return `${closeRow()}<column-set gutter="2.5rem" mobile-gutter="2rem" mobile-stack="true">
-<column-unit slot="0" span="5">${img(project.image, project.title, {
-    cls: "cover",
-  })}</column-unit>
-<column-unit slot="1" span="7">${body}</column-unit>
-</column-set><br />
+  return `${closeRow()}${coverRow(project.image, project.title, body)}<br />
 <hr /><column-set gutter="1" mobile-stack="false">
 <column-unit slot="0" span="6"><span class="caption"><a href="${esc(
     prev.id
@@ -266,30 +299,31 @@ const releasePanel = (project, prev, next) => {
 </column-set>`;
 };
 
-const aboutPanel = () => `${closeRow()}<column-set gutter="2.5rem" mobile-gutter="2rem" mobile-stack="true">
-<column-unit slot="0" span="4">${img(about.image, siteMeta.name, {
-  cls: "cover",
-})}<span class="caption photo-credit">Photo by <a href="${esc(
-  about.photoCredit.href
-)}" target="_blank">${esc(about.photoCredit.display)}</a></span></column-unit>
-<column-unit slot="1" span="8"><h2 style="--font-scale: 0.6;">${esc(about.heading)}</h2><br />
+const aboutPanel = () => {
+  const credit = `<span class="caption photo-credit">Photo by <a href="${esc(
+    about.photoCredit.href
+  )}" target="_blank">${esc(about.photoCredit.display)}</a></span>`;
+
+  const body = `<h2 style="--font-scale: 0.5;">${esc(about.heading)}</h2><br />
 ${about.paragraphs.map((p) => nl2br(p)).join("<br />\n<br />\n")}<br />
 <br />
 <hr /><br />
 <column-set gutter="1rem" mobile-stack="false">
 <column-unit slot="0" span="6"><span class="circled">EMAIL</span><a href="mailto:${esc(
-  siteMeta.email
-)}">${esc(siteMeta.email)}</a></column-unit>
+    siteMeta.email
+  )}">${esc(siteMeta.email)}</a></column-unit>
 <column-unit slot="1" span="6">${links
-  .map(
-    (l) =>
-      `<div class="contact-item"><span class="circled">${esc(
-        l.label.toUpperCase()
-      )}</span><a href="${esc(l.href)}" target="_blank">${esc(l.display)}</a></div>`
-  )
-  .join("")}</column-unit>
-</column-set></column-unit>
+    .map(
+      (l) =>
+        `<div class="contact-item"><span class="circled">${esc(
+          l.label.toUpperCase()
+        )}</span><a href="${esc(l.href)}" target="_blank">${esc(l.display)}</a></div>`
+    )
+    .join("")}</column-unit>
 </column-set>`;
+
+  return `${closeRow()}${coverRow(about.image, siteMeta.name, body, { below: credit })}`;
+};
 
 const filmPanel = () => {
   const items = filmProjects
@@ -306,14 +340,9 @@ ${nl2br(p.description)}`;
         )}" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen loading="lazy"></iframe></div><br />
 ${caption}`;
 
-      return `<column-set gutter="2.5rem" mobile-gutter="2rem" mobile-stack="true">
-<column-unit slot="0" span="5">${img(p.image, p.title, {
-        cls: "cover",
-      })}</column-unit>
-<column-unit slot="1" span="7">${caption}</column-unit>
-</column-set>`;
+      return coverRow(p.image, p.title, caption, { lazy: true });
     })
-    .join("<br />\n<br />\n<hr /><br />\n");
+    .join(ROW_SEPARATOR);
 
   return `${closeRow()}<h2 style="--font-scale: 0.7;">Film</h2><br />\n<br />\n${items}`;
 };
@@ -332,13 +361,7 @@ const mixingReference = (r) => {
     .filter(Boolean)
     .join("\n");
 
-  return `<column-set gutter="2.5rem" mobile-gutter="2rem" mobile-stack="true">
-<column-unit slot="0" span="5">${img(r.image, r.title, {
-    cls: "cover",
-    lazy: true,
-  })}</column-unit>
-<column-unit slot="1" span="7">${caption}</column-unit>
-</column-set>`;
+  return coverRow(r.image, r.title, caption, { lazy: true });
 };
 
 const mixingPanel = () => `${closeRow()}<h2 style="--font-scale: 0.7;">${mixing.heading}</h2><br />
@@ -347,7 +370,7 @@ ${nl2br(mixing.lead)}<br />
 <br />
 <hr /><br />
 <span class="circled">${esc(mixing.referenceLabel.toUpperCase())}</span><br />
-${mixing.references.map(mixingReference).join("<br />\n<br />\n<hr /><br />\n")}<br />
+${mixing.references.map(mixingReference).join(ROW_SEPARATOR)}<br />
 <br />
 <hr /><br />
 ${nl2br(mixing.closing)}<br />
@@ -368,7 +391,24 @@ ${nl2br(mixing.closing)}<br />
  * column pages (film, mixing) set their body text at full width and need a
  * tighter column than the ones that split into a photo and a text column.
  */
-const panelCss = (id, measure = "68rem") => `[id="${id}"].page {
+/*
+ * The one measure every view shares. The cover-beside-text rows want the same
+ * column wherever they appear, so the home scroll and the panels both take it
+ * from here rather than each carrying their own number.
+ */
+const MEASURE = "56rem";
+
+const measureCss = (id, measure = MEASURE) => `[id="${id}"] .page-content > * {
+	max-width: ${measure};
+	margin-left: auto;
+	margin-right: auto;
+}
+
+body.mobile [id="${id}"] .page-content > * {
+	max-width: 100%;
+}`;
+
+const panelCss = (id, measure = MEASURE) => `[id="${id}"].page {
 	justify-content: flex-start;
 	min-height: var(--viewport-height);
 }
@@ -388,16 +428,8 @@ const panelCss = (id, measure = "68rem") => `[id="${id}"].page {
 	padding: 0 1rem;
 }
 
-/* Centred column, matching the centred cover scroll on the home page. */
-[id="${id}"] .page-content > * {
-	max-width: ${measure};
-	margin-left: auto;
-	margin-right: auto;
-}
-
-body.mobile [id="${id}"] .page-content > * {
-	max-width: 100%;
-}
+/* Centred column, matching the cover scroll on the home page. */
+${measureCss(id, measure)}
 
 body.mobile [id="${id}"] .page-layout {
 	padding-top: 3rem;
@@ -531,9 +563,12 @@ const buildPages = () => {
 }
 
 [id="${pageId("main-scroll")}"] .page-content {
-	text-align: center;
-	padding: 1rem;
-}`,
+	text-align: left;
+	padding: 0 1rem;
+}
+
+/* Same column as the panels — see MEASURE. */
+${measureCss(pageId("main-scroll"))}`,
     }),
     makePage({
       purl: "footer",
@@ -573,13 +608,13 @@ const buildPages = () => {
       purl: "film",
       title: "Film",
       content: filmPanel(),
-      localCss: panelCss(pageId("film"), "56rem"),
+      localCss: panelCss(pageId("film")),
     }),
     makePage({
       purl: "mixing",
       title: "Mixing & Mastering",
       content: mixingPanel(),
-      localCss: panelCss(pageId("mixing"), "56rem"),
+      localCss: panelCss(pageId("mixing")),
     })
   );
 
@@ -605,37 +640,23 @@ bodycopy img {
 	height: auto;
 }
 
-/* Release covers in the main scroll */
-/* One cover per row, centred column — the template's single-scroll layout. */
-.scroll-item {
-	display: block;
-	width: 100%;
-	max-width: 40rem;
-	margin: 0 auto 6rem auto;
-	text-align: left;
-}
-
-.scroll-item:last-child {
-	margin-bottom: 0;
-}
-
+/* Covers that link somewhere — the releases in the home scroll. */
 /* width/height attributes give the intrinsic ratio; height:auto keeps it. */
-.scroll-item img {
-	width: 100%;
-	height: auto;
+.cover-link {
+	display: block;
+}
+
+.cover-link img {
 	transition: opacity 300ms ease-in-out;
 }
 
-.scroll-item a:hover img {
+.cover-link:hover img {
 	opacity: 0.75;
 }
 
-.scroll-item .caption {
-	margin-top: 1em;
-}
-
-body.mobile .scroll-item {
-	max-width: 100%;
+/* Release titles link into their page; they should not look like body links. */
+h2 a {
+	text-decoration: none;
 }
 
 /* Panels (release / about / film / mixing) */
@@ -923,7 +944,10 @@ let html = shell
     (_m, open, close) => open + state.css.stylesheet + close
   );
 
-if (!html.includes(".scroll-item")) throw new Error("Site stylesheet was not replaced");
+// The additions block only exists in our stylesheet, so its banner is the
+// sentinel that the template's own <style> really was overwritten.
+if (!html.includes("Yves Spiri: site additions"))
+  throw new Error("Site stylesheet was not replaced");
 
 /*
  * Scrolling to the cover scroll, from the hero title (#main-scroll) and from the

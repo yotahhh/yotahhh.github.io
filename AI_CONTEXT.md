@@ -98,6 +98,15 @@ page) and scrolls to the cover scroll itself.
   extends with an "additions" block (`EXTRA_CSS` in `scripts/build-site.mjs`) for the
   pieces the template has no components for: cover scroll, track lists, panels,
   embeds, buttons.
+- **One row, one measure.** Every view is built from `coverRow()` — a cover in a
+  5/7 `column-set` beside its text, stacking on mobile — separated by
+  `ROW_SEPARATOR`. The home scroll, the release panels, the film entries, the
+  mixing references and the about photo all go through it, and all sit in the
+  same `MEASURE` (56rem) column. Change either constant and every view moves
+  together; that is the point. Entry headings are `--font-scale: 0.5`, page
+  headings `0.7`.
+- The home scroll's rows are a way *into* a release, not the release itself: the
+  track list and the audio embed stay on the release page.
 - Typography: Gaisyr (`h1`, `h2`), Repro Variable (body), Diatype Variable (track
   lists) — all Cargo fonts embedded in the shell, no external font request. The
   face for the big name is `displayFont` in `src/data/site.js` (the template's own
@@ -107,13 +116,18 @@ page) and scrolls to the cover scroll itself.
   link at load time.
 - The name's character comes from `scripts/hero-effect.js` rather than the
   typeface: the h1's glyphs are drawn to a 2D canvas in that same font, uploaded
-  as a texture, and sampled through a drifting flow field plus a soft lens that
-  follows the pointer, with a little chromatic split. The same distortion also
-  ramps up as the title scrolls off the top — 0 at rest, 7× once it has cleared
-  the viewport. Tuning knobs are all in `frame()`: `uAmp` (ambient warp, ~0.4% of
-  the width), the lens multiplier, `uSplit`, and the `exit` curve (`1.6` exponent,
-  `* 6` amplitude and `* 4` split factors). It only takes over once a GL context exists, honours
-  `prefers-reduced-motion`, pauses off-screen, and caps device pixel ratio at 2.
+  as a texture, and sampled through a drifting flow field, a lens that wanders on
+  its own, and a second lens that follows the pointer, with a little chromatic
+  split. The first two need no cursor: the name is never still. The same
+  distortion also ramps up as the title scrolls off the top — 0 at rest, 7× once
+  it has cleared the viewport. Tuning knobs are in the shader and in `frame()`:
+  `uAmp` (ambient warp, ~0.4% of the width), the flow field's `uTime` factors
+  (~0.02, i.e. one drift every few minutes), the self-driven lens (`0.11`/`0.083`
+  Lissajous rates, `1.5` amplitude, `9.0` falloff — broader and weaker than the
+  pointer's `2.6`/`16.0`), `uSplit`, and the `exit` curve (`1.6` exponent, `* 6`
+  amplitude and `* 4` split factors). It only takes over once a GL context exists,
+  pauses off-screen, caps device pixel ratio at 2, and freezes entirely under
+  `prefers-reduced-motion` — that is the one thing that stops the drift.
 - Sizes are in `rem`, and Cargo scales the root font size per viewport — prefer `rem`
   over `px` so mobile scaling keeps working.
 - The stylesheet exists twice in the output (in the state JSON *and* as a `<style>`

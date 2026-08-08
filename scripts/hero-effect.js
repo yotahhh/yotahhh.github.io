@@ -7,7 +7,8 @@
  * cover scroll) and is only made transparent once a GL context actually exists,
  * so without WebGL the page looks exactly as it does now. The glyphs are drawn
  * to a 2D canvas in the page's own font, uploaded as a texture, and sampled
- * through a slow flow field plus a soft lens under the cursor.
+ * through a slow flow field, a lens that wanders on its own, and a second lens
+ * under the cursor. The first two run unattended, so the name is never still.
  *
  * Cargo re-renders pages client-side, so the effect re-mounts whenever a new h1
  * appears, and stops itself when its own h1 leaves the document.
@@ -36,6 +37,7 @@
 		"uniform float uAmp;",
 		"uniform float uSplit;",
 		"uniform float uPointer;",
+		"uniform float uDrift;",
 		"uniform float uAlpha;",
 
 		"float hash(vec2 p) {",
@@ -55,8 +57,8 @@
 		"	vec2 p = vec2(uv.x * uAspect, uv.y);",
 
 		// Slow drifting flow field — the ambient shimmer.
-		"	float nx = noise(p * 2.6 + vec2(uTime * 0.05, uTime * 0.035));",
-		"	float ny = noise(p * 2.6 + vec2(uTime * -0.045, uTime * 0.03) + 37.0);",
+		"	float nx = noise(p * 2.6 + vec2(uTime * 0.022, uTime * 0.016));",
+		"	float ny = noise(p * 2.6 + vec2(uTime * -0.020, uTime * 0.013) + 37.0);",
 		"	vec2 flow = (vec2(nx, ny) - 0.5) * uAmp;",
 
 		// Soft lens that follows the pointer.
@@ -64,8 +66,19 @@
 		"	float lens = exp(-dot(d, d) * 16.0) * uPointer;",
 		"	flow += normalize(d + vec2(1e-5)) * lens * uAmp * 2.6;",
 
+		/*
+		 * A second lens that wanders on its own, so the name keeps breathing
+		 * with no cursor on the page. Broader and weaker than the pointer's,
+		 * on a Lissajous path of roughly one and a half minutes, which is slow
+		 * enough that you notice it has moved rather than watching it move.
+		 */
+		"	vec2 ac = vec2(0.5 + 0.30 * sin(uTime * 0.11), 0.5 + 0.22 * cos(uTime * 0.083));",
+		"	vec2 ad = vec2((uv.x - ac.x) * uAspect, uv.y - ac.y);",
+		"	float drift = exp(-dot(ad, ad) * 9.0) * uDrift;",
+		"	flow += normalize(ad + vec2(1e-5)) * drift * uAmp * 1.5;",
+
 		"	vec2 w = uv + flow;",
-		"	float split = uSplit * (0.35 + lens * 1.4);",
+		"	float split = uSplit * (0.35 + lens * 1.4 + drift * 0.9);",
 		"	float ar = texture2D(uTex, w + vec2(split, 0.0)).a;",
 		"	float ag = texture2D(uTex, w).a;",
 		"	float ab = texture2D(uTex, w - vec2(split, 0.0)).a;",
@@ -163,11 +176,20 @@
 		gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
 
 		var u = {};
-		["uTex", "uColor", "uMouse", "uTime", "uAspect", "uAmp", "uSplit", "uPointer", "uAlpha"].forEach(
-			function (name) {
-				u[name] = gl.getUniformLocation(pr, name);
-			}
-		);
+		[
+			"uTex",
+			"uColor",
+			"uMouse",
+			"uTime",
+			"uAspect",
+			"uAmp",
+			"uSplit",
+			"uPointer",
+			"uDrift",
+			"uAlpha"
+		].forEach(function (name) {
+			u[name] = gl.getUniformLocation(pr, name);
+		});
 
 		var tex = gl.createTexture();
 		gl.bindTexture(gl.TEXTURE_2D, tex);
@@ -249,6 +271,9 @@
 			gl.uniform1f(u.uAmp, (reduce ? 0.0016 : 0.0042) * (1 + exit * 6));
 			gl.uniform1f(u.uSplit, 0.0014 * (1 + exit * 4));
 			gl.uniform1f(u.uPointer, reduce ? 0 : pointer);
+			// Always on, cursor or not — the only thing that stills it is
+			// prefers-reduced-motion.
+			gl.uniform1f(u.uDrift, reduce ? 0 : 1);
 			gl.uniform2f(u.uMouse, mouse[0], mouse[1]);
 			gl.activeTexture(gl.TEXTURE0);
 			gl.bindTexture(gl.TEXTURE_2D, tex);
