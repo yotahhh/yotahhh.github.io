@@ -52,9 +52,23 @@ export const mixing = {
   lead:
     "I offer professional mixing and mastering services for musicians, podcasts, film, and any media involving sound.",
   referenceLabel: "References",
+  // Each entry renders as a cover beside its text, like the film page — the
+  // build reads the cover's intrinsic size, so the image must exist in images/.
   references: [
-    'Check out the <a href="https://crttrcollective.bandcamp.com/album/crttr-clb-009" target="_blank"><u>CRTTR-CLB</u></a> project, where I mastered all ten releases so far.',
-    'I mixed and mastered <a href="https://daneitte.bandcamp.com/album/artificial-landscapes" target="_blank"><u>Artificial Landscapes</u></a>, the twelve-track album by Dane Itte.',
+    {
+      title: "CRTTR-CLB",
+      artist: "CRTTR",
+      image: "/images/crttr_clb_011.jpg",
+      href: "https://crttrcollective.bandcamp.com/album/crttr-clb-011",
+      text: "I mastered all ten releases in this club series so far. Pictured: CRTTR-CLB-011.",
+    },
+    {
+      title: "Artificial Landscapes",
+      artist: "Dane Itte",
+      image: "/images/artificial_landscapes.jpg",
+      href: "https://daneitte.bandcamp.com/album/artificial-landscapes",
+      text: "I mixed and mastered this twelve-track album, released in May 2026.",
+    },
   ],
   closing:
     "Please contact me for a free initial master and to discuss individual pricing.",

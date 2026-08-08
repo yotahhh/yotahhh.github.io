@@ -318,15 +318,38 @@ ${caption}`;
   return `${closeRow()}<h2 style="--font-scale: 0.7;">Film</h2><br />\n<br />\n${items}`;
 };
 
+// A reference reads like a film entry: cover beside its text, stacking on
+// mobile, so the page has something to look at rather than a list of links.
+const mixingReference = (r) => {
+  const caption = [
+    `<h2 style="--font-scale: 0.5;">${esc(r.title)}</h2>`,
+    r.artist ? `<br /><span class="caption">${esc(r.artist)}</span>` : "",
+    `<br />`,
+    `${nl2br(r.text)}<br />`,
+    `<br />`,
+    `<a class="button" href="${esc(r.href)}" target="_blank">Listen on Bandcamp ↗</a>`,
+  ]
+    .filter(Boolean)
+    .join("\n");
+
+  return `<column-set gutter="2.5rem" mobile-gutter="2rem" mobile-stack="true">
+<column-unit slot="0" span="5">${img(r.image, r.title, {
+    cls: "cover",
+    lazy: true,
+  })}</column-unit>
+<column-unit slot="1" span="7">${caption}</column-unit>
+</column-set>`;
+};
+
 const mixingPanel = () => `${closeRow()}<h2 style="--font-scale: 0.7;">${mixing.heading}</h2><br />
 <br />
 ${nl2br(mixing.lead)}<br />
 <br />
 <hr /><br />
-<span class="circled">${esc(mixing.referenceLabel.toUpperCase())}</span>${mixing.references.join(
-  "<br />\n<br />\n",
-)}<br />
+<span class="circled">${esc(mixing.referenceLabel.toUpperCase())}</span><br />
+${mixing.references.map(mixingReference).join("<br />\n<br />\n<hr /><br />\n")}<br />
 <br />
+<hr /><br />
 ${nl2br(mixing.closing)}<br />
 <br />
 <a class="button" href="mailto:${esc(siteMeta.email)}">${esc(mixing.ctaLabel)}</a>`;
@@ -556,7 +579,7 @@ const buildPages = () => {
       purl: "mixing",
       title: "Mixing & Mastering",
       content: mixingPanel(),
-      localCss: panelCss(pageId("mixing"), "48rem"),
+      localCss: panelCss(pageId("mixing"), "56rem"),
     })
   );
 
