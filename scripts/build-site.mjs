@@ -3,7 +3,7 @@
  *
  * Content source of truth:
  *   src/data/projects.js  (music + film entries)
- *   src/data/site.js      (header, hero, about, mixing, footer)
+ *   src/data/site.js      (header, hero, about, mixing)
  *
  * Shell source: template.html (a Cargo "Graphic F992" export). The Cargo
  * frontend renders everything client-side from window.__PRELOADED_STATE__,
@@ -215,7 +215,9 @@ const mainScroll = () =>
         `<br />`,
         `${nl2br(p.description)}<br />`,
         `<br />`,
-        `<a class="button" href="${esc(p.id)}" rel="history">Listen →</a>`,
+        embed(p),
+        `<br />`,
+        `<a class="button" href="${esc(p.id)}" rel="history">Full release →</a>`,
       ]
         .filter(Boolean)
         .join("\n");
@@ -223,15 +225,6 @@ const mainScroll = () =>
       return coverRow(p.image, p.title, body, { href: p.id, lazy: true });
     })
     .join(ROW_SEPARATOR);
-
-const footer = () => `<column-set gutter="1" mobile-stack="false">
-<column-unit slot="0" span="9">${esc(siteMeta.name)} — Sound, Music, Engineering — ${esc(
-  siteMeta.year
-)}</column-unit>
-<column-unit slot="1" span="3"><div style="text-align: right"><span class="circled">${esc(
-  siteMeta.place
-)}</span></div></column-unit>
-</column-set>`;
 
 /*
  * The site's one repeating unit: a cover in a 5/7 split beside its text,
@@ -356,7 +349,9 @@ const mixingReference = (r) => {
     `<br />`,
     `${nl2br(r.text)}<br />`,
     `<br />`,
-    `<a class="button" href="${esc(r.href)}" target="_blank">Listen on Bandcamp ↗</a>`,
+    embed(r),
+    `<br />`,
+    `<a class="button" href="${esc(r.href)}" target="_blank">Open on Bandcamp ↗</a>`,
   ]
     .filter(Boolean)
     .join("\n");
@@ -398,6 +393,34 @@ ${nl2br(mixing.closing)}<br />
  */
 const MEASURE = "56rem";
 
+/*
+ * ...and the vertical one. Every page opens and closes on the same air, so the
+ * home page, the panels and the title all start at the same line rather than
+ * each picking a number. Mobile gets its own pair because the viewport is a
+ * third of the height, not because the pages differ.
+ */
+const PAD = { top: "7rem", bottom: "8rem", topMobile: "3rem", bottomMobile: "5rem" };
+
+/*
+ * --viewport-height is a pixel value Cargo recomputes. On mobile it changes as
+ * the URL bar slides in and out, so a page locked to it grows and shrinks
+ * mid-scroll and the whole document appears to snap. Nothing on a phone needs a
+ * viewport-tall page, so every page is content-height there.
+ */
+const pagePadCss = (id) => `[id="${id}"] .page-layout {
+	padding-top: ${PAD.top};
+	padding-bottom: ${PAD.bottom};
+}
+
+body.mobile [id="${id}"].page {
+	min-height: auto;
+}
+
+body.mobile [id="${id}"] .page-layout {
+	padding-top: ${PAD.topMobile};
+	padding-bottom: ${PAD.bottomMobile};
+}`;
+
 const measureCss = (id, measure = MEASURE) => `[id="${id}"] .page-content > * {
 	max-width: ${measure};
 	margin-left: auto;
@@ -416,11 +439,11 @@ const panelCss = (id, measure = MEASURE) => `[id="${id}"].page {
 [id="${id}"] .page-layout {
 	max-width: 100%;
 	align-items: flex-start;
-	padding-top: 7rem;
-	padding-bottom: 8rem;
 	padding-left: 0;
 	padding-right: 0;
 }
+
+${pagePadCss(id)}
 
 [id="${id}"] .page-content {
 	text-align: left;
@@ -429,12 +452,7 @@ const panelCss = (id, measure = MEASURE) => `[id="${id}"].page {
 }
 
 /* Centred column, matching the cover scroll on the home page. */
-${measureCss(id, measure)}
-
-body.mobile [id="${id}"] .page-layout {
-	padding-top: 3rem;
-	padding-bottom: 5rem;
-}`;
+${measureCss(id, measure)}`;
 
 const makePage = ({
   purl,
@@ -513,21 +531,6 @@ const buildPages = () => {
 }`,
     }),
     makePage({
-      purl: "clock",
-      title: "Clock",
-      content: `<digital-clock pad-hour="true" twentyfour-hour="true" value="{hour}:{minute}:{second}"></digital-clock>`,
-      pin: true,
-      pinOptions: {
-        screen_visibility: "desktop",
-        position: "top",
-        fixed: true,
-        adjust: false,
-      },
-      localCss: `[id="${pageId("clock")}"] .page-content {
-	text-align: right;
-}`,
-    }),
-    makePage({
       purl: "main-title",
       title: "Main title",
       content: mainTitle(),
@@ -543,6 +546,22 @@ const buildPages = () => {
 
 [id="${pageId("main-title")}"] .page-layout {
 	align-items: center;
+}
+
+${pagePadCss(pageId("main-title"))}
+
+/*
+ * On a phone the title is not a viewport-tall opening shot — it is the first
+ * thing on the page, sitting on the same air as everything else. Left as a
+ * centred full-height block it opened on a screen of nothing.
+ */
+body.mobile [id="${pageId("main-title")}"].page {
+	justify-content: flex-start;
+}
+
+body.mobile [id="${pageId("main-title")}"] .page-layout {
+	margin-top: 0;
+	margin-bottom: 0;
 }`,
     }),
     makePage({
@@ -553,14 +572,14 @@ const buildPages = () => {
       localCss: `[id="${pageId("main-scroll")}"] .page-layout {
 	max-width: 100%;
 	align-items: flex-start;
-	padding-top: 10rem;
-	padding-bottom: 10rem;
 }
 
 [id="${pageId("main-scroll")}"].page {
 	justify-content: flex-start;
 	min-height: auto;
 }
+
+${pagePadCss(pageId("main-scroll"))}
 
 [id="${pageId("main-scroll")}"] .page-content {
 	text-align: left;
@@ -569,18 +588,6 @@ const buildPages = () => {
 
 /* Same column as the panels — see MEASURE. */
 ${measureCss(pageId("main-scroll"))}`,
-    }),
-    makePage({
-      purl: "footer",
-      title: "Footer",
-      content: footer(),
-      pin: true,
-      pinOptions: {
-        screen_visibility: "all",
-        position: "bottom",
-        fixed: true,
-        adjust: false,
-      },
     })
   );
 
@@ -624,7 +631,7 @@ ${measureCss(pageId("main-scroll"))}`,
 /* -------------------------------------------------------------- stylesheet */
 
 /** Styles for the plain-HTML pieces the Cargo template has no components for. */
-const extraCss = (pageBackground) => `
+const extraCss = () => `
 
 /* ---------------- Yves Spiri: site additions ---------------- */
 
@@ -804,16 +811,6 @@ h1.hero-gl a {
 	z-index: 1;
 }
 
-/*
- * The footer is pinned with position: fixed, so page content scrolls underneath
- * it. Without a background of its own the two sets of text overlapped — most
- * visible near the end of the longer panels. It carries the page's own
- * background colour, lifted from the template's body rule at build time so the
- * two cannot drift apart.
- */
-.page.pinned-bottom.fixed {
-	background-color: ${pageBackground};
-}
 `;
 
 /* ------------------------------------------------------------------- build */
@@ -837,14 +834,8 @@ const baseStylesheet = base.css.stylesheet;
 if (!baseStylesheet.includes(TEMPLATE_DISPLAY_FONT)) {
   throw new Error(`Expected ${TEMPLATE_DISPLAY_FONT} in the template stylesheet`);
 }
-/* The page background, so the pinned footer can be painted the same colour. */
-const backgroundMatch = /body\s*\{[^{}]*?background-color:\s*([^;]+);/.exec(baseStylesheet);
-if (!backgroundMatch) throw new Error("Could not find the body background in the template stylesheet");
-const pageBackground = backgroundMatch[1].trim();
-
 const stylesheet =
-  baseStylesheet.replaceAll(TEMPLATE_DISPLAY_FONT, `"${displayFont.family}"`) +
-  extraCss(pageBackground);
+  baseStylesheet.replaceAll(TEMPLATE_DISPLAY_FONT, `"${displayFont.family}"`) + extraCss();
 const fonts = base.site.fonts
   .map((f) =>
     f.family === TEMPLATE_DISPLAY_FONT
@@ -979,10 +970,26 @@ const BOOT_SCRIPT = `<script>(function(){
 		var target = document.getElementById(id);
 		if (!target) return false;
 		var top = target.getBoundingClientRect().top + window.scrollY;
+
+		/*
+		 * The deferred correction below used to fire unconditionally, so if you
+		 * started scrolling within 700ms of arriving it hauled you back to the
+		 * anchor — which is what read as the page snapping on a phone, where a
+		 * touch scroll begins almost immediately. Any input from the reader now
+		 * wins.
+		 */
+		var cancelled = false;
+		function cancel() { cancelled = true; }
+		var opts = { passive: true, once: true };
+		window.addEventListener("wheel", cancel, opts);
+		window.addEventListener("touchstart", cancel, opts);
+		window.addEventListener("touchmove", cancel, opts);
+		window.addEventListener("keydown", cancel, { once: true });
+
 		window.scrollTo({ top: top, behavior: "smooth" });
 		// Not every browser honours smooth here; land it either way.
 		setTimeout(function() {
-			if (Math.abs(window.scrollY - top) > 4) window.scrollTo(0, top);
+			if (!cancelled && Math.abs(window.scrollY - top) > 4) window.scrollTo(0, top);
 		}, 700);
 		return true;
 	}

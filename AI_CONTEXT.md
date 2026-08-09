@@ -55,7 +55,7 @@ page) and scrolls to the cover scroll itself.
     into the built page. Raw WebGL, no dependencies.
 - **`src/data/`**: **content lives here.**
   - `projects.js`: `musicProjects` and `filmProjects` arrays.
-  - `site.js`: header/nav, hero, about, mixing & mastering, footer.
+  - `site.js`: header/nav, hero, about, mixing & mastering.
 - **`public/images/`**: cover art and photos, copied to `dist/images/`.
 - **`public/CNAME`**: custom domain, copied to `dist/`.
 - **`dist/`**: build output (git-ignored).
@@ -105,8 +105,17 @@ page) and scrolls to the cover scroll itself.
   same `MEASURE` (56rem) column. Change either constant and every view moves
   together; that is the point. Entry headings are `--font-scale: 0.5`, page
   headings `0.7`.
-- The home scroll's rows are a way *into* a release, not the release itself: the
-  track list and the audio embed stay on the release page.
+- Rows carry their own player. The home scroll and the mixing references embed
+  the same Bandcamp/SoundCloud iframe the release pages use, so you can listen
+  without leaving the page; the release page is still where the track list and
+  the credits live.
+- **One vertical rhythm too.** `PAD` (7/8rem desktop, 3/5rem mobile) is the page
+  padding for every view, applied through `pagePadCss()`. Nothing picks its own
+  number.
+- `pagePadCss()` also drops `min-height` to `auto` on mobile. Pages locked to
+  `var(--viewport-height)` grow and shrink as a phone's URL bar slides in and
+  out, which made the document appear to snap while scrolling.
+- There is no footer and no clock: both were pinned pages and both are gone.
 - Typography: Gaisyr (`h1`, `h2`), Repro Variable (body), Diatype Variable (track
   lists) — all Cargo fonts embedded in the shell, no external font request. The
   face for the big name is `displayFont` in `src/data/site.js` (the template's own

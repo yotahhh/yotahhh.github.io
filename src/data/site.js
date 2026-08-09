@@ -8,8 +8,6 @@ export const siteMeta = {
   description:
     "Yves Spiri is a Zürich-based artist and MA Sound Design student at ZHdK, working across music, film, and live performance. Also releasing as Yotah.",
   email: "hi@yvesspiri.net",
-  place: "ZÜRICH/CH",
-  year: "2026",
 };
 
 export const hero = {
@@ -61,6 +59,8 @@ export const mixing = {
       image: "/images/crttr_clb_011.jpg",
       href: "https://crttrcollective.bandcamp.com/album/crttr-clb-011",
       text: "I mastered all ten releases in this club series so far. Pictured: CRTTR-CLB-011.",
+      embedUrl:
+        "https://bandcamp.com/EmbeddedPlayer/album=1297599169/size=small/bgcol=ffffff/linkcol=0687f5/transparent=true/",
     },
     {
       title: "Artificial Landscapes",
@@ -68,6 +68,8 @@ export const mixing = {
       image: "/images/artificial_landscapes.jpg",
       href: "https://daneitte.bandcamp.com/album/artificial-landscapes",
       text: "I mixed and mastered this twelve-track album, released in May 2026.",
+      embedUrl:
+        "https://bandcamp.com/EmbeddedPlayer/album=615968157/size=small/bgcol=ffffff/linkcol=0687f5/transparent=true/",
     },
   ],
   closing:
