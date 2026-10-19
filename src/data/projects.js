@@ -40,6 +40,16 @@ export const musicProjects = [
     embedUrl: "https://bandcamp.com/EmbeddedPlayer/album=1857918484/size=small/bgcol=ffffff/linkcol=0687f5/transparent=true/"
   },
   {
+    id: "closed-for-good",
+    title: "closed for good",
+    description: "Featured on \"I Wanna Be A Superstar Vol. 3\" by CRTTR, a collective based in Bern, Switzerland: a mutation with many faces, unfolding through sound, image, and genre-fluid collaborative play.",
+    credits: "Released by CRTTR",
+    image: "/images/closed_for_good.jpg",
+    tracks: "1. closed for good 03:03",
+    bandcampLink: "https://crttrcollective.bandcamp.com/track/closed-for-good",
+    embedUrl: "https://bandcamp.com/EmbeddedPlayer/track=2658368179/size=small/bgcol=ffffff/linkcol=0687f5/transparent=true/"
+  },
+  {
     id: "no-time-to-waste",
     title: "No Time To Waste",
     description: "Featured on \"I Wanna Be A Superstar Vol. 1\" by CRTTR, a collective based in Bern, Switzerland: a mutation with many faces, unfolding through sound, image, and genre-fluid collaborative play.",
