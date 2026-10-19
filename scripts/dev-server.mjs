@@ -1,9 +1,8 @@
 /*
  * dev-server.mjs — static preview server for the generated site.
  *
- * The Cargo frontend resolves pages against location.pathname, so the site
- * must be served from the root of an origin: unknown paths fall back to
- * index.html (the same trick 404.html plays on GitHub Pages).
+ * Behaves like GitHub Pages: /dir/ serves /dir/index.html, /dir redirects
+ * to /dir/, and anything else that does not exist gets 404.html.
  *
  *   node scripts/dev-server.mjs [dir] [--port 5173]
  *
@@ -27,6 +26,7 @@ const TYPES = {
   ".html": "text/html; charset=utf-8",
   ".css": "text/css; charset=utf-8",
   ".js": "text/javascript; charset=utf-8",
+  ".txt": "text/plain; charset=utf-8",
   ".mjs": "text/javascript; charset=utf-8",
   ".json": "application/json; charset=utf-8",
   ".jpg": "image/jpeg",
@@ -54,9 +54,20 @@ const server = createServer(async (req, res) => {
   const pathname = decodeURIComponent(new URL(req.url, "http://localhost").pathname);
   const safe = normalize(pathname).replace(/^(\.\.[/\\])+/, "");
 
-  let file = safe === "/" ? null : await tryFile(join(base, safe));
-  // Client-side routes (/about, /true-bug, …) boot from index.html.
-  if (!file) file = await tryFile(join(base, "index.html"));
+  let file = await tryFile(join(base, safe));
+  if (!file && (await tryFile(join(base, safe, "index.html")))) {
+    if (!safe.endsWith("/")) {
+      res.writeHead(301, { location: pathname + "/" });
+      res.end();
+      return;
+    }
+    file = join(base, safe, "index.html");
+  }
+  let status = 200;
+  if (!file) {
+    file = await tryFile(join(base, "404.html"));
+    status = 404;
+  }
 
   if (!file) {
     res.writeHead(404, { "content-type": "text/plain" });
@@ -65,7 +76,7 @@ const server = createServer(async (req, res) => {
   }
 
   const body = await readFile(file);
-  res.writeHead(200, {
+  res.writeHead(status, {
     "content-type": TYPES[extname(file)] || "application/octet-stream",
     "cache-control": "no-store",
   });

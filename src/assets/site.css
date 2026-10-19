@@ -1,0 +1,463 @@
+/* ============================================================
+   yvesspiri.net · direction H2 "backroom, broken"
+   Shared stylesheet. The first part is the reference implementation
+   (_REDESIGN/yvesspiri-h2-reference.html) and its values are the source
+   of truth; the inner page additions sit at the end.
+   ============================================================ */
+
+:root {
+  /* ground + surfaces */
+  --ground: #A9AB8C;          /* damp green-grey wall */
+  --window: #CFC9AE;          /* window body */
+  --paper: #DCD6C1;           /* inset text panel, file icons */
+  --button: #D5CFB6;          /* error dialog + bevel buttons */
+  --row-hover: #C3BDA2;
+  --row-current: #B4B995;
+
+  /* ink (text is ALWAYS dark on light) */
+  --ink: #1E211C;
+  --ink-2: #33352A;
+  --ink-3: #45463A;
+  --ink-4: #4E4F42;
+
+  /* accents */
+  --rust: #7A3B26;
+  --rust-btn: #8E4E34;
+  --warn: #B88A3A;
+  --led-dead: #6E6C55;
+  --led-alarm: #9A2E1C;
+
+  /* folder icon tints */
+  --f-about: #7C6838;
+  --f-music: #55606C;
+  --f-film: #7A3B26;
+  --f-live: #6E6F62;
+  --f-sound: #62786B;
+
+  /* bevel */
+  --bevel-dark: #9E9881;
+  --bevel-light: #EEEADB;
+
+  --shadow: 6px 6px 0 rgba(30, 33, 28, 0.4);
+
+  --font-sans: "Schibsted Grotesk", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body { margin: 0; }
+
+body {
+  min-height: 100vh;
+  background-color: var(--ground);
+  /* faint vertical wallpaper stripes */
+  background-image: repeating-linear-gradient(90deg, rgba(40, 42, 25, 0.06) 0 2px, transparent 2px 22px);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 1.55;
+  position: relative;
+  overflow-x: hidden;
+}
+
+a { color: var(--ink); text-decoration: none; }
+a:focus-visible, button:focus-visible { outline: 2px dashed var(--ink); outline-offset: 2px; }
+
+/* ---------- atmosphere overlays (fixed, non-interactive) ---------- */
+
+/* CRT scanlines */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 100;
+  background: repeating-linear-gradient(to bottom, rgba(20, 22, 15, 0.09) 0 1px, transparent 1px 3px);
+}
+
+/* fluorescent hum: a pale wash that drops out irregularly */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 99;
+  background: rgba(255, 248, 190, 0.10);
+  animation: hum 5s infinite steps(1);
+}
+@keyframes hum {
+  0% { opacity: 1; }
+  41% { opacity: 0; }
+  42% { opacity: 1; }
+  44% { opacity: 0.3; }
+  45% { opacity: 1; }
+  80% { opacity: 0.6; }
+  81% { opacity: 1; }
+}
+
+/* water stains on the wall */
+.stains {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ---------- layout ---------- */
+
+.page {
+  position: relative;
+  z-index: 1;
+  max-width: 1060px;
+  margin: 0 auto;
+  padding: 72px 32px 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.site-header { position: relative; }
+
+.name {
+  position: relative;
+  display: inline-block;
+}
+.name h1 {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 64px;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  /* chromatic aberration */
+  text-shadow: 3px 0 0 rgba(140, 40, 25, 0.4), -3px 0 0 rgba(40, 80, 90, 0.35);
+}
+/* torn rust ghost slice of the name */
+.name .ghost {
+  position: absolute;
+  left: 14px;
+  top: 0;
+  font-family: var(--font-sans);
+  font-size: 64px;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: var(--rust);
+  opacity: 0.35;
+  clip-path: inset(46% 0 30% 0);
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+}
+
+.desk {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 24px;
+}
+.desk > .directory { flex: 1.4 1 440px; min-width: 0; }
+.desk > .side {
+  flex: 1 1 320px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  /* side column drops down and overlaps the directory window */
+  margin-top: 120px;
+  margin-left: -56px;
+  position: relative;
+  z-index: 2;
+}
+
+/* ---------- window ---------- */
+
+.window {
+  position: relative;
+  background: var(--window);
+  border: 2px solid var(--ink);
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+}
+
+.titlebar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 30px;
+  padding: 0 10px;
+  border-bottom: 2px solid var(--ink);
+}
+.titlebar .box {
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--ink);
+  flex: none;
+}
+.titlebar .stripes {
+  flex: 1 1 0;
+  height: 14px;
+  background: repeating-linear-gradient(to bottom, var(--ink) 0 1px, transparent 1px 4px);
+}
+.titlebar .title {
+  padding: 0 10px;
+  font-size: 13px;
+  white-space: nowrap;
+}
+.titlebar.small { height: 28px; }
+.titlebar.small .stripes { height: 12px; }
+.titlebar.small .title { font-size: 12px; padding: 0 8px; }
+
+/* ---------- directory listing ---------- */
+
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 128px 56px;
+  column-gap: 14px;
+  align-items: center;
+  padding: 6px 12px;
+  min-height: 34px;
+}
+.row.head {
+  border-bottom: 1.5px solid var(--ink);
+  font-size: 12px;
+  color: var(--ink-3);
+}
+.rows { display: flex; flex-direction: column; padding: 6px 0 10px; }
+.rows a.row:hover { background: var(--row-hover); }
+.rows .row[aria-current="page"] { background: var(--row-current); }
+.row .name-cell { display: flex; align-items: center; gap: 10px; }
+.row .meta { color: var(--ink-4); }
+.row[aria-current="page"] .meta { color: var(--ink-2); }
+
+/* corrupted row: drifts right and twitches */
+.row.glitch {
+  background: rgba(122, 59, 38, 0.10);
+  animation: jitter 4s infinite steps(1);
+}
+@keyframes jitter {
+  0% { transform: translateX(12px); }
+  70% { transform: translateX(12px); }
+  71% { transform: translateX(-4px); }
+  73% { transform: translateX(18px); }
+  75% { transform: translateX(12px); }
+}
+
+/* static tear running across the listing: a zero-height slot between two
+   rows, so it always sits on their boundary whatever the row heights are */
+.tear-slot { position: relative; height: 0; }
+.tear {
+  position: absolute;
+  left: -10px;
+  top: -3px;
+  width: calc(100% + 24px);
+  height: 6px;
+  pointer-events: none;
+}
+
+.statusbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 12px;
+  border-top: 1.5px solid var(--ink);
+  font-size: 12px;
+  color: var(--ink-4);
+}
+.leds { display: inline-flex; gap: 6px; align-items: center; }
+.led {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1.5px solid var(--ink);
+  background: var(--led-dead);
+}
+.led.alarm { background: var(--led-alarm); animation: blink 1.2s infinite steps(1); }
+@keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.15; } }
+
+/* ---------- readme ---------- */
+
+.readme-body {
+  margin: 14px;
+  padding: 16px 18px;
+  background: var(--paper);
+  border: 1.5px solid var(--ink);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-family: var(--font-sans);
+  font-size: 17px;
+  line-height: 1.5;
+}
+.readme-body p { margin: 0; }
+.readme-body a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--rust);
+}
+.readme-body .mail {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--ink-3);
+}
+
+/* ---------- player ---------- */
+
+.player {
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+}
+.play {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--rust-btn);
+  border: 2px solid var(--ink);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  cursor: pointer;
+}
+.player .track {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.player .label {
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.player .wave { width: 100%; height: 28px; }
+.player .time { flex: none; font-size: 12px; color: var(--ink-3); }
+
+/* ---------- error dialog ---------- */
+
+.error {
+  margin-left: -70px;
+  width: 320px;
+  max-width: 100%;
+  background: var(--button);
+}
+.error[hidden] { display: none; }
+.error .msg { padding: 14px; display: flex; gap: 12px; align-items: flex-start; }
+.error .msg p { margin: 0; font-size: 13px; }
+.error .actions { display: flex; justify-content: flex-end; gap: 8px; padding: 0 14px 14px; }
+
+.bevel {
+  min-height: 32px;
+  padding: 0 16px;
+  background: var(--button);
+  border: 2px solid var(--ink);
+  box-shadow: inset -2px -2px 0 var(--bevel-dark), inset 2px 2px 0 var(--bevel-light);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--ink);
+  cursor: pointer;
+}
+.bevel:active { box-shadow: inset 2px 2px 0 var(--bevel-dark), inset -2px -2px 0 var(--bevel-light); }
+
+/* ============================================================
+   inner page additions: same components, extended
+   ============================================================ */
+
+.name a { color: inherit; }
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* breadcrumb path under the name on inner pages */
+.path { margin: 10px 0 0; font-size: 13px; color: var(--ink-3); }
+.path a { text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--rust); }
+
+/* a directory with more windows stacked under it */
+.desk > .main-col { flex: 1.4 1 440px; min-width: 0; display: flex; flex-direction: column; gap: 24px; }
+
+/* a desk with nothing beside the directory */
+.desk.solo > .directory { flex-basis: 100%; }
+
+/* rows that are not links (track lists) */
+.rows div.row { cursor: default; }
+.row .name-cell { min-width: 0; }
+.row .name-cell .label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.row .name-cell svg { flex: none; }
+
+.readme-body .entry-title { font-size: 24px; line-height: 1.2; letter-spacing: -0.01em; }
+
+/* the home page player: a link to the release above its embed */
+.player-label { margin: 12px 14px -4px; font-size: 12px; }
+.player-label a { text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--rust); }
+
+/* inset panel holding an image or an embed */
+.inset {
+  margin: 14px;
+  background: var(--paper);
+  border: 1.5px solid var(--ink);
+}
+.inset img { display: block; width: 100%; height: auto; }
+.inset iframe { display: block; width: 100%; border: 0; }
+.inset .caption {
+  margin: 0;
+  padding: 6px 10px;
+  border-top: 1.5px solid var(--ink);
+  font-size: 12px;
+  color: var(--ink-3);
+}
+.inset .caption a { text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--rust); }
+.inset.video iframe { aspect-ratio: 16 / 9; height: auto; }
+
+/* readme extras: credits, notes, the "more" disclosure */
+.readme-body .credits {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--ink-3);
+  white-space: pre-line;
+}
+.readme-body .note { font-family: var(--font-mono); font-size: 13px; color: var(--ink-3); }
+.readme-body details summary {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--ink-3);
+  cursor: pointer;
+}
+.readme-body details[open] summary { margin-bottom: 8px; }
+.readme-body ul { margin: 0; padding: 0; list-style: none; font-family: var(--font-mono); font-size: 13px; }
+.readme-body li + li { margin-top: 2px; }
+
+/* ---------- responsive ---------- */
+
+@media (max-width: 760px) {
+  .desk > .side { margin-top: 0; margin-left: 0; }
+  .error { margin-left: 0; }
+}
+
+@media (max-width: 640px) {
+  .page { padding: 36px 12px 56px; }
+  .name h1, .name .ghost { font-size: 44px; }
+  .row { grid-template-columns: minmax(0, 1fr) auto; padding: 9px 10px; }
+  .hide-sm { display: none; }
+}
+
+/* ---------- reduced motion: keep the look, stop the movement ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  body::before, .row.glitch, .led.alarm { animation: none; }
+  .row.glitch { transform: translateX(12px); }
+}

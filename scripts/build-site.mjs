@@ -1,1045 +1,550 @@
 /*
- * build-site.mjs — generates index.html from the Cargo template shell.
+ * build-site.mjs: generates the static site from src/data/.
  *
- * Content source of truth:
- *   src/data/projects.js  (music + film entries)
- *   src/data/site.js      (header, hero, about, mixing)
+ * Every page is built from the same handful of components (window, directory
+ * listing, readme, inset) defined below, styled by src/assets/site.css. The
+ * output is plain HTML written to the repo root, which GitHub Pages serves
+ * as is:
  *
- * Shell source: template.html (a Cargo "Graphic F992" export). The Cargo
- * frontend renders everything client-side from window.__PRELOADED_STATE__,
- * so building the site means rewriting that state object.
+ *   index.html                 home: directory of the site + readme + player
+ *   about/ music/ film/ mixing/ folder pages, one listing each
+ *   music/<id>/ film/<id>/     entry pages
+ *   contact.txt                plain text
+ *   404.html                   "file not found", forwards the old /<id> links
+ *   assets/                    site.css, site.js
  *
- * The release pages — cover beside a numbered track list, a "More" disclosure
- * for extra notes, embedded player — follow the layout of player.html
- * (Cargo "~Template K999").
+ * Dates in the "modified" column are real: the last git commit touching the
+ * file behind each row (its image, or the data file), falling back to the
+ * file's mtime. Sizes are real byte sizes.
  *
- * Writes index.html and 404.html to the repo root. GitHub Pages serves that
- * root directly off main, so images/ and CNAME are committed there as-is and
- * a build is published simply by pushing.
- *
- * NOTE: the Cargo router resolves pages against location.pathname, so the
- * generated page only renders when served from the root of a domain.
+ *   node scripts/build-site.mjs
  */
 
-import { readFileSync, writeFileSync } from "node:fs";
-import { dirname, resolve } from "node:path";
+import { execFileSync } from "node:child_process";
+import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { musicProjects, filmProjects } from "../src/data/projects.js";
-import { siteMeta, hero, links, about, mixing, displayFont } from "../src/data/site.js";
+import { about, featuredRelease, links, mixing, readme, siteMeta } from "../src/data/site.js";
+import { filmProjects, musicProjects } from "../src/data/projects.js";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const SHELL = resolve(root, "template.html");
-const OUT = resolve(root, "index.html");
-const NOT_FOUND = resolve(root, "404.html");
+const OWNED_DIRS = ["about", "music", "film", "mixing", "assets"];
 
-/* ------------------------------------------------------------------ utils */
+// ---------- facts about files ----------
 
-const esc = (s = "") =>
-  String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-
-const nl2br = (s = "") => esc(s).replace(/\n/g, "<br />\n");
-
-/**
- * Intrinsic pixel size of a JPEG or PNG, read straight from its header.
- *
- * Every <img> is emitted with width/height so the browser can reserve the right
- * box before the file arrives. Without them a cover is 0px tall until it loads,
- * and since the covers are lazy-loaded that growth happens *while* you scroll
- * past them: the scroll range keeps extending under the finger and the page
- * feels like it stalls. Cheap header parse, no dependency.
- */
-const imageSize = (src) => {
-  const buf = readFileSync(resolve(root, src.replace(/^\//, "")));
-
-  // PNG: 8-byte signature, then an IHDR whose first two fields are the size.
-  if (buf.length > 24 && buf.readUInt32BE(0) === 0x89504e47)
-    return { width: buf.readUInt32BE(16), height: buf.readUInt32BE(20) };
-
-  // JPEG: walk the marker segments until the start-of-frame, which carries it.
-  if (buf.readUInt16BE(0) === 0xffd8) {
-    let off = 2;
-    while (off + 9 < buf.length) {
-      if (buf[off] !== 0xff) {
-        off += 1;
-        continue;
-      }
-      const marker = buf[off + 1];
-      // SOF0–SOF15, minus the markers in that range that are not frame headers.
-      const isFrame =
-        marker >= 0xc0 && marker <= 0xcf && ![0xc4, 0xc8, 0xcc].includes(marker);
-      if (isFrame) return { height: buf.readUInt16BE(off + 5), width: buf.readUInt16BE(off + 7) };
-      off += 2 + buf.readUInt16BE(off + 2);
-    }
-  }
-
-  throw new Error(`Could not read image dimensions: ${src}`);
+const fileTime = (rel) => {
+  const abs = join(root, rel);
+  try {
+    const out = execFileSync("git", ["log", "-1", "--format=%ct", "--", rel], { cwd: root }).toString().trim();
+    if (out) return Number(out) * 1000;
+  } catch {}
+  return existsSync(abs) ? statSync(abs).mtimeMs : Date.now();
 };
+const imgPath = (src) => src.replace(/^\//, "");
+const latest = (...times) => Math.max(...times);
 
-/** <img> with its intrinsic size baked in, so it reserves space before loading. */
-const img = (src, alt, { cls = "", lazy = false } = {}) => {
-  const { width, height } = imageSize(src);
-  return (
-    `<img${cls ? ` class="${cls}"` : ""} src="${esc(src)}" alt="${esc(alt)}"` +
-    ` width="${width}" height="${height}"${lazy ? ` loading="lazy"` : ""} />`
-  );
-};
-
-/** Deterministic Cargo-style page id: one letter + 10 digits. */
-const pageId = (seed) => {
-  let h = 2166136261;
-  for (const ch of seed) {
-    h ^= ch.charCodeAt(0);
-    h = Math.imul(h, 16777619) >>> 0;
-  }
-  const letter = String.fromCharCode(65 + (h % 26));
-  const digits = String(h).padStart(10, "0").slice(0, 10);
-  return letter + digits;
-};
-
-/** "Released by Nostro Hood System" -> "Nostro Hood System" */
-const labelOf = (project) => {
-  const m = /Released by ([^\n]+)/.exec(project.credits || "");
-  return m ? m[1].split(/ on /)[0].trim() : "";
-};
-
-/** Parse "1. Corroded 04:23\n2. Slide 03:40" into rows. */
-const parseTracks = (tracks) => {
-  if (!tracks) return null;
-  const lines = tracks.split("\n").map((l) => l.trim()).filter(Boolean);
-  const rows = [];
-  for (const line of lines) {
-    const m = /^(\d+)\.\s*(.*?)(?:\s+(\d{1,2}:\d{2}))?$/.exec(line);
-    if (!m) return null; // not a numbered track list (e.g. free-form notes)
-    rows.push({ num: m[1], title: m[2], duration: m[3] || "" });
-  }
-  return rows.length ? rows : null;
-};
-
-/* -------------------------------------------------------- content builders */
-
-/** player.html-style track list: number · title · duration, hairline rows. */
-const trackList = (rows) =>
-  `<div class="tracklist">` +
-  rows
-    .map(
-      (t) =>
-        `<div class="track"><span class="tnum">${esc(t.num)}</span>` +
-        `<span class="tname">${esc(t.title)}</span>` +
-        `<span class="tdur">${esc(t.duration)}</span></div>`
-    )
-    .join("") +
-  `</div>`;
-
-/** Recolour a Bandcamp embed to sit on the dark panel background. */
-const darkEmbed = (url) =>
-  url.replace(/bgcol=[0-9a-fA-F]+/, "bgcol=0d0d0d").replace(/linkcol=[0-9a-fA-F]+/, "linkcol=ffffff");
-
-const embed = (project) => {
-  if (project.embedUrl)
-    return `<iframe class="embed embed-bandcamp" src="${esc(darkEmbed(project.embedUrl))}" title="${esc(
-      project.title
-    )} — Bandcamp player" loading="lazy"></iframe>`;
-  if (project.soundcloudEmbed)
-    return `<iframe class="embed embed-soundcloud" src="${esc(
-      project.soundcloudEmbed
-    )}" title="${esc(project.title)} — SoundCloud player" allow="autoplay" loading="lazy"></iframe>`;
-  return "";
-};
-
-/*
- * Panels are regular Cargo pages, not overlay pages: in a static export an
- * overlay that has been closed cannot be reopened (its container stays stuck
- * mid-close-animation — reproducible on the untouched template), which would
- * break every panel link after the first close. Regular pages also give us
- * working deep links for free.
- */
-const closeRow = () =>
-  `<div class="panel-close"><a class="caption" href="/" rel="history">← Back</a></div>`;
-
-/* ------------------------------------------------------------- page bodies */
-
-const headerDesktop = () => `<column-set>
-<column-unit slot="0"><span class="circled">INDEX</span><a href="/" rel="history">${esc(
-  siteMeta.name
-)}</a><br />Sound Design · Music · Engineering</column-unit>
-<column-unit slot="1"><span class="circled">WORK</span><a class="to-music" href="/" rel="history">Music</a><br /><a href="film" rel="history">Film</a><br /><a href="mixing" rel="history">Mixing &#x26; Mastering</a></column-unit>
-<column-unit slot="2"><span class="circled">CONTACT</span><a href="mailto:${esc(
-  siteMeta.email
-)}">${esc(siteMeta.email)}</a><br /><a href="about" rel="history">About</a></column-unit>
-<column-unit slot="3"><span class="circled">FOLLOW</span>${links
-  .map((l) => `<a href="${esc(l.href)}" target="_blank">${esc(l.label)}</a>`)
-  .join("<br />")}</column-unit>
-</column-set>`;
-
-const headerMobile = () => `<column-set gutter="1rem" mobile-stack="false">
-<column-unit slot="0"><a href="/" rel="history">${esc(
-  siteMeta.name
-)}</a><br /><br /><a class="to-music" href="/" rel="history">Music</a><br /><a href="film" rel="history">Film</a><br /><a href="mixing" rel="history">Mixing &#x26; Mastering</a><br /><a href="about" rel="history">About</a></column-unit>
-<column-unit slot="1"><span class="circled">CONTACT</span><a href="mailto:${esc(
-  siteMeta.email
-)}">${esc(siteMeta.email)}</a><br /><br /><span class="circled">FOLLOW</span>${links
-  .map((l) => `<a href="${esc(l.href)}" target="_blank">${esc(l.label)}</a>`)
-  .join("<br />")}</column-unit>
-</column-set>`;
-
-const mainTitle = () => `<h2>${esc(hero.eyebrow)}</h2><br />
-<br />
-<br />
-<column-set gutter="8rem"><column-unit slot="0" span="2"></column-unit><column-unit slot="1" span="8"><h1 uses="fit-text"><a href="#main-scroll" rel="history">${esc(
-  hero.title
-)}</a></h1></column-unit><column-unit slot="2" span="2"></column-unit></column-set><br />
-<br />
-<br />
-<h2 style="--font-scale: 0.55;"><i>${hero.subtitle}</i></h2>`;
-
-/*
- * The releases, in the same cover-beside-text row the panels use. The row is
- * a way in, not the release itself: the players stay on the release pages,
- * which is where the track list and the embed live.
- */
-const mainScroll = () =>
-  musicProjects
-    .map((p) => {
-      const label = labelOf(p);
-      const rows = parseTracks(p.tracks);
-      const meta = [label, rows ? `${rows.length} track${rows.length > 1 ? "s" : ""}` : ""]
-        .filter(Boolean)
-        .join(" · ");
-
-      const body = [
-        `<h2 style="--font-scale: 0.5;"><a href="${esc(p.id)}" rel="history">${esc(
-          p.title
-        )}</a></h2>`,
-        meta ? `<br /><span class="caption">${esc(meta)}</span>` : "",
-        `<br />`,
-        `${nl2br(p.description)}<br />`,
-        `<br />`,
-        embed(p),
-        `<br />`,
-        `<a class="button" href="${esc(p.id)}" rel="history">Full release →</a>`,
-      ]
-        .filter(Boolean)
-        .join("\n");
-
-      return coverRow(p.image, p.title, body, { href: p.id, lazy: true });
-    })
-    .join(ROW_SEPARATOR);
-
-/*
- * The site's one repeating unit: a cover in a 5/7 split beside its text,
- * stacking on mobile. Releases, film entries, the mixing references and the
- * home scroll all render through this, so the views cannot drift apart.
- *
- * `href` makes the cover a link (the home scroll); `below` hangs a caption
- * under it (the about photo's credit).
- */
-const coverRow = (image, alt, body, { href = "", below = "", lazy = false } = {}) => {
-  const cover = img(image, alt, { cls: "cover", lazy });
-  return `<column-set gutter="2.5rem" mobile-gutter="2rem" mobile-stack="true">
-<column-unit slot="0" span="5">${
-    href ? `<a class="cover-link" href="${esc(href)}" rel="history">${cover}</a>` : cover
-  }${below}</column-unit>
-<column-unit slot="1" span="7">${body}</column-unit>
-</column-set>`;
-};
-
-/** Entries are separated by a rule, the same way up and down the site. */
-const ROW_SEPARATOR = "<br />\n<br />\n<hr /><br />\n";
-
-const releasePanel = (project, prev, next) => {
-  const label = labelOf(project);
-  const rows = parseTracks(project.tracks);
-  const meta = [label, rows ? `${rows.length} track${rows.length > 1 ? "s" : ""}` : ""]
-    .filter(Boolean)
-    .join(" · ");
-
-  // player.html's "More" info panel, inlined: a second overlay on top of this
-  // one cannot be reopened once dismissed, so disclose the notes in place.
-  const notes = project.extendedDescription
-    ? `<details class="notes"><summary><u><b>More</b></u></summary>${nl2br(
-        project.extendedDescription
-      )}</details>`
-    : "";
-
-  const body = [
-    `<h2 style="--font-scale: 0.5;">${esc(project.title)}</h2><br />`,
-    meta ? `<span class="caption">${esc(meta)}</span><br />` : "",
-    `${nl2br(project.description)}<br />`,
-    notes,
-    `<br />`,
-    // Entries without a numbered track list (e.g. single sound pieces) carry
-    // that information in their description already.
-    rows ? trackList(rows) : "",
-    `<br />`,
-    embed(project),
-    project.credits ? `<br /><span class="caption">${nl2br(project.credits)}</span>` : "",
-    project.bandcampLink
-      ? `<br /><a class="button" href="${esc(project.bandcampLink)}" target="_blank">Listen on Bandcamp ↗</a>`
-      : "",
-  ]
-    .filter(Boolean)
-    .join("\n");
-
-  return `${closeRow()}${coverRow(project.image, project.title, body)}<br />
-<hr /><column-set gutter="1" mobile-stack="false">
-<column-unit slot="0" span="6"><span class="caption"><a href="${esc(
-    prev.id
-  )}" rel="history">← ${esc(prev.title)}</a></span></column-unit>
-<column-unit slot="1" span="6"><div style="text-align: right"><span class="caption"><a href="${esc(
-    next.id
-  )}" rel="history">${esc(next.title)} →</a></span></div></column-unit>
-</column-set>`;
-};
-
-const aboutPanel = () => {
-  const credit = `<span class="caption photo-credit">Photo by <a href="${esc(
-    about.photoCredit.href
-  )}" target="_blank">${esc(about.photoCredit.display)}</a></span>`;
-
-  const body = `<h2 style="--font-scale: 0.5;">${esc(about.heading)}</h2><br />
-${about.paragraphs.map((p) => nl2br(p)).join("<br />\n<br />\n")}<br />
-<br />
-<hr /><br />
-<column-set gutter="1rem" mobile-stack="false">
-<column-unit slot="0" span="6"><span class="circled">EMAIL</span><a href="mailto:${esc(
-    siteMeta.email
-  )}">${esc(siteMeta.email)}</a></column-unit>
-<column-unit slot="1" span="6">${links
-    .map(
-      (l) =>
-        `<div class="contact-item"><span class="circled">${esc(
-          l.label.toUpperCase()
-        )}</span><a href="${esc(l.href)}" target="_blank">${esc(l.display)}</a></div>`
-    )
-    .join("")}</column-unit>
-</column-set>`;
-
-  return `${closeRow()}${coverRow(about.image, siteMeta.name, body, { below: credit })}`;
-};
-
-const filmPanel = () => {
-  const items = filmProjects
-    .map((p) => {
-      const caption = `<h2 style="--font-scale: 0.5;">${esc(p.title)}</h2>${
-        p.status ? `<br /><span class="caption">${esc(p.status)}</span>` : ""
-      }<br />
-${nl2br(p.description)}`;
-
-      // Trailers get the full width; posters sit beside their text.
-      if (p.embedUrl)
-        return `<div class="video"><iframe src="${esc(p.embedUrl)}" title="${esc(
-          p.title
-        )}" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen loading="lazy"></iframe></div><br />
-${caption}`;
-
-      return coverRow(p.image, p.title, caption, { lazy: true });
-    })
-    .join(ROW_SEPARATOR);
-
-  return `${closeRow()}<h2 style="--font-scale: 0.7;">Film</h2><br />\n<br />\n${items}`;
-};
-
-// A reference reads like a film entry: cover beside its text, stacking on
-// mobile, so the page has something to look at rather than a list of links.
-const mixingReference = (r) => {
-  const caption = [
-    `<h2 style="--font-scale: 0.5;">${esc(r.title)}</h2>`,
-    r.artist ? `<br /><span class="caption">${esc(r.artist)}</span>` : "",
-    `<br />`,
-    `${nl2br(r.text)}<br />`,
-    `<br />`,
-    embed(r),
-    `<br />`,
-    `<a class="button" href="${esc(r.href)}" target="_blank">Open on Bandcamp ↗</a>`,
-  ]
-    .filter(Boolean)
-    .join("\n");
-
-  return coverRow(r.image, r.title, caption, { lazy: true });
-};
-
-const mixingPanel = () => `${closeRow()}<h2 style="--font-scale: 0.7;">${mixing.heading}</h2><br />
-<br />
-${nl2br(mixing.lead)}<br />
-<br />
-<hr /><br />
-<span class="circled">${esc(mixing.referenceLabel.toUpperCase())}</span><br />
-${mixing.references.map(mixingReference).join(ROW_SEPARATOR)}<br />
-<br />
-<hr /><br />
-${nl2br(mixing.closing)}<br />
-<br />
-<a class="button" href="mailto:${esc(siteMeta.email)}">${esc(mixing.ctaLabel)}</a>`;
-
-/* ------------------------------------------------------------- page models */
-
-/*
- * Panels read as part of the page, not as a modal on top of it: no surface of
- * their own, no border and no shadow.
- *
- * They are top-aligned but horizontally centred, which is the rest of the
- * site's axis — the cover scroll on the home page is a centred column too.
- * Only the vertical centring goes: in a viewport-height page it stranded a
- * short panel in the middle of empty space, which is what made these look
- * detached on wide screens. The measure stays per-page because the single-
- * column pages (film, mixing) set their body text at full width and need a
- * tighter column than the ones that split into a photo and a text column.
- */
-/*
- * The one measure every view shares. The cover-beside-text rows want the same
- * column wherever they appear, so the home scroll and the panels both take it
- * from here rather than each carrying their own number.
- */
-const MEASURE = "56rem";
-
-/*
- * ...and the vertical one. Every page opens and closes on the same air, so the
- * home page, the panels and the title all start at the same line rather than
- * each picking a number. Mobile gets its own pair because the viewport is a
- * third of the height, not because the pages differ.
- */
-const PAD = { top: "7rem", bottom: "8rem", topMobile: "3rem", bottomMobile: "5rem" };
-
-/*
- * --viewport-height is a pixel value Cargo recomputes. On mobile it changes as
- * the URL bar slides in and out, so a page locked to it grows and shrinks
- * mid-scroll and the whole document appears to snap. Nothing on a phone needs a
- * viewport-tall page, so every page is content-height there.
- */
-const pagePadCss = (id) => `[id="${id}"] .page-layout {
-	padding-top: ${PAD.top};
-	padding-bottom: ${PAD.bottom};
-}
-
-body.mobile [id="${id}"].page {
-	min-height: auto;
-}
-
-body.mobile [id="${id}"] .page-layout {
-	padding-top: ${PAD.topMobile};
-	padding-bottom: ${PAD.bottomMobile};
-}`;
-
-const measureCss = (id, measure = MEASURE) => `[id="${id}"] .page-content > * {
-	max-width: ${measure};
-	margin-left: auto;
-	margin-right: auto;
-}
-
-body.mobile [id="${id}"] .page-content > * {
-	max-width: 100%;
-}`;
-
-const panelCss = (id, measure = MEASURE) => `[id="${id}"].page {
-	justify-content: flex-start;
-	min-height: var(--viewport-height);
-}
-
-[id="${id}"] .page-layout {
-	max-width: 100%;
-	align-items: flex-start;
-	padding-left: 0;
-	padding-right: 0;
-}
-
-${pagePadCss(id)}
-
-[id="${id}"] .page-content {
-	text-align: left;
-	height: auto;
-	padding: 0 1rem;
-}
-
-/* Centred column, matching the cover scroll on the home page. */
-${measureCss(id, measure)}`;
-
-const makePage = ({
-  purl,
-  title,
-  content,
-  localCss = null,
-  pin = false,
-  pinOptions = {},
-  stacked = false,
-}) => ({
-  id: pageId(purl),
-  title,
-  purl,
-  page_type: "page",
-  content,
-  local_css: localCss,
-  display: true,
-  stack: false,
-  pin,
-  overlay: false,
-  password_enabled: false,
-  page_count: 0,
-  page_design_options: null,
-  backdrops: { activeBackdrop: "none" },
-  pin_options: pinOptions,
-  overlay_options: {},
-  thumb_media_id: null,
-  thumbnail: null,
-  thumb_meta: [],
-  media: [],
-  tags: [],
-  access_level: "public",
-  __stacked: stacked,
+const DATE = new Intl.DateTimeFormat("de-CH", {
+  timeZone: "Europe/Zurich",
+  day: "2-digit", month: "2-digit", year: "2-digit",
+  hour: "2-digit", minute: "2-digit", hourCycle: "h23",
 });
+// DD.MM.YY HH:MM, 24h
+const fmtDate = (ms) => {
+  const p = Object.fromEntries(DATE.formatToParts(new Date(ms)).map((x) => [x.type, x.value]));
+  return `${p.day}.${p.month}.${p.year} ${p.hour}:${p.minute}`;
+};
+const fmtSize = (bytes) => {
+  if (bytes < 1024 * 100) return `${(bytes / 1024).toFixed(1)}K`;
+  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)}K`;
+  return `${(bytes / 1048576).toFixed(1)}M`;
+};
+const sizeOf = (rel) => fmtSize(statSync(join(root, rel)).size);
 
-const buildPages = () => {
-  const pages = [];
+// ---------- helpers ----------
 
-  pages.push(
-    makePage({
-      purl: "header-desktop",
-      title: "Header (desktop)",
-      content: headerDesktop(),
-      pin: true,
-      pinOptions: {
-        screen_visibility: "desktop",
-        position: "top",
-        fixed: true,
-        adjust: false,
-      },
-      localCss: `[id="${pageId("header-desktop")}"].page {
-	min-height: auto;
-}
-
-[id="${pageId("header-desktop")}"] .page-layout {
-	align-items: flex-start;
-}`,
-    }),
-    makePage({
-      purl: "header-mobile",
-      title: "Header (mobile)",
-      content: headerMobile(),
-      pin: true,
-      pinOptions: {
-        screen_visibility: "mobile",
-        position: "top",
-        fixed: false,
-        adjust: false,
-      },
-      localCss: `[id="${pageId("header-mobile")}"].page {
-	min-height: auto;
-}
-
-[id="${pageId("header-mobile")}"] .page-layout {
-	align-items: flex-start;
-}`,
-    }),
-    makePage({
-      purl: "main-title",
-      title: "Main title",
-      content: mainTitle(),
-      stacked: true,
-      localCss: `[id="${pageId("main-title")}"].page {
-	min-height: var(--viewport-height);
-}
-
-[id="${pageId("main-title")}"] .page-content {
-	align-items: center;
-	text-align: center;
-}
-
-[id="${pageId("main-title")}"] .page-layout {
-	align-items: center;
-}
-
-${pagePadCss(pageId("main-title"))}
-
-/*
- * On a phone the title is not a viewport-tall opening shot — it is the first
- * thing on the page, sitting on the same air as everything else. Left as a
- * centred full-height block it opened on a screen of nothing.
- */
-body.mobile [id="${pageId("main-title")}"].page {
-	justify-content: flex-start;
-}
-
-body.mobile [id="${pageId("main-title")}"] .page-layout {
-	margin-top: 0;
-	margin-bottom: 0;
-}`,
-    }),
-    makePage({
-      purl: "main-scroll",
-      title: "Main scroll",
-      content: mainScroll(),
-      stacked: true,
-      localCss: `[id="${pageId("main-scroll")}"] .page-layout {
-	max-width: 100%;
-	align-items: flex-start;
-}
-
-[id="${pageId("main-scroll")}"].page {
-	justify-content: flex-start;
-	min-height: auto;
-}
-
-${pagePadCss(pageId("main-scroll"))}
-
-[id="${pageId("main-scroll")}"] .page-content {
-	text-align: left;
-	padding: 0 1rem;
-}
-
-/* Same column as the panels — see MEASURE. */
-${measureCss(pageId("main-scroll"))}`,
-    })
-  );
-
-  musicProjects.forEach((project, i) => {
-    const prev = musicProjects[(i - 1 + musicProjects.length) % musicProjects.length];
-    const next = musicProjects[(i + 1) % musicProjects.length];
-    pages.push(
-      makePage({
-        purl: project.id,
-        title: project.title,
-        content: releasePanel(project, prev, next),
-        localCss: panelCss(pageId(project.id)),
-      })
-    );
-  });
-
-  pages.push(
-    makePage({
-      purl: "about",
-      title: "About",
-      content: aboutPanel(),
-      localCss: panelCss(pageId("about")),
-    }),
-    makePage({
-      purl: "film",
-      title: "Film",
-      content: filmPanel(),
-      localCss: panelCss(pageId("film")),
-    }),
-    makePage({
-      purl: "mixing",
-      title: "Mixing & Mastering",
-      content: mixingPanel(),
-      localCss: panelCss(pageId("mixing")),
-    })
-  );
-
-  return pages;
+const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+// Copy in the data files may contain HTML (links) and entities, so it is
+// passed through, but stray "&" and em dashes are not allowed to slip in.
+const copy = (s) => {
+  if (/[—]/.test(s)) throw new Error(`em dash in copy: ${s}`);
+  return String(s).replace(/&(?![#a-z0-9]+;)/gi, "&amp;");
 };
 
-/* -------------------------------------------------------------- stylesheet */
+// Bandcamp embeds, recoloured to sit on the paper panel.
+const bandcamp = (url) =>
+  url.replace(/bgcol=[0-9a-f]+/i, "bgcol=dcd6c1").replace(/linkcol=[0-9a-f]+/i, "linkcol=7a3b26").replace(/transparent=true\/?/, "");
+const soundcloud = (url) => url.replace(/color=%23[0-9a-f]+/i, "color=%237a3b26") + "&visual=false";
 
-/** Styles for the plain-HTML pieces the Cargo template has no components for. */
-const extraCss = () => `
+// "1. Corroded 04:23" lines become tracks; anything else is a note.
+const parseTracks = (text = "") => {
+  const tracks = [];
+  const notes = [];
+  for (const line of text.split("\n").map((l) => l.trim()).filter(Boolean)) {
+    const m = line.match(/^(\d+)\.\s+(.*?)(?:\s+(\d{1,2}:\d{2}))?$/);
+    if (m) tracks.push({ n: m[1].padStart(2, "0"), title: m[2], length: m[3] || "" });
+    else notes.push(line);
+  }
+  return { tracks, notes };
+};
 
-/* ---------------- Yves Spiri: site additions ---------------- */
+// ---------- icons (decorative) ----------
 
-bodycopy a:hover,
-.caption a:hover,
-.circled a:hover {
-	color: rgba(255, 255, 255, 0.95);
+const TINT = { about: "var(--f-about)", music: "var(--f-music)", film: "var(--f-film)", mixing: "var(--f-live)", sound: "var(--f-sound)" };
+
+const icon = {
+  folder: (tint) => `<svg width="20" height="15" viewBox="0 0 20 15" aria-hidden="true"><path d="M1 2h7l2 2h9v10H1z" fill="${tint}" stroke="var(--ink)" stroke-width="1.5"/></svg>`,
+  up: () => `<svg width="20" height="15" viewBox="0 0 20 15" aria-hidden="true"><path d="M1 2h7l2 2h9v10H1z" fill="none" stroke="var(--ink)" stroke-width="1.5"/></svg>`,
+  file: () => `<svg width="20" height="15" viewBox="0 0 20 15" aria-hidden="true"><path d="M5 1h7l3 3v10H5z" fill="var(--paper)" stroke="var(--ink)" stroke-width="1.5"/></svg>`,
+  image: () => `<svg width="20" height="15" viewBox="0 0 20 15" aria-hidden="true"><path d="M3 2h14v11H3z" fill="var(--paper)" stroke="var(--ink)" stroke-width="1.5"/><path d="M5 11l3.5-4 2.5 3 1.5-1.5L15 11z" fill="var(--ink-3)"/></svg>`,
+  wave: () => `<svg width="20" height="15" viewBox="0 0 20 15" fill="none" stroke="var(--rust)" stroke-width="2" aria-hidden="true"><path d="M2 7.5v0M5 4v7M8 2v11M11 5v5M14 3v9M17 6v3"/></svg>`,
+  link: () => `<svg width="20" height="15" viewBox="0 0 20 15" aria-hidden="true"><path d="M5 1h7l3 3v10H5z" fill="var(--paper)" stroke="var(--ink)" stroke-width="1.5"/><path d="M8 10l4-4M9 6h3v3" fill="none" stroke="var(--rust)" stroke-width="1.5"/></svg>`,
+};
+
+// ---------- components ----------
+
+const titlebar = (title, { small = false, boxes = true } = {}) => `
+      <div class="titlebar${small ? " small" : ""}">${boxes ? `
+        <span class="box" aria-hidden="true"></span>` : ""}
+        <span class="stripes" aria-hidden="true"></span>
+        <span class="title">${esc(title)}</span>
+        <span class="stripes" aria-hidden="true"></span>${boxes ? `
+        <span class="box" aria-hidden="true"></span>` : ""}
+      </div>`;
+
+const win = (title, body, { cls = "", label = title } = {}) => `
+    <section class="window${cls ? " " + cls : ""}" aria-label="${esc(label)}">${titlebar(title)}${body}
+    </section>`;
+
+const TEAR = `
+        <div class="tear-slot" aria-hidden="true"><svg class="tear" viewBox="0 0 400 6" preserveAspectRatio="none">
+          <defs>
+            <pattern id="noise" width="16" height="6" patternUnits="userSpaceOnUse">
+              <rect width="16" height="6" fill="#B9B39A"/>
+              <rect x="0" y="0" width="5" height="2" fill="#5E5F4E"/>
+              <rect x="7" y="2" width="6" height="2" fill="#8C8A72"/>
+              <rect x="2" y="4" width="3" height="2" fill="#3A3B30"/>
+              <rect x="11" y="4" width="4" height="2" fill="#E2DCC4"/>
+            </pattern>
+          </defs>
+          <rect width="400" height="6" fill="url(#noise)"/>
+        </svg></div>`;
+
+// One listing row. href makes it a link; external links open in a new tab.
+const row = ({ href, icon: ic, name, modified = "", size = "", current = false, glitch = false, corrupt = false }) => {
+  const tag = href ? "a" : "div";
+  const ext = href && /^https?:/.test(href);
+  const attrs = [
+    `class="row${glitch ? " glitch" : ""}"`,
+    href ? `href="${esc(href)}"` : "",
+    ext ? `target="_blank" rel="noopener"` : "",
+    current ? `aria-current="page"` : "",
+  ].filter(Boolean).join(" ");
+  // the one unreadable date: its last digit is gone
+  const mod = corrupt && modified ? modified.slice(0, -1) + "▒" : modified;
+  return `
+        <${tag} ${attrs}>
+          <span class="name-cell">${ic}<span class="label">${esc(name)}${ext ? `<span class="visually-hidden"> (opens in a new tab)</span>` : ""}</span></span>
+          <span class="meta">${esc(mod)}</span><span class="meta hide-sm">${esc(size)}</span>
+        </${tag}>`;
+};
+
+const directory = ({ title, rows, head = ["name", "modified", "size"], tearAfter = -1, unreadable = 0 }) => {
+  const body = rows.map((r, i) => row(r) + (i === tearAfter ? TEAR : "")).join("");
+  const count = rows.filter((r) => r.name !== "../").length;
+  const status = `${count} ${count === 1 ? "item" : "items"}${unreadable ? ` · ${unreadable} unreadable` : ""}`;
+  return `
+    <section class="window directory" aria-label="Directory ${esc(title)}">${titlebar(title)}
+
+      <div class="row head" aria-hidden="true"><span>${head[0]}</span><span>${head[1]}</span><span class="hide-sm">${head[2]}</span></div>
+
+      <nav class="rows" aria-label="Files">${body}
+      </nav>
+
+      <div class="statusbar">
+        <span>${status}</span>
+        <span class="leds" aria-hidden="true"><span class="led"></span><span class="led"></span><span class="led alarm"></span></span>
+      </div>
+    </section>`;
+};
+
+const readmeWin = (title, inner) => win(title, `
+      <div class="readme-body">${inner}
+      </div>`);
+
+const p = (html, cls) => `\n        <p${cls ? ` class="${cls}"` : ""}>${copy(html)}</p>`;
+const mailLine = () => p(`› <a href="mailto:${siteMeta.email}" style="text-decoration:none">${siteMeta.email}</a>`, "mail");
+
+const imageWin = (title, src, alt, caption = "") => {
+  const [w, h] = imageSize(src);
+  return win(title, `
+      <div class="inset">
+        <img src="${src}" alt="${esc(alt)}" width="${w}" height="${h}" loading="lazy" decoding="async">${caption ? `
+        <p class="caption">${caption}</p>` : ""}
+      </div>`);
+};
+
+const embedWin = (title, { bandcampUrl, soundcloudUrl, vimeoUrl, label, href }) => {
+  let frame = "";
+  if (bandcampUrl) frame = `<iframe src="${esc(bandcamp(bandcampUrl))}" height="42" title="${esc(label)} on Bandcamp" loading="lazy" seamless></iframe>`;
+  else if (soundcloudUrl) frame = `<iframe src="${esc(soundcloud(soundcloudUrl))}" height="166" title="${esc(label)} on SoundCloud" loading="lazy" allow="autoplay"></iframe>`;
+  else if (vimeoUrl) frame = `<iframe src="${esc(vimeoUrl)}" title="${esc(label)} on Vimeo" loading="lazy" allow="fullscreen; picture-in-picture" allowfullscreen></iframe>`;
+  return win(title, `${href ? `
+      <p class="player-label"><a href="${href}">${esc(label)}</a></p>` : ""}
+      <div class="inset${vimeoUrl ? " video" : ""}">
+        ${frame}
+      </div>`, { label: `${title}: ${label}` });
+};
+
+// intrinsic size of a JPEG, so images reserve their space (no layout shift)
+function imageSize(src) {
+  const buf = readFileSync(join(root, imgPath(src)));
+  let i = 2;
+  while (i < buf.length) {
+    const marker = buf[i + 1];
+    const len = buf.readUInt16BE(i + 2);
+    // SOF0..SOF15, except DHT (C4), JPG (C8) and DAC (CC)
+    if (marker >= 0xc0 && marker <= 0xcf && ![0xc4, 0xc8, 0xcc].includes(marker)) {
+      return [buf.readUInt16BE(i + 7), buf.readUInt16BE(i + 5)];
+    }
+    i += 2 + len;
+  }
+  throw new Error(`no JPEG size in ${src}`);
 }
 
-bodycopy img {
-	display: block;
-	max-width: 100%;
-	height: auto;
-}
+// ---------- page shell ----------
 
-/* Covers that link somewhere — the releases in the home scroll. */
-/* width/height attributes give the intrinsic ratio; height:auto keeps it. */
-.cover-link {
-	display: block;
-}
+const STAINS = `
+<svg class="stains" aria-hidden="true" viewBox="0 0 1200 1000" preserveAspectRatio="xMidYMid slice">
+  <g fill="#5E5A3A" fill-opacity="0.16">
+    <path d="M0 0 H260 C240 60 280 110 220 150 C170 190 120 140 80 200 C50 240 20 230 0 260 Z"/>
+    <path d="M940 0 H1200 V320 C1160 300 1150 240 1100 230 C1040 216 1060 150 1010 120 C970 96 990 40 940 0 Z"/>
+    <path d="M1200 780 V1000 H900 C930 960 980 950 1010 910 C1050 860 1110 880 1140 830 C1160 800 1180 790 1200 780 Z"/>
+  </g>
+  <g fill="#5E5A3A" fill-opacity="0.22">
+    <circle cx="240" cy="160" r="9"/><circle cx="270" cy="120" r="5"/><circle cx="1000" cy="150" r="7"/><circle cx="960" cy="960" r="6"/>
+  </g>
+  <path d="M1050 0 C1046 60 1056 110 1048 180 C1044 230 1052 260 1050 300" fill="none" stroke="#4E4A30" stroke-opacity="0.2" stroke-width="3"/>
+</svg>`;
 
-.cover-link img {
-	transition: opacity 300ms ease-in-out;
-}
+const FAVICON = `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 16"><path d="M1 2h7l2 2h9v11H1z" fill="#7A3B26" stroke="#1E211C" stroke-width="1.5"/></svg>`)}`;
 
-.cover-link:hover img {
-	opacity: 0.75;
-}
+// path: the site path of the page ("/", "/music/", …). crumbs: [[label, href]].
+const page = ({ path, title, description = siteMeta.description, crumbs = null, desk, scripts = false }) => {
+  const home = path === "/";
+  const name = home ? siteMeta.name : `<a href="/">${siteMeta.name}</a>`;
+  const crumbHtml = crumbs
+    ? `\n    <p class="path"><a href="/">${siteMeta.domain}</a>/${crumbs.map(([l, h]) => (h ? `<a href="${h}">${esc(l)}</a>/` : `${esc(l)}/`)).join("")}</p>`
+    : "";
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${esc(title)}</title>
+<meta name="description" content="${esc(description)}">
+<link rel="canonical" href="https://${siteMeta.domain}${path}">
+<meta property="og:title" content="${esc(title)}">
+<meta property="og:description" content="${esc(description)}">
+<meta property="og:url" content="https://${siteMeta.domain}${path}">
+<link rel="icon" href="${FAVICON}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/site.css">
+</head>
+<body>
+${STAINS}
 
-/* Release titles link into their page; they should not look like body links. */
-h2 a {
-	text-decoration: none;
-}
+<main class="page">
 
-/* Panels (release / about / film / mixing) */
-/* Sits on the content's left margin, matching the release pages' prev/next. */
-.panel-close {
-	text-align: left;
-	margin-bottom: 2rem;
-}
+  <header class="site-header">
+    <div class="name">
+      <h1>${name}</h1>
+      <span class="ghost" aria-hidden="true">${siteMeta.name}</span>
+    </div>${crumbHtml}
+  </header>
+${desk}
+</main>
+${scripts ? `\n<script src="/assets/site.js"></script>\n` : ""}</body>
+</html>
+`;
+};
 
-.cover {
-	width: 100%;
-	height: auto;
-}
-
-.contact-item + .contact-item {
-	margin-top: 0.7em;
-}
-
-.photo-credit {
-	margin-top: 0.75em;
-	font-style: italic;
-	text-align: right;
-}
-
-.video {
-	position: relative;
-	width: 100%;
-	padding-bottom: 56.25%;
-}
-
-.video iframe {
-	position: absolute;
-	inset: 0;
-	width: 100%;
-	height: 100%;
-	border: 0;
-}
-
-/* "More" notes disclosure */
-.notes summary {
-	display: inline-block;
-	cursor: pointer;
-	list-style: none;
-	margin-top: 0.5em;
-}
-
-.notes summary::-webkit-details-marker,
-.notes summary::marker {
-	display: none;
-	content: "";
-}
-
-.notes[open] summary {
-	margin-bottom: 0.5em;
-}
-
-/* Track lists — after player.html */
-.tracklist {
-	font-family: "Diatype Variable";
-	font-variation-settings: 'slnt' 0, 'MONO' 0;
-	font-size: 1rem;
-	margin: 0.5em 0 0 0;
-}
-
-.track {
-	display: flex;
-	align-items: baseline;
-	gap: 1em;
-	padding: 0.6em 0;
-	border-top: 1px solid rgba(255, 255, 255, 0.15);
-}
-
-.track:last-child {
-	border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-}
-
-.tnum {
-	flex: 0 0 1.5em;
-	color: rgba(255, 255, 255, 0.35);
-}
-
-.tname {
-	flex: 1 1 auto;
-	color: rgba(255, 255, 255, 0.85);
-}
-
-.tdur {
-	flex: 0 0 auto;
-	color: rgba(255, 255, 255, 0.35);
-	font-variant-numeric: tabular-nums;
-}
-
-/* Embedded players */
-.embed {
-	display: block;
-	width: 100%;
-	border: 0;
-	background: #000000;
-}
-
-.embed-bandcamp {
-	height: 42px;
-}
-
-.embed-soundcloud {
-	height: 166px;
-}
-
-/* Buttons */
-.button {
-	display: inline-block;
-	padding: 0.5em 1.1em;
-	border-radius: 10em;
-	background: rgba(255, 255, 255, 0.14);
-	color: rgba(255, 255, 255, 0.85) !important;
-	line-height: normal;
-	margin-top: 0.5em;
-}
-
-.button:hover {
-	background: rgba(255, 255, 255, 0.24);
-}
-
-/* Display face for the name on the home page — see displayFont in src/data/site.js */
-h1 {
-	font-weight: ${displayFont.weight};
-	letter-spacing: ${displayFont.letterSpacing};
-}
-
-/*
- * The WebGL treatment of that name (scripts/hero-effect.js). The .hero-gl class
- * is only added once a GL context exists, so without WebGL the plain text shows.
- */
-h1.hero-gl {
-	position: relative;
-}
-
-h1.hero-gl a {
-	color: transparent;
-}
-
-.hero-gl-canvas {
-	position: absolute;
-	pointer-events: none;
-	z-index: 1;
-}
-
+// main: the directory window, plus anything stacked under it.
+const deskHtml = (dir, side = [], under = []) => `
+  <div class="desk${side.length ? "" : " solo"}">
+${under.length ? `
+    <div class="main-col">
+${dir}
+${under.join("\n")}
+    </div>` : dir}
+${side.length ? `
+    <div class="side">
+${side.join("\n")}
+    </div>` : ""}
+  </div>
 `;
 
-/* ------------------------------------------------------------------- build */
+const UP = (href) => ({ href, icon: icon.up(), name: "../", modified: "", size: "" });
 
-const shell = readFileSync(SHELL, "utf8");
+// ---------- dates ----------
 
-const stateMatch = /window\.__PRELOADED_STATE__=(\{[\s\S]*?\});?<\/script>/.exec(shell);
-if (!stateMatch) throw new Error("Could not find __PRELOADED_STATE__ in template.html");
-const base = JSON.parse(stateMatch[1]);
-
-const pages = buildPages();
-const stacked = pages.filter((p) => p.__stacked);
-
-/*
- * The template's h1 face (UnifrakturMaguntia) is a Google font the Cargo runtime
- * loads from site.fonts, so swapping the display face means swapping it in both
- * the stylesheet and that list.
- */
-const TEMPLATE_DISPLAY_FONT = "UnifrakturMaguntia";
-const baseStylesheet = base.css.stylesheet;
-if (!baseStylesheet.includes(TEMPLATE_DISPLAY_FONT)) {
-  throw new Error(`Expected ${TEMPLATE_DISPLAY_FONT} in the template stylesheet`);
-}
-const stylesheet =
-  baseStylesheet.replaceAll(TEMPLATE_DISPLAY_FONT, `"${displayFont.family}"`) + extraCss();
-const fonts = base.site.fonts
-  .map((f) =>
-    f.family === TEMPLATE_DISPLAY_FONT
-      ? { family: displayFont.family, provider: displayFont.provider || "google" }
-      : f
-  )
-  // A Cargo family may already be listed — the runtime must not load it twice.
-  .filter((f, i, all) => all.findIndex((o) => o.family === f.family) === i);
-
-const state = {
-  ...base,
-  structure: {
-    byParent: { root: pages.map((p) => p.id) },
-    bySort: Object.fromEntries(pages.map((p, i) => [p.id, i])),
-    indexById: Object.fromEntries(
-      pages.map((p) => [p.id, p.__stacked ? stacked.indexOf(p) : null])
-    ),
-    liveIndexes: {},
-  },
-  site: {
-    ...base.site,
-    fonts,
-    website_title: siteMeta.title,
-    has_site_description: true,
-    site_description: siteMeta.description,
-    is_template: false,
-    can_duplicate: false,
-    can_copy: false,
-    screenshot: null,
-    site_preview_url: null,
-  },
-  pages: {
-    byId: Object.fromEntries(
-      pages.map((p) => {
-        const { __stacked, ...page } = p;
-        return [page.id, page];
-      })
-    ),
-  },
-  sets: {
-    byId: {
-      ...base.sets.byId,
-      root: { ...base.sets.byId.root, page_count: stacked.length },
-    },
-  },
-  media: { data: [] },
-  css: { ...base.css, stylesheet },
-  frontendState: {
-    ...base.frontendState,
-    hostname: "yvesspiri.net",
-    activePID: "root",
-    renderedPages: [],
-    fontsLoaded: base.frontendState.fontsLoaded.map((f) =>
-      f === TEMPLATE_DISPLAY_FONT ? displayFont.family : f
-    ),
-  },
+const T = {
+  site: fileTime("src/data/site.js"),
+  projects: fileTime("src/data/projects.js"),
 };
+const releaseTime = (r) => fileTime(imgPath(r.image));
+const filmTime = (f) => (f.image ? fileTime(imgPath(f.image)) : T.projects);
+T.music = latest(...musicProjects.map(releaseTime));
+T.film = latest(...filmProjects.map(filmTime));
+T.mixing = latest(T.site, ...mixing.references.map((r) => fileTime(imgPath(r.image))));
+T.about = latest(T.site, fileTime(imgPath(about.image)));
 
-const stateJson = JSON.stringify(state).replace(/</g, "\\u003c");
+// ---------- contact.txt ----------
 
-let html = shell
-  // function form: the state JSON must not be read as $-replacement patterns
-  .replace(stateMatch[0], () => `window.__PRELOADED_STATE__=${stateJson}</script>`)
-  .replace(/<title>[^<]*<\/title>/, `<title>${esc(siteMeta.title)}</title>`)
-  .replace(
-    /<meta name="description" content="[^"]*">/,
-    `<meta name="description" content="${esc(siteMeta.description)}">`
-  )
-  .replace(
-    /<meta name="twitter:title" content="[^"]*">/,
-    `<meta name="twitter:title" content="${esc(siteMeta.title)}">`
-  )
-  .replace(
-    /<meta name="twitter:description" content="[^"]*">/,
-    `<meta name="twitter:description" content="${esc(siteMeta.description)}">`
-  )
-  .replace(
-    /<meta property="og:title" content="[^"]*">/,
-    `<meta property="og:title" content="${esc(siteMeta.title)}">`
-  )
-  .replace(
-    /<meta property="og:description" content="[^"]*">/,
-    `<meta property="og:description" content="${esc(siteMeta.description)}">`
-  )
-  .replace(/<meta property="og:url" content="[^"]*">/, `<meta property="og:url" content="https://yvesspiri.net">`)
-  // Cargo-hosted preview images for the source template — not this site.
-  .replace(/\s*<meta name="twitter:card" content="[^"]*">/, "")
-  .replace(/\s*<meta name="twitter:image" content="[^"]*">/, "")
-  .replace(/\s*<meta property="og:image" content="[^"]*">/, "")
-  // The shell ships a server-rendered copy of the template's own pages;
-  // the Cargo frontend renders our state client-side instead.
-  .replace(/<div class="content">[\s\S]*<\/div>(?=\s*<script src=)/, '<div class="content"></div>')
-  // The body carries a static copy of the site stylesheet, and the frontend
-  // keeps using that element rather than re-emitting it from the state.
-  .replace(
-    /(<customhtml><\/customhtml><style>)[\s\S]*?(<\/style><style id="mobile-offset-styles">)/,
-    (_m, open, close) => open + state.css.stylesheet + close
-  );
+const pad = (s, n) => s + " ".repeat(Math.max(1, n - s.length));
+const contactTxt = [
+  "Yves Spiri",
+  "Zürich",
+  "",
+  `${pad("email", 12)}${siteMeta.email}`,
+  ...links.map((l) => `${pad(l.label, 12)}${l.href}`),
+  "",
+  "available for film and game scoring, mixing and mastering,",
+  "and music production tutoring, online or in person.",
+  "",
+].join("\n");
 
-// The additions block only exists in our stylesheet, so its banner is the
-// sentinel that the template's own <style> really was overwritten.
-if (!html.includes("Yves Spiri: site additions"))
-  throw new Error("Site stylesheet was not replaced");
+// ---------- pages ----------
 
-/*
- * Scrolling to the cover scroll, from the hero title (#main-scroll) and from the
- * "Music" nav link (a.to-music). The template's own scroll-to-page link only
- * nudges the page a few pixels in a static export, so take those clicks over.
- * "Music" also has to work from a release page, where that section is not on the
- * page at all: there it navigates home and scrolls once home has rendered.
- */
-const BOOT_SCRIPT = `<script>(function(){
-	var KEY = "yvs:scroll-to-music";
+const pages = {};
 
-	function clearPending() {
-		try { sessionStorage.removeItem(KEY); } catch (e) {}
-	}
-
-	function scrollWhenReady() {
-		var tries = 0;
-		var timer = setInterval(function() {
-			if (scrollToId("main-scroll")) {
-				clearInterval(timer);
-				clearPending();
-			} else if (++tries > 60) {
-				clearInterval(timer);
-			}
-		}, 150);
-	}
-
-	function scrollToId(id) {
-		var target = document.getElementById(id);
-		if (!target) return false;
-		var top = target.getBoundingClientRect().top + window.scrollY;
-
-		/*
-		 * The deferred correction below used to fire unconditionally, so if you
-		 * started scrolling within 700ms of arriving it hauled you back to the
-		 * anchor — which is what read as the page snapping on a phone, where a
-		 * touch scroll begins almost immediately. Any input from the reader now
-		 * wins.
-		 */
-		var cancelled = false;
-		function cancel() { cancelled = true; }
-		var opts = { passive: true, once: true };
-		window.addEventListener("wheel", cancel, opts);
-		window.addEventListener("touchstart", cancel, opts);
-		window.addEventListener("touchmove", cancel, opts);
-		window.addEventListener("keydown", cancel, { once: true });
-
-		window.scrollTo({ top: top, behavior: "smooth" });
-		// Not every browser honours smooth here; land it either way.
-		setTimeout(function() {
-			if (!cancelled && Math.abs(window.scrollY - top) > 4) window.scrollTo(0, top);
-		}, 700);
-		return true;
-	}
-
-	document.addEventListener("click", function(event) {
-		if (!event.target.closest) return;
-		var link = event.target.closest('a[href^="#"], a.to-music');
-		if (!link) return;
-		var href = link.getAttribute("href");
-		var id = href.charAt(0) === "#" ? href.slice(1) : "main-scroll";
-		if (document.getElementById(id)) {
-			event.preventDefault();
-			event.stopPropagation();
-			scrollToId(id);
-		} else if (link.classList.contains("to-music")) {
-			// Not on the home page — let the link navigate home, then scroll once
-			// the section renders. The flag covers the case where following the
-			// link reloads the document and kills the poll below.
-			try { sessionStorage.setItem(KEY, "1"); } catch (e) {}
-			scrollWhenReady();
-		}
-	}, true);
-
-	var pending;
-	try { pending = sessionStorage.getItem(KEY); } catch (e) {}
-	if (pending) {
-		clearPending();
-		scrollWhenReady();
-	}
-})();</script>`;
-
-const heroEffect = readFileSync(resolve(root, "scripts/hero-effect.js"), "utf8");
-if (heroEffect.includes("</script")) throw new Error("hero-effect.js cannot contain </script");
-
-html = html.replace(
-  "</body>",
-  `\t\t${BOOT_SCRIPT}\n\t\t<script>\n${heroEffect}\n\t\t</script>\n\t</body>`
-);
-
-if (html.includes("Curzio") || html.includes("Kaputt") || html.includes("cargoworld")) {
-  throw new Error("Template placeholder content leaked into the output");
+// home
+{
+  const featured = musicProjects.find((r) => r.id === featuredRelease);
+  const rows = [
+    { href: "/about/", icon: icon.folder(TINT.about), name: "about/", modified: fmtDate(T.about), size: "dir" },
+    { href: "/music/", icon: icon.folder(TINT.music), name: "music/", modified: fmtDate(T.music), size: "dir" },
+    { href: "/film/", icon: icon.folder(TINT.film), name: "film/", modified: fmtDate(T.film), size: "dir", glitch: true },
+    { href: "/mixing/", icon: icon.folder(TINT.mixing), name: "mixing/", modified: fmtDate(T.mixing), size: "dir", corrupt: true },
+    { href: "/contact.txt", icon: icon.file(), name: "contact.txt", modified: fmtDate(T.site), size: fmtSize(Buffer.byteLength(contactTxt)) },
+    { href: "/", icon: icon.file(), name: "readme.txt", modified: fmtDate(T.site), size: fmtSize(Buffer.byteLength(readme.join(" "))), current: true },
+  ];
+  const side = [
+    readmeWin("readme.txt", readme.map((t) => p(t)).join("") + mailLine()),
+    embedWin("player", { bandcampUrl: featured.embedUrl, label: featured.title, href: `/music/${featured.id}/` }),
+    `
+    <section class="window error" role="alertdialog" aria-label="Error" aria-describedby="error-msg">
+      <div class="titlebar small">
+        <span class="stripes" aria-hidden="true"></span>
+        <span class="title">error</span>
+        <span class="stripes" aria-hidden="true"></span>
+      </div>
+      <div class="msg">
+        <svg width="28" height="26" viewBox="0 0 28 26" aria-hidden="true"><path d="M14 2 L26 24 H2 Z" fill="var(--warn)" stroke="var(--ink)" stroke-width="2"/><path d="M14 9v8M14 19.5v1.5" stroke="var(--ink)" stroke-width="2"/></svg>
+        <p id="error-msg">sector 07 could not be read. some files may be incomplete.</p>
+      </div>
+      <div class="actions">
+        <button type="button" class="bevel" data-error="retry">retry</button>
+        <button type="button" class="bevel" data-error="ignore">ignore</button>
+      </div>
+    </section>`,
+  ];
+  pages["index.html"] = page({
+    path: "/",
+    title: siteMeta.name,
+    desk: deskHtml(directory({ title: `${siteMeta.domain}/`, rows, tearAfter: 2, unreadable: 1 }), side),
+    scripts: true,
+  });
 }
 
-writeFileSync(OUT, html);
+// about/
+{
+  const rows = [
+    UP("/"),
+    { href: about.image, icon: icon.image(), name: "portrait.jpg", modified: fmtDate(fileTime(imgPath(about.image))), size: sizeOf(imgPath(about.image)) },
+    ...links.map((l) => ({ href: l.href, icon: icon.link(), name: `${l.label}.url`, modified: fmtDate(T.site), size: "url" })),
+    { href: "/contact.txt", icon: icon.file(), name: "contact.txt", modified: fmtDate(T.site), size: fmtSize(Buffer.byteLength(contactTxt)) },
+  ];
+  const credit = `photo <a href="${about.photoCredit.href}" target="_blank" rel="noopener">${esc(about.photoCredit.display)}</a>`;
+  const side = [
+    readmeWin("bio.txt", about.paragraphs.map((t) => p(t)).join("") + mailLine()),
+    imageWin("portrait.jpg", about.image, "Portrait of Yves Spiri", credit),
+  ];
+  pages["about/index.html"] = page({
+    path: "/about/",
+    title: `about · ${siteMeta.name}`,
+    crumbs: [["about"]],
+    desk: deskHtml(directory({ title: `${siteMeta.domain}/about/`, rows }), side),
+  });
+}
 
-// GitHub Pages has no history fallback: deep links (/about, /true-bug, …)
-// are served 404.html, which boots the same app and resolves the route.
-writeFileSync(NOT_FOUND, html);
+// music/
+{
+  const rows = [
+    UP("/"),
+    ...musicProjects.map((r, i) => ({
+      href: `/music/${r.id}/`,
+      icon: icon.folder(TINT.music),
+      name: `${r.id}/`,
+      modified: fmtDate(releaseTime(r)),
+      size: "dir",
+      corrupt: i === musicProjects.length - 1,
+    })),
+  ];
+  const musicLinks = links.filter((l) => l.label !== "instagram");
+  const side = [
+    readmeWin("readme.txt",
+      p("Yotah is my experimental club music project.") +
+      `\n        <ul>${musicLinks.map((l) => `\n          <li>› <a href="${l.href}" target="_blank" rel="noopener">${esc(l.label)}</a></li>`).join("")}\n        </ul>`),
+  ];
+  pages["music/index.html"] = page({
+    path: "/music/",
+    title: `music · ${siteMeta.name}`,
+    description: "Releases, remixes and compilation tracks by Yotah.",
+    crumbs: [["music"]],
+    desk: deskHtml(directory({ title: `${siteMeta.domain}/music/`, rows, unreadable: 1 }), side),
+  });
 
-console.log(
-  `built index.html + 404.html — ${pages.length} pages ` +
-    `(${stacked.length} stacked, ${musicProjects.length} releases, ${filmProjects.length} film)`
-);
+  // music/<id>/
+  for (const r of musicProjects) {
+    const { tracks, notes } = parseTracks(r.tracks);
+    const t = fmtDate(releaseTime(r));
+    const rows = [
+      UP("/music/"),
+      ...tracks.map((tr) => ({ icon: icon.wave(), name: `${tr.n} ${tr.title}`, modified: tr.length, size: "" })),
+      { href: r.image, icon: icon.image(), name: "cover.jpg", modified: t, size: sizeOf(imgPath(r.image)) },
+      r.bandcampLink && { href: r.bandcampLink, icon: icon.link(), name: "bandcamp.url", modified: t, size: "url" },
+    ].filter(Boolean);
+    const text =
+      p(esc(r.title), "entry-title") +
+      p(r.description) +
+      (r.extendedDescription ? `\n        <details>\n          <summary>more</summary>\n          <p>${copy(r.extendedDescription)}</p>\n        </details>` : "") +
+      (notes.length ? p(esc(notes.join(" · ").toLowerCase()), "note") : "") +
+      (r.credits ? p(esc(r.credits), "credits") : "");
+    const side = [
+      imageWin("cover.jpg", r.image, `Cover art for ${r.title}`),
+      embedWin("player", { bandcampUrl: r.embedUrl, soundcloudUrl: r.soundcloudEmbed, label: r.title }),
+    ];
+    pages[`music/${r.id}/index.html`] = page({
+      path: `/music/${r.id}/`,
+      title: `${r.title} · ${siteMeta.name}`,
+      description: r.description.replace(/<[^>]+>/g, ""),
+      crumbs: [["music", "/music/"], [r.id]],
+      desk: deskHtml(directory({ title: `music/${r.id}/`, rows, head: ["name", "time", "size"] }), side, [readmeWin("readme.txt", text)]),
+    });
+  }
+}
+
+// film/
+{
+  const rows = [
+    UP("/"),
+    ...filmProjects.map((f, i) => ({
+      href: `/film/${f.id}/`,
+      icon: icon.folder(TINT.film),
+      name: `${f.id}/`,
+      modified: fmtDate(filmTime(f)),
+      size: "dir",
+      glitch: i === 0,
+    })),
+  ];
+  pages["film/index.html"] = page({
+    path: "/film/",
+    title: `film · ${siteMeta.name}`,
+    description: "Sound design for film and animation by Yves Spiri.",
+    crumbs: [["film"]],
+    desk: deskHtml(directory({ title: `${siteMeta.domain}/film/`, rows })),
+  });
+
+  for (const f of filmProjects) {
+    const t = fmtDate(filmTime(f));
+    const rows = [
+      UP("/film/"),
+      f.image && { href: f.image, icon: icon.image(), name: "poster.jpg", modified: t, size: sizeOf(imgPath(f.image)) },
+      f.embedUrl && { href: f.embedUrl.split("?")[0].replace("player.vimeo.com/video", "vimeo.com"), icon: icon.link(), name: "vimeo.url", modified: t, size: "url" },
+    ].filter(Boolean);
+    const side = [
+      f.image && imageWin("poster.jpg", f.image, `Poster for ${f.title}`),
+      f.embedUrl && embedWin("video", { vimeoUrl: f.embedUrl, label: f.title }),
+    ].filter(Boolean);
+    pages[`film/${f.id}/index.html`] = page({
+      path: `/film/${f.id}/`,
+      title: `${f.title} · ${siteMeta.name}`,
+      description: f.description,
+      crumbs: [["film", "/film/"], [f.id]],
+      desk: deskHtml(directory({ title: `film/${f.id}/`, rows }), side, [
+        readmeWin("readme.txt", p(esc(f.title), "entry-title") + p(f.description) + (f.status ? p(esc(`status: ${f.status.toLowerCase()}`), "note") : "")),
+      ]),
+    });
+  }
+}
+
+// mixing/
+{
+  const rows = [
+    UP("/"),
+    ...mixing.references.map((r) => ({
+      href: r.href,
+      icon: icon.link(),
+      name: `${r.id}.url`,
+      modified: fmtDate(fileTime(imgPath(r.image))),
+      size: "url",
+    })),
+    { href: "/contact.txt", icon: icon.file(), name: "contact.txt", modified: fmtDate(T.site), size: fmtSize(Buffer.byteLength(contactTxt)) },
+  ];
+  const side = [
+    readmeWin("readme.txt", p(mixing.lead) + p(mixing.closing) + mailLine()),
+    ...mixing.references.flatMap((r) => [
+      win(`${r.id}.jpg`, `
+      <div class="inset">
+        <img src="${r.image}" alt="Cover art for ${esc(r.title)} by ${esc(r.artist)}" width="${imageSize(r.image)[0]}" height="${imageSize(r.image)[1]}" loading="lazy" decoding="async">
+        <p class="caption">${esc(r.artist)} · ${esc(r.title)}. ${copy(r.text)}</p>
+      </div>
+      <div class="inset">
+        <iframe src="${esc(bandcamp(r.embedUrl))}" height="42" title="${esc(r.title)} on Bandcamp" loading="lazy" seamless></iframe>
+      </div>`, { label: `${r.artist}, ${r.title}` }),
+    ]),
+  ];
+  pages["mixing/index.html"] = page({
+    path: "/mixing/",
+    title: `mixing & mastering · ${siteMeta.name}`,
+    description: mixing.lead,
+    crumbs: [["mixing"]],
+    desk: deskHtml(directory({ title: `${siteMeta.domain}/mixing/`, rows }), side),
+  });
+}
+
+// 404: the old single-page site had /<id> routes for releases; forward them.
+{
+  const rows = [
+    UP("/"),
+    { href: "/music/", icon: icon.folder(TINT.music), name: "music/", modified: "", size: "dir" },
+    { href: "/contact.txt", icon: icon.file(), name: "contact.txt", modified: "", size: "" },
+  ];
+  const side = [readmeWin("error.log", p("file not found. it may have moved, or never existed.", "note"))];
+  const ids = JSON.stringify(musicProjects.map((r) => r.id));
+  pages["404.html"] = page({
+    path: "/404.html",
+    title: `not found · ${siteMeta.name}`,
+    crumbs: [["▒▒▒"]],
+    desk: deskHtml(directory({ title: "not found", rows, unreadable: 1 }), side) +
+      `<script>(function(){var ids=${ids};var m=location.pathname.match(/^\\/([^/]+)\\/?$/);if(m&&ids.indexOf(m[1])!==-1)location.replace('/music/'+m[1]+'/');})();</script>\n`,
+  });
+}
+
+// ---------- write ----------
+
+for (const d of OWNED_DIRS) rmSync(join(root, d), { recursive: true, force: true });
+for (const [rel, html] of Object.entries(pages)) {
+  const out = join(root, rel);
+  mkdirSync(dirname(out), { recursive: true });
+  writeFileSync(out, html);
+}
+writeFileSync(join(root, "contact.txt"), contactTxt);
+mkdirSync(join(root, "assets"), { recursive: true });
+copyFileSync(join(root, "src/assets/site.css"), join(root, "assets/site.css"));
+copyFileSync(join(root, "src/assets/site.js"), join(root, "assets/site.js"));
+
+console.log(`built ${Object.keys(pages).length} pages + contact.txt`);

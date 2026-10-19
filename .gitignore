@@ -118,3 +118,9 @@ typings/
 
 # Backup
 backup/
+
+# macOS
+.DS_Store
+
+# design handoff (local only)
+_REDESIGN/

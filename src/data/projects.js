@@ -2,7 +2,7 @@ export const musicProjects = [
   {
     id: "slow-brained-remix",
     title: "Slow Brained (Yotah Remix)",
-    description: "A remix of Flower B's \"Slow Brained\", featured on \"Flagrant Déni\" — breaks, jungle and techno by Ethos Records.",
+    description: "A remix of Flower B's \"Slow Brained\", featured on \"Flagrant Déni\": breaks, jungle and techno by Ethos Records.",
     credits: "Remix by Yotah\nReleased by Ethos Records",
     image: "/images/slow_brained_remix.jpg",
     tracks: "1. Slow Brained (Yotah Remix) 02:51",
@@ -42,7 +42,7 @@ export const musicProjects = [
   {
     id: "no-time-to-waste",
     title: "No Time To Waste",
-    description: "Featured on \"I Wanna Be A Superstar Vol. 1\" by CRTTR, a collective based in Bern, Switzerland—a mutation with many faces, unfolding through sound, image, and genre-fluid collaborative play.",
+    description: "Featured on \"I Wanna Be A Superstar Vol. 1\" by CRTTR, a collective based in Bern, Switzerland: a mutation with many faces, unfolding through sound, image, and genre-fluid collaborative play.",
     credits: "Released by CRTTR",
     image: "/images/no_time_to_waste.jpg",
     tracks: "1. No Time To Waste 04:08",
@@ -53,7 +53,7 @@ export const musicProjects = [
     id: "rewiring",
     title: "Rewiring EP",
     description: "NHS's twentieth release introduces a newcomer, Yotah, with their debut EP \"Rewiring.\" The project features four tracks that teeter on the fringes of chunky maximalism and intricate, evolving modulation. The work explores hybridized and amorphous sonics into recognizable patterns, only to break through this consolidation to peer into the unknown that lurks on the other side.",
-    extendedDescription: "The creative process involved deliberate musical deconstruction. The artist pursued a method of learning and unlearning various styles of music to be left with a semblance of what was. The resulting sound operates as a collection of reinterpreted patterns—echoes of previous musical styles transformed through personal recontextualization.",
+    extendedDescription: "The creative process involved deliberate musical deconstruction. The artist pursued a method of learning and unlearning various styles of music to be left with a semblance of what was. The resulting sound operates as a collection of reinterpreted patterns, echoes of previous musical styles transformed through personal recontextualization.",
     credits: "Artwork by Aviv Szabs & Emanuel Baumann\nMastering by Fausto Mercier\nReleased by Nostro Hood System",
     image: "/images/rewiring.jpg",
     tracks: "1. Lungs 02:41\n2. Arc Blast 04:38\n3. Bouncer 04:46\n4. Landing Sequence 04:57",
@@ -63,7 +63,7 @@ export const musicProjects = [
   {
     id: "spring-remix",
     title: "Spring (Yotah's Healing Remix)",
-    description: "I was captivated by the original track's 'airy' feel, particularly in the vocals and the overall mix. The rhythmic patterns were so intricate and refined that I didn't dare touch them. Instead, I focused on translating that spacey, airy vibe into a spherical drone. My goal was to create something reminiscent of lying on the grass on a warm day, watching clouds drift by – a healing sensation I tend to forget during long winters and rediscover each spring.",
+    description: "I was captivated by the original track's 'airy' feel, particularly in the vocals and the overall mix. The rhythmic patterns were so intricate and refined that I didn't dare touch them. Instead, I focused on translating that spacey, airy vibe into a spherical drone. My goal was to create something reminiscent of lying on the grass on a warm day, watching clouds drift by, a healing sensation I tend to forget during long winters and rediscover each spring.",
     credits: "",
     image: "/images/spring_remix.jpg",
     tracks: "1. Spring (Yotah's Healing Remix) 05:54",
@@ -93,7 +93,7 @@ export const musicProjects = [
   {
     id: "this-is-fine",
     title: "This is Fine",
-    description: "Featured on \"I Wanna Be A Superstar Vol. 2\" by CRTTR, a collective based in Bern, Switzerland—a mutation with many faces, unfolding through sound, image, and genre-fluid collaborative play.",
+    description: "Featured on \"I Wanna Be A Superstar Vol. 2\" by CRTTR, a collective based in Bern, Switzerland: a mutation with many faces, unfolding through sound, image, and genre-fluid collaborative play.",
     credits: "Released by CRTTR",
     image: "/images/this_is_fine.jpg",
     tracks: "1. This is Fine 03:00",
