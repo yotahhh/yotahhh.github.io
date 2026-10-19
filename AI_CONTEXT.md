@@ -39,14 +39,16 @@ portfolio site, https://yvesspiri.net/.
   links to `/music/<id>/`.
 
 ## Themes
-- Four colour themes, switched by the swatches in every page header: `backroom` (the
-  original design, default, its tokens are `:root` in `src/assets/site.css`) and
-  `glare`, `dumbo`, `glitter`, drawn from reference images in `palettes/` (git-ignored,
-  local only: never commit it).
-- Themes live in `src/data/themes.js` as token overrides. The build appends them to
-  `assets/site.css` as `:root[data-theme="…"]` blocks. Derived colours (shadow,
-  wallpaper stripes, scanlines, glitch row, static strip) use `color-mix()` or `var()`,
-  so they follow the theme.
+- Four colour themes, switched by the swatches in every page header: `glitter`
+  (default), `backroom` (the original design), `glare` and `dumbo`. All but backroom
+  are drawn from reference images in `palettes/` (git-ignored, local only: never
+  commit it).
+- Themes live in `src/data/themes.js`, each with its full token set; `defaultTheme`
+  picks the default. The build appends them to `assets/site.css`: the default as the
+  base `:root`, the others as `:root[data-theme="…"]` overrides. The `:root` block in
+  `src/assets/site.css` is only the fallback for tokens a theme leaves out. Derived
+  colours (shadow, wallpaper stripes, scanlines, glitch row, static strip) use
+  `color-mix()` or `var()`, so they follow the theme.
 - The choice is stored in `localStorage` (`ys-theme`); an inline script in `<head>`
   applies it before first paint.
 - The build fails if any text colour is below 4.5:1 on a surface it is used on (the
@@ -57,7 +59,8 @@ portfolio site, https://yvesspiri.net/.
 - Text is always dark on a light surface.
 - No all caps, no bold: every font is weight 400. Labels lowercase except proper names.
 - Dates as `DD.MM.YY`, times 24h. The build throws on an em dash in copy.
-- One corrupted detail per page at most (a cut-off date, a twitching row).
+- One corrupted detail per page at most (a cut-off date, a twitching row). No
+  "unreadable" note in the status bar.
 - Respect `prefers-reduced-motion`.
 
 ## Dates and sizes

@@ -27,7 +27,7 @@ import { fileURLToPath } from "node:url";
 
 import { about, landingTrack, links, mixing, readme, siteMeta } from "../src/data/site.js";
 import { filmProjects, musicProjects } from "../src/data/projects.js";
-import { themes } from "../src/data/themes.js";
+import { defaultTheme, themes } from "../src/data/themes.js";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const landingAudio = JSON.parse(readFileSync(join(root, "src/data/landing-track.json"), "utf8"));
@@ -151,10 +151,10 @@ const row = ({ href, icon: ic, name, modified = "", size = "", current = false, 
         </${tag}>`;
 };
 
-const directory = ({ title, rows, head = ["name", "modified", "size"], tearAfter = -1, unreadable = 0 }) => {
+const directory = ({ title, rows, head = ["name", "modified", "size"], tearAfter = -1 }) => {
   const body = rows.map((r, i) => row(r) + (i === tearAfter ? TEAR : "")).join("");
   const count = rows.filter((r) => r.name !== "../").length;
-  const status = `${count} ${count === 1 ? "item" : "items"}${unreadable ? ` · ${unreadable} unreadable` : ""}`;
+  const status = `${count} ${count === 1 ? "item" : "items"}`;
   return `
     <section class="window directory" aria-label="Directory ${esc(title)}">${titlebar(title)}
 
@@ -271,10 +271,11 @@ const contrast = (a, b) => {
   return (hi + 0.05) / (lo + 0.05);
 };
 
-// The default theme's tokens are the :root block of the stylesheet.
+// Tokens a theme does not set fall back to the :root block of the stylesheet.
 const rootTokens = Object.fromEntries(
   [...readFileSync(join(root, "src/assets/site.css"), "utf8").matchAll(/^\s*--([a-z0-9-]+):\s*(#[0-9A-Fa-f]{6});/gm)].map((m) => [m[1], m[2]]),
 );
+if (!themes.some((t) => t.id === defaultTheme)) throw new Error(`defaultTheme "${defaultTheme}" is not in themes`);
 
 // Every text colour on every surface it actually appears on must reach 4.5:1.
 const USED = {
@@ -293,19 +294,25 @@ for (const t of themes) {
   }
 }
 
+// The default theme becomes the base :root; the others are switchable overrides.
+const tokenBlock = (t) => Object.entries(t.tokens).map(([k, v]) => `  --${k}: ${v};`).join("\n");
 const themeCss = `
 /* ---------- themes (generated from src/data/themes.js) ---------- */
+
+:root {
+${tokenBlock(themes.find((t) => t.id === defaultTheme))}
+}
 ${themes
-  .filter((t) => t.tokens)
-  .map((t) => `\n:root[data-theme="${t.id}"] {\n${Object.entries(t.tokens).map(([k, v]) => `  --${k}: ${v};`).join("\n")}\n}`)
+  .filter((t) => t.id !== defaultTheme)
+  .map((t) => `\n:root[data-theme="${t.id}"] {\n${tokenBlock(t)}\n}`)
   .join("\n")}
 `;
 
 // Runs before first paint, so a chosen theme never flashes the default.
-const THEME_BOOT = `<script>try{var t=localStorage.getItem("ys-theme");if(t&&t!=="${themes[0].id}")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>`;
+const THEME_BOOT = `<script>try{var t=localStorage.getItem("ys-theme");if(t&&t!=="${defaultTheme}")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>`;
 
 const themeSwitcher = () => `
-    <div class="themes" role="group" aria-label="Appearance">
+    <div class="themes" role="group" aria-label="Appearance" data-default="${defaultTheme}">
       <span aria-hidden="true">appearance</span>
       <span class="swatches">${themes
         .map(
@@ -317,7 +324,8 @@ const themeSwitcher = () => `
 
 // ---------- page shell ----------
 
-const FAVICON = `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 16"><path d="M1 2h7l2 2h9v11H1z" fill="#7A3B26" stroke="#1E211C" stroke-width="1.5"/></svg>`)}`;
+const FAVICON_FILL = themes.find((t) => t.id === defaultTheme).swatch[1];
+const FAVICON = `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 16"><path d="M1 2h7l2 2h9v11H1z" fill="${FAVICON_FILL}" stroke="#1E211C" stroke-width="1.5"/></svg>`)}`;
 
 // path: the site path of the page ("/", "/music/", …). crumbs: [[label, href]].
 const page = ({ path, title, description = siteMeta.description, crumbs = null, desk }) => {
@@ -429,7 +437,7 @@ const pages = {};
   pages["index.html"] = page({
     path: "/",
     title: siteMeta.name,
-    desk: deskHtml(directory({ title: `${siteMeta.domain}/`, rows, tearAfter: 2, unreadable: 1 }), side),
+    desk: deskHtml(directory({ title: `${siteMeta.domain}/`, rows, tearAfter: 2 }), side),
   });
 }
 
@@ -478,7 +486,7 @@ const pages = {};
     title: `music · ${siteMeta.name}`,
     description: "Releases, remixes and compilation tracks by Yotah.",
     crumbs: [["music"]],
-    desk: deskHtml(directory({ title: `${siteMeta.domain}/music/`, rows, unreadable: 1 }), side),
+    desk: deskHtml(directory({ title: `${siteMeta.domain}/music/`, rows }), side),
   });
 
   // music/<id>/
@@ -629,7 +637,7 @@ const pages = {};
     path: "/404.html",
     title: `not found · ${siteMeta.name}`,
     crumbs: [["▒▒▒"]],
-    desk: deskHtml(directory({ title: "not found", rows, unreadable: 1 }), side) +
+    desk: deskHtml(directory({ title: "not found", rows }), side) +
       `<script>(function(){var ids=${ids};var m=location.pathname.match(/^\\/([^/]+)\\/?$/);if(m&&ids.indexOf(m[1])!==-1)location.replace('/music/'+m[1]+'/');else if(m&&m[1]==='contact.txt')location.replace('/contact/');})();</script>\n`,
   });
 }

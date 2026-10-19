@@ -1,17 +1,72 @@
 // Colour themes, switchable from the swatches in the page header.
 //
-// "backroom" is the original design and the default: its values live in
-// :root in src/assets/site.css. The others are drawn from reference images
-// in palettes/ (git-ignored, local only): surfaces from their light areas,
-// ink from their darkest, the accent ("rust" in token names) from their
-// most saturated colour. Text stays dark on light in every theme, and the
+// The default theme is written as the base :root, the others as
+// :root[data-theme="…"] overrides. "backroom" is the original design; the
+// others are drawn from reference images in palettes/ (git-ignored, local
+// only): surfaces from their light areas, ink from their darkest, the accent
+// ("rust" in token names) from their most saturated colour. Text stays dark on light in every theme, and the
 // build checks every text/surface pair for at least 4.5:1 contrast.
+
+export const defaultTheme = "glitter";
 
 export const themes = [
   {
+    // the glitter face: mauve skin, violet shadow, green and pink glitter
+    id: "glitter",
+    label: "glitter",
+    swatch: ["#A88F98", "#1F6B55"],
+    tokens: {
+      ground: "#B09AA3",
+      window: "#DDCED5",
+      paper: "#EEE4E9",
+      button: "#E4D8DE",
+      "row-hover": "#CFBCC5",
+      "row-current": "#C4D8CB",
+      ink: "#1A1822",
+      "ink-2": "#28282F",
+      "ink-3": "#38343F",
+      "ink-4": "#443E4A",
+      rust: "#1F6B55",
+      "rust-btn": "#D385B1",
+      "led-dead": "#7D5C68",
+      "led-alarm": "#C2186B",
+      "f-about": "#7D5C68",
+      "f-music": "#254665",
+      "f-film": "#72454D",
+      "f-live": "#235B4F",
+      "f-sound": "#6DA587",
+      "bevel-dark": "#A8939D",
+      "bevel-light": "#F7F1F4",
+    },
+  },
+  {
+    // the original design: damp green-grey wall, beige windows, rust
     id: "backroom",
     label: "backroom",
     swatch: ["#A9AB8C", "#7A3B26"],
+    tokens: {
+      ground: "#A9AB8C",
+      window: "#CFC9AE",
+      paper: "#DCD6C1",
+      button: "#D5CFB6",
+      "row-hover": "#C3BDA2",
+      "row-current": "#B4B995",
+      ink: "#1E211C",
+      "ink-2": "#33352A",
+      "ink-3": "#45463A",
+      "ink-4": "#4E4F42",
+      rust: "#7A3B26",
+      "rust-btn": "#8E4E34",
+      "led-dead": "#6E6C55",
+      "led-alarm": "#9A2E1C",
+      "f-about": "#7C6838",
+      "f-music": "#55606C",
+      "f-film": "#7A3B26",
+      "f-live": "#6E6F62",
+      "f-sound": "#62786B",
+      "bevel-dark": "#9E9881",
+      "bevel-light": "#EEEADB",
+    },
   },
   {
     // the glare: steel light through glass, near-black, one edge of deep red
@@ -69,35 +124,6 @@ export const themes = [
       "f-sound": "#6FA9C5",
       "bevel-dark": "#97A8BA",
       "bevel-light": "#F2F6FA",
-    },
-  },
-  {
-    // the glitter face: mauve skin, violet shadow, green and pink glitter
-    id: "glitter",
-    label: "glitter",
-    swatch: ["#A88F98", "#1F6B55"],
-    tokens: {
-      ground: "#B09AA3",
-      window: "#DDCED5",
-      paper: "#EEE4E9",
-      button: "#E4D8DE",
-      "row-hover": "#CFBCC5",
-      "row-current": "#C4D8CB",
-      ink: "#1A1822",
-      "ink-2": "#28282F",
-      "ink-3": "#38343F",
-      "ink-4": "#443E4A",
-      rust: "#1F6B55",
-      "rust-btn": "#D385B1",
-      "led-dead": "#7D5C68",
-      "led-alarm": "#C2186B",
-      "f-about": "#7D5C68",
-      "f-music": "#254665",
-      "f-film": "#72454D",
-      "f-live": "#235B4F",
-      "f-sound": "#6DA587",
-      "bevel-dark": "#A8939D",
-      "bevel-light": "#F7F1F4",
     },
   },
 ];

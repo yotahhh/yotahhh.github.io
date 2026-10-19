@@ -219,7 +219,8 @@
 
   // ---------- appearance ----------
 
-  function currentTheme() { return document.documentElement.getAttribute('data-theme') || 'backroom'; }
+  function defaultTheme() { var g = document.querySelector('.themes'); return g ? g.getAttribute('data-default') : ''; }
+  function currentTheme() { return document.documentElement.getAttribute('data-theme') || defaultTheme(); }
 
   function bindThemes() {
     var swatches = document.querySelectorAll('main.page:not(.ghost) .swatch');
@@ -229,7 +230,7 @@
     swatches.forEach(function (b) {
       b.addEventListener('click', function () {
         var id = b.getAttribute('data-theme-id');
-        if (id === 'backroom') document.documentElement.removeAttribute('data-theme');
+        if (id === defaultTheme()) document.documentElement.removeAttribute('data-theme');
         else document.documentElement.setAttribute('data-theme', id);
         try { localStorage.setItem('ys-theme', id); } catch (e) {}
         mark();
