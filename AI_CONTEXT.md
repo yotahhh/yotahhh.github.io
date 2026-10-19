@@ -7,8 +7,10 @@ portfolio site, https://yvesspiri.net/.
 - **Design:** direction H2 "backroom, broken": a slightly broken retro-futurist file
   browser. Striped window title bars, a directory listing as navigation, damp
   institutional colours, scanlines, a fluorescent wash that drops out once every 18s
-  and a few small glitches. Type is ChicagoFLF (public-domain Chicago revival, the
-  Mac OS 9 system face), self-hosted from `src/assets/fonts/`.
+  and a few small glitches. Type is the Mac OS 9 pairing: Geneva for all text
+  (system font on macOS, Verdana elsewhere, nothing hosted) and ChicagoFLF, a
+  public-domain Chicago revival self-hosted from `src/assets/fonts/`, only for window
+  titles. Chicago everywhere read as too bold.
 - **Stack:** plain static HTML/CSS. A Node ESM script (`scripts/build-site.mjs`, no
   dependencies) renders every page from the content in `src/data/`.
 - **Deployment:** GitHub Pages serves the repo root of `main`. The push is the deploy.

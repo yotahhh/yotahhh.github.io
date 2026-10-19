@@ -40,10 +40,13 @@
 
   --shadow: 6px 6px 0 rgba(30, 33, 28, 0.4);
 
-  /* Mac OS 9 system face for everything: ChicagoFLF, the free Chicago
-     revival by Robin Casady (public domain), self-hosted in /assets/fonts */
-  --font-sans: "ChicagoFLF", "Chicago", "Charcoal", system-ui, sans-serif;
-  --font-mono: "ChicagoFLF", "Chicago", "Charcoal", system-ui, sans-serif;
+  /* the Mac OS 9 pairing: Geneva for text (the real one on macOS, its
+     sibling Verdana elsewhere), Chicago only for window titles. ChicagoFLF
+     is the free Chicago revival by Robin Casady (public domain), self-hosted
+     in /assets/fonts */
+  --font-sans: Geneva, Verdana, "DejaVu Sans", sans-serif;
+  --font-mono: Geneva, Verdana, "DejaVu Sans", sans-serif;
+  --font-title: "ChicagoFLF", "Chicago", "Charcoal", Geneva, sans-serif;
 }
 
 @font-face {
@@ -66,7 +69,7 @@ body {
   color: var(--ink);
   font-family: var(--font-mono);
   font-weight: 400;
-  font-size: 13px;
+  font-size: 12px;
   line-height: 1.55;
   position: relative;
   overflow-x: hidden;
@@ -129,7 +132,7 @@ body::before {
   font-family: var(--font-sans);
   font-weight: 400;
   font-size: 64px;
-  letter-spacing: 0;
+  letter-spacing: -0.02em;
   line-height: 1;
   /* chromatic aberration */
   text-shadow: 3px 0 0 rgba(140, 40, 25, 0.4), -3px 0 0 rgba(40, 80, 90, 0.35);
@@ -141,7 +144,7 @@ body::before {
   top: 0;
   font-family: var(--font-sans);
   font-size: 64px;
-  letter-spacing: 0;
+  letter-spacing: -0.02em;
   line-height: 1;
   color: var(--rust);
   opacity: 0.35;
@@ -203,6 +206,7 @@ body::before {
 }
 .titlebar .title {
   padding: 0 10px;
+  font-family: var(--font-title);
   font-size: 13px;
   white-space: nowrap;
 }
@@ -288,8 +292,8 @@ body::before {
   flex-direction: column;
   gap: 10px;
   font-family: var(--font-sans);
-  font-size: 15px;
-  line-height: 1.55;
+  font-size: 14px;
+  line-height: 1.6;
 }
 .readme-body p { margin: 0; }
 .readme-body a {
