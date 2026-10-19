@@ -7,7 +7,10 @@
    2. embeds (Bandcamp, SoundCloud, Vimeo): only one thing plays at a time.
       Bandcamp has no player API, so a click into an embed (focus moving into
       its iframe) counts as it starting, and reloading the iframe stops it.
-   3. once anything has been started, internal links swap the page content
+   3. appearance: the header swatches switch the colour theme (data-theme on
+      <html>, remembered in localStorage; an inline script in <head> applies
+      it before first paint).
+   4. once anything has been started, internal links swap the page content
       in place instead of loading a new page, so the music keeps going. A
       playing embed cannot be moved without reloading, so its old page stays
       in the document, invisible, with just that player pinned to the corner. */
@@ -214,8 +217,30 @@
     if (e.state && e.state.swapped) swap(location.href, false);
   });
 
+  // ---------- appearance ----------
+
+  function currentTheme() { return document.documentElement.getAttribute('data-theme') || 'backroom'; }
+
+  function bindThemes() {
+    var swatches = document.querySelectorAll('main.page:not(.ghost) .swatch');
+    function mark() {
+      swatches.forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-theme-id') === currentTheme())); });
+    }
+    swatches.forEach(function (b) {
+      b.addEventListener('click', function () {
+        var id = b.getAttribute('data-theme-id');
+        if (id === 'backroom') document.documentElement.removeAttribute('data-theme');
+        else document.documentElement.setAttribute('data-theme', id);
+        try { localStorage.setItem('ys-theme', id); } catch (e) {}
+        mark();
+      });
+    });
+    mark();
+  }
+
   function bindPage() {
     bindPlayer();
+    bindThemes();
   }
   bindPage();
 })();

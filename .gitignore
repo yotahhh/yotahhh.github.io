@@ -128,3 +128,6 @@ _REDESIGN/
 # unreleased source audio: never publish
 landing music/
 landing_music/
+
+# palette reference images (local only)
+palettes/

@@ -38,7 +38,8 @@
   --bevel-dark: #9E9881;
   --bevel-light: #EEEADB;
 
-  --shadow: 6px 6px 0 rgba(30, 33, 28, 0.4);
+  /* derived from the tokens above, so they follow the theme */
+  --shadow: 6px 6px 0 color-mix(in srgb, var(--ink) 40%, transparent);
 
   /* the Mac OS 9 pairing: Geneva for text (the real one on macOS, its
      sibling Verdana elsewhere), Chicago only for window titles. ChicagoFLF
@@ -65,7 +66,7 @@ body {
   min-height: 100vh;
   background-color: var(--ground);
   /* faint vertical wallpaper stripes */
-  background-image: repeating-linear-gradient(90deg, rgba(40, 42, 25, 0.06) 0 2px, transparent 2px 22px);
+  background-image: repeating-linear-gradient(90deg, color-mix(in srgb, var(--ink) 6%, transparent) 0 2px, transparent 2px 22px);
   color: var(--ink);
   font-family: var(--font-mono);
   font-weight: 400;
@@ -87,7 +88,7 @@ body::after {
   inset: 0;
   pointer-events: none;
   z-index: 100;
-  background: repeating-linear-gradient(to bottom, rgba(20, 22, 15, 0.09) 0 1px, transparent 1px 3px);
+  background: repeating-linear-gradient(to bottom, color-mix(in srgb, var(--ink) 9%, transparent) 0 1px, transparent 1px 3px);
 }
 
 /* fluorescent hum: a pale wash that drops out irregularly */
@@ -121,7 +122,15 @@ body::before {
   gap: 28px;
 }
 
-.site-header { position: relative; }
+.site-header {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px 24px;
+}
+.site-header .lead { min-width: 0; }
 
 .name {
   position: relative;
@@ -234,11 +243,12 @@ body::before {
 .rows .row[aria-current="page"] { background: var(--row-current); }
 .row .name-cell { display: flex; align-items: center; gap: 10px; }
 .row .meta { color: var(--ink-4); }
-.row[aria-current="page"] .meta { color: var(--ink-2); }
+.row[aria-current="page"] .meta,
+.rows a.row:hover .meta { color: var(--ink-2); }
 
 /* corrupted row: drifts right and twitches */
 .row.glitch {
-  background: rgba(122, 59, 38, 0.10);
+  background: color-mix(in srgb, var(--rust) 10%, transparent);
   animation: jitter 4s infinite steps(1);
 }
 @keyframes jitter {
@@ -375,7 +385,7 @@ body::before {
 }
 
 /* breadcrumb path under the name on inner pages */
-.path { margin: 10px 0 0; font-size: 13px; color: var(--ink-3); }
+.path { margin: 10px 0 0; font-size: 13px; color: var(--ink-2); }
 .path a { text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--rust); }
 
 /* a directory with more windows stacked under it */
@@ -489,6 +499,21 @@ main.ghost .inset.docked .undock {
   padding: 0 10px;
 }
 
+/* ---------- appearance: theme swatches in the header ---------- */
+
+.themes { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--ink-2); }
+.themes .swatches { display: flex; gap: 6px; }
+.swatch {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 2px solid var(--ink);
+  box-shadow: 2px 2px 0 color-mix(in srgb, var(--ink) 40%, transparent);
+  background: linear-gradient(135deg, var(--a) 0 55%, var(--b) 55% 100%);
+  cursor: pointer;
+}
+.swatch[aria-pressed="true"] { outline: 2px solid var(--ink); outline-offset: 2px; }
+
 /* ---------- responsive ---------- */
 
 @media (max-width: 760px) {
@@ -523,3 +548,77 @@ main.ghost .inset.docked .undock {
 .contact-list dt { color: var(--ink-3); }
 .contact-list dd { margin: 0; overflow-wrap: anywhere; }
 .contact-list a { text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--rust); }
+
+/* ---------- themes (generated from src/data/themes.js) ---------- */
+
+:root[data-theme="glare"] {
+  --ground: #9AA5B2;
+  --window: #C9D1DA;
+  --paper: #E6EBF0;
+  --button: #D3DAE2;
+  --row-hover: #B8C2CD;
+  --row-current: #D8BFC1;
+  --ink: #0C0809;
+  --ink-2: #1D151A;
+  --ink-3: #30323A;
+  --ink-4: #3D4048;
+  --rust: #7E0A11;
+  --rust-btn: #B0262A;
+  --led-dead: #525B66;
+  --led-alarm: #C0121A;
+  --f-about: #616B78;
+  --f-music: #393C45;
+  --f-film: #7E0A11;
+  --f-live: #7E8B9A;
+  --f-sound: #B0BECE;
+  --bevel-dark: #8E99A6;
+  --bevel-light: #F5F7FA;
+}
+
+:root[data-theme="dumbo"] {
+  --ground: #97A596;
+  --window: #C8D6E4;
+  --paper: #E0E9F2;
+  --button: #D1DDE9;
+  --row-hover: #B4C6D8;
+  --row-current: #E6C8B0;
+  --ink: #18241B;
+  --ink-2: #223326;
+  --ink-3: #2F4234;
+  --ink-4: #394B3D;
+  --rust: #8E3B12;
+  --rust-btn: #D2652E;
+  --led-dead: #576350;
+  --led-alarm: #D2652E;
+  --f-about: #A78567;
+  --f-music: #3A9CBE;
+  --f-film: #8E3B12;
+  --f-live: #576350;
+  --f-sound: #6FA9C5;
+  --bevel-dark: #97A8BA;
+  --bevel-light: #F2F6FA;
+}
+
+:root[data-theme="glitter"] {
+  --ground: #B09AA3;
+  --window: #DDCED5;
+  --paper: #EEE4E9;
+  --button: #E4D8DE;
+  --row-hover: #CFBCC5;
+  --row-current: #C4D8CB;
+  --ink: #1A1822;
+  --ink-2: #28282F;
+  --ink-3: #38343F;
+  --ink-4: #443E4A;
+  --rust: #1F6B55;
+  --rust-btn: #D385B1;
+  --led-dead: #7D5C68;
+  --led-alarm: #C2186B;
+  --f-about: #7D5C68;
+  --f-music: #254665;
+  --f-film: #72454D;
+  --f-live: #235B4F;
+  --f-sound: #6DA587;
+  --bevel-dark: #A8939D;
+  --bevel-light: #F7F1F4;
+}

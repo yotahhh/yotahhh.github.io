@@ -38,7 +38,8 @@
   --bevel-dark: #9E9881;
   --bevel-light: #EEEADB;
 
-  --shadow: 6px 6px 0 rgba(30, 33, 28, 0.4);
+  /* derived from the tokens above, so they follow the theme */
+  --shadow: 6px 6px 0 color-mix(in srgb, var(--ink) 40%, transparent);
 
   /* the Mac OS 9 pairing: Geneva for text (the real one on macOS, its
      sibling Verdana elsewhere), Chicago only for window titles. ChicagoFLF
@@ -65,7 +66,7 @@ body {
   min-height: 100vh;
   background-color: var(--ground);
   /* faint vertical wallpaper stripes */
-  background-image: repeating-linear-gradient(90deg, rgba(40, 42, 25, 0.06) 0 2px, transparent 2px 22px);
+  background-image: repeating-linear-gradient(90deg, color-mix(in srgb, var(--ink) 6%, transparent) 0 2px, transparent 2px 22px);
   color: var(--ink);
   font-family: var(--font-mono);
   font-weight: 400;
@@ -87,7 +88,7 @@ body::after {
   inset: 0;
   pointer-events: none;
   z-index: 100;
-  background: repeating-linear-gradient(to bottom, rgba(20, 22, 15, 0.09) 0 1px, transparent 1px 3px);
+  background: repeating-linear-gradient(to bottom, color-mix(in srgb, var(--ink) 9%, transparent) 0 1px, transparent 1px 3px);
 }
 
 /* fluorescent hum: a pale wash that drops out irregularly */
@@ -121,7 +122,15 @@ body::before {
   gap: 28px;
 }
 
-.site-header { position: relative; }
+.site-header {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px 24px;
+}
+.site-header .lead { min-width: 0; }
 
 .name {
   position: relative;
@@ -234,11 +243,12 @@ body::before {
 .rows .row[aria-current="page"] { background: var(--row-current); }
 .row .name-cell { display: flex; align-items: center; gap: 10px; }
 .row .meta { color: var(--ink-4); }
-.row[aria-current="page"] .meta { color: var(--ink-2); }
+.row[aria-current="page"] .meta,
+.rows a.row:hover .meta { color: var(--ink-2); }
 
 /* corrupted row: drifts right and twitches */
 .row.glitch {
-  background: rgba(122, 59, 38, 0.10);
+  background: color-mix(in srgb, var(--rust) 10%, transparent);
   animation: jitter 4s infinite steps(1);
 }
 @keyframes jitter {
@@ -375,7 +385,7 @@ body::before {
 }
 
 /* breadcrumb path under the name on inner pages */
-.path { margin: 10px 0 0; font-size: 13px; color: var(--ink-3); }
+.path { margin: 10px 0 0; font-size: 13px; color: var(--ink-2); }
 .path a { text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--rust); }
 
 /* a directory with more windows stacked under it */
@@ -488,6 +498,21 @@ main.ghost .inset.docked .undock {
   min-height: 26px;
   padding: 0 10px;
 }
+
+/* ---------- appearance: theme swatches in the header ---------- */
+
+.themes { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--ink-2); }
+.themes .swatches { display: flex; gap: 6px; }
+.swatch {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 2px solid var(--ink);
+  box-shadow: 2px 2px 0 color-mix(in srgb, var(--ink) 40%, transparent);
+  background: linear-gradient(135deg, var(--a) 0 55%, var(--b) 55% 100%);
+  cursor: pointer;
+}
+.swatch[aria-pressed="true"] { outline: 2px solid var(--ink); outline-offset: 2px; }
 
 /* ---------- responsive ---------- */
 

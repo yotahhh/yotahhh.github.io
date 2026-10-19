@@ -38,6 +38,21 @@ portfolio site, https://yvesspiri.net/.
 - `/404.html`: "not found". It also forwards the old single-page site's `/<id>` release
   links to `/music/<id>/`.
 
+## Themes
+- Four colour themes, switched by the swatches in every page header: `backroom` (the
+  original design, default, its tokens are `:root` in `src/assets/site.css`) and
+  `glare`, `dumbo`, `glitter`, drawn from reference images in `palettes/` (git-ignored,
+  local only: never commit it).
+- Themes live in `src/data/themes.js` as token overrides. The build appends them to
+  `assets/site.css` as `:root[data-theme="…"]` blocks. Derived colours (shadow,
+  wallpaper stripes, scanlines, glitch row, static strip) use `color-mix()` or `var()`,
+  so they follow the theme.
+- The choice is stored in `localStorage` (`ys-theme`); an inline script in `<head>`
+  applies it before first paint.
+- The build fails if any text colour is below 4.5:1 on a surface it is used on (the
+  `USED` table in `build-site.mjs`). Embeds keep a fixed paper background; Bandcamp
+  cannot be recoloured without reloading the player.
+
 ## Content rules (from the client brief)
 - Text is always dark on a light surface.
 - No all caps, no bold: every font is weight 400. Labels lowercase except proper names.

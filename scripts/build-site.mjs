@@ -27,6 +27,7 @@ import { fileURLToPath } from "node:url";
 
 import { about, landingTrack, links, mixing, readme, siteMeta } from "../src/data/site.js";
 import { filmProjects, musicProjects } from "../src/data/projects.js";
+import { themes } from "../src/data/themes.js";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const landingAudio = JSON.parse(readFileSync(join(root, "src/data/landing-track.json"), "utf8"));
@@ -121,11 +122,11 @@ const TEAR = `
         <div class="tear-slot" aria-hidden="true"><svg class="tear" viewBox="0 0 400 6" preserveAspectRatio="none">
           <defs>
             <pattern id="noise" width="16" height="6" patternUnits="userSpaceOnUse">
-              <rect width="16" height="6" fill="#B9B39A"/>
-              <rect x="0" y="0" width="5" height="2" fill="#5E5F4E"/>
-              <rect x="7" y="2" width="6" height="2" fill="#8C8A72"/>
-              <rect x="2" y="4" width="3" height="2" fill="#3A3B30"/>
-              <rect x="11" y="4" width="4" height="2" fill="#E2DCC4"/>
+              <rect width="16" height="6" fill="var(--row-hover)"/>
+              <rect x="0" y="0" width="5" height="2" fill="var(--ink-4)"/>
+              <rect x="7" y="2" width="6" height="2" fill="var(--bevel-dark)"/>
+              <rect x="2" y="4" width="3" height="2" fill="var(--ink-2)"/>
+              <rect x="11" y="4" width="4" height="2" fill="var(--bevel-light)"/>
             </pattern>
           </defs>
           <rect width="400" height="6" fill="url(#noise)"/>
@@ -255,6 +256,65 @@ const dock = () => {
 </div>`;
 };
 
+// ---------- themes ----------
+
+// WCAG contrast ratio between two #RRGGBB colours
+const luminance = (hex) => {
+  const [r, g, b] = hex.match(/[0-9a-f]{2}/gi).map((h) => {
+    const c = parseInt(h, 16) / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+};
+const contrast = (a, b) => {
+  const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+  return (hi + 0.05) / (lo + 0.05);
+};
+
+// The default theme's tokens are the :root block of the stylesheet.
+const rootTokens = Object.fromEntries(
+  [...readFileSync(join(root, "src/assets/site.css"), "utf8").matchAll(/^\s*--([a-z0-9-]+):\s*(#[0-9A-Fa-f]{6});/gm)].map((m) => [m[1], m[2]]),
+);
+
+// Every text colour on every surface it actually appears on must reach 4.5:1.
+const USED = {
+  ink: ["window", "paper", "button", "row-hover", "row-current", "ground"],
+  "ink-2": ["window", "row-hover", "row-current", "ground"], // hovered/current dates, path
+  "ink-3": ["window", "paper", "button"], // list header, credits, mail, dock time
+  "ink-4": ["window"], // dates, sizes, status bar
+};
+for (const t of themes) {
+  const tok = { ...rootTokens, ...t.tokens };
+  for (const [fg, bgs] of Object.entries(USED)) {
+    for (const bg of bgs) {
+      const ratio = contrast(tok[fg], tok[bg]);
+      if (ratio < 4.5) throw new Error(`theme ${t.id}: --${fg} on --${bg} is ${ratio.toFixed(2)}:1, needs 4.5:1`);
+    }
+  }
+}
+
+const themeCss = `
+/* ---------- themes (generated from src/data/themes.js) ---------- */
+${themes
+  .filter((t) => t.tokens)
+  .map((t) => `\n:root[data-theme="${t.id}"] {\n${Object.entries(t.tokens).map(([k, v]) => `  --${k}: ${v};`).join("\n")}\n}`)
+  .join("\n")}
+`;
+
+// Runs before first paint, so a chosen theme never flashes the default.
+const THEME_BOOT = `<script>try{var t=localStorage.getItem("ys-theme");if(t&&t!=="${themes[0].id}")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>`;
+
+const themeSwitcher = () => `
+    <div class="themes" role="group" aria-label="Appearance">
+      <span aria-hidden="true">appearance</span>
+      <span class="swatches">${themes
+        .map(
+          (t) =>
+            `<button type="button" class="swatch" data-theme-id="${t.id}" aria-pressed="false" aria-label="${esc(t.label)}" title="${esc(t.label)}" style="--a:${t.swatch[0]};--b:${t.swatch[1]}"></button>`,
+        )
+        .join("")}</span>
+    </div>`;
+
 // ---------- page shell ----------
 
 const FAVICON = `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 16"><path d="M1 2h7l2 2h9v11H1z" fill="#7A3B26" stroke="#1E211C" stroke-width="1.5"/></svg>`)}`;
@@ -280,16 +340,19 @@ const page = ({ path, title, description = siteMeta.description, crumbs = null, 
 <link rel="icon" href="${FAVICON}">
 <link rel="preload" href="/assets/fonts/ChicagoFLF.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/assets/site.css">
+${THEME_BOOT}
 </head>
 <body>
 
 <main class="page">
 
   <header class="site-header">
+    <div class="lead">
     <div class="name">
       <h1>${name}</h1>
       <span class="ghost" aria-hidden="true">${siteMeta.name}</span>
     </div>${crumbHtml}
+    </div>${themeSwitcher()}
   </header>
 ${desk}
 </main>
@@ -580,7 +643,7 @@ for (const [rel, html] of Object.entries(pages)) {
   writeFileSync(out, html);
 }
 mkdirSync(join(root, "assets"), { recursive: true });
-copyFileSync(join(root, "src/assets/site.css"), join(root, "assets/site.css"));
+writeFileSync(join(root, "assets/site.css"), readFileSync(join(root, "src/assets/site.css"), "utf8") + themeCss);
 copyFileSync(join(root, "src/assets/site.js"), join(root, "assets/site.js"));
 mkdirSync(join(root, "assets/fonts"), { recursive: true });
 copyFileSync(join(root, "src/assets/fonts/ChicagoFLF.woff2"), join(root, "assets/fonts/ChicagoFLF.woff2"));
