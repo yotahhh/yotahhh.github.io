@@ -7,8 +7,8 @@
  * as is:
  *
  *   index.html                 home: directory of the site + readme + player
- *   about/ music/ film/ mixing/ folder pages, one listing each
- *   music/<id>/ film/<id>/     entry pages
+ *   about/ music/ film/ games/ mixing/  folder pages, one listing each
+ *   music/<id>/ film/<id>/ games/<id>/  entry pages
  *   contact/                   contact.txt, shown in a window
  *   404.html                   "file not found", forwards the old /<id> links
  *   assets/                    site.css, site.js
@@ -26,12 +26,12 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { about, landingTrack, links, mixing, readme, siteMeta } from "../src/data/site.js";
-import { filmProjects, musicProjects } from "../src/data/projects.js";
+import { filmProjects, gameProjects, musicProjects } from "../src/data/projects.js";
 import { defaultTheme, themes } from "../src/data/themes.js";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const landingAudio = JSON.parse(readFileSync(join(root, "src/data/landing-track.json"), "utf8"));
-const OWNED_DIRS = ["about", "music", "film", "mixing", "contact", "assets"];
+const OWNED_DIRS = ["about", "music", "film", "games", "mixing", "contact", "assets"];
 
 // ---------- facts about files ----------
 
@@ -92,7 +92,7 @@ const parseTracks = (text = "") => {
 
 // ---------- icons (decorative) ----------
 
-const TINT = { about: "var(--f-about)", music: "var(--f-music)", film: "var(--f-film)", mixing: "var(--f-live)", sound: "var(--f-sound)" };
+const TINT = { about: "var(--f-about)", music: "var(--f-music)", film: "var(--f-film)", mixing: "var(--f-live)", games: "var(--f-sound)" };
 
 const icon = {
   folder: (tint) => `<svg width="20" height="15" viewBox="0 0 20 15" aria-hidden="true"><path d="M1 2h7l2 2h9v10H1z" fill="${tint}" stroke="var(--ink)" stroke-width="1.5"/></svg>`,
@@ -398,6 +398,8 @@ const releaseTime = (r) => fileTime(imgPath(r.image));
 const filmTime = (f) => (f.image ? fileTime(imgPath(f.image)) : T.projects);
 T.music = latest(...musicProjects.map(releaseTime));
 T.film = latest(...filmProjects.map(filmTime));
+const gameTime = (g) => latest(...g.stills.map((st) => fileTime(imgPath(st.image))));
+T.games = latest(...gameProjects.map(gameTime));
 T.mixing = latest(T.site, ...mixing.references.map((r) => fileTime(imgPath(r.image))));
 T.about = latest(T.site, fileTime(imgPath(about.image)));
 
@@ -426,6 +428,7 @@ const pages = {};
     { href: "/about/", icon: icon.folder(TINT.about), name: "about/", modified: fmtDate(T.about), size: "dir" },
     { href: "/music/", icon: icon.folder(TINT.music), name: "music/", modified: fmtDate(T.music), size: "dir" },
     { href: "/film/", icon: icon.folder(TINT.film), name: "film/", modified: fmtDate(T.film), size: "dir", glitch: true },
+    { href: "/games/", icon: icon.folder(TINT.games), name: "games/", modified: fmtDate(T.games), size: "dir" },
     { href: "/mixing/", icon: icon.folder(TINT.mixing), name: "mixing/", modified: fmtDate(T.mixing), size: "dir", corrupt: true },
     { href: "/contact/", icon: icon.file(), name: "contact.txt", modified: fmtDate(T.site), size: fmtSize(Buffer.byteLength(contactTxt)) },
     { href: "/", icon: icon.file(), name: "readme.txt", modified: fmtDate(T.site), size: fmtSize(Buffer.byteLength(readme.join(" "))), current: true },
@@ -559,6 +562,46 @@ const pages = {};
       desk: deskHtml(directory({ title: `film/${f.id}/`, rows }), side, [
         readmeWin("readme.txt", p(esc(f.title), "entry-title") + p(f.description) + (f.status ? p(esc(`status: ${f.status.toLowerCase()}`), "note") : "")),
       ]),
+    });
+  }
+}
+
+// games/
+{
+  const rows = [
+    UP("/"),
+    ...gameProjects.map((g) => ({
+      href: `/games/${g.id}/`,
+      icon: icon.folder(TINT.games),
+      name: `${g.id}/`,
+      modified: fmtDate(gameTime(g)),
+      size: "dir",
+    })),
+  ];
+  pages["games/index.html"] = page({
+    path: "/games/",
+    title: `games · ${siteMeta.name}`,
+    description: "Sound for games by Yves Spiri.",
+    crumbs: [["games"]],
+    desk: deskHtml(directory({ title: `${siteMeta.domain}/games/`, rows })),
+  });
+
+  for (const g of gameProjects) {
+    const rows = [
+      UP("/games/"),
+      ...g.stills.map((st) => ({ href: st.image, icon: icon.image(), name: st.name, modified: fmtDate(fileTime(imgPath(st.image))), size: sizeOf(imgPath(st.image)) })),
+      g.link && { href: g.link.href, icon: icon.link(), name: g.link.name, modified: fmtDate(T.projects), size: "url" },
+    ].filter(Boolean);
+    pages[`games/${g.id}/index.html`] = page({
+      path: `/games/${g.id}/`,
+      title: `${g.title} · ${siteMeta.name}`,
+      description: g.description,
+      crumbs: [["games", "/games/"], [g.id]],
+      desk: deskHtml(
+        directory({ title: `games/${g.id}/`, rows }),
+        g.stills.map((st) => imageWin(st.name, st.image, st.alt)),
+        [readmeWin("readme.txt", p(esc(g.title), "entry-title") + p(g.description) + (g.credits ? p(esc(g.credits), "credits") : ""))],
+      ),
     });
   }
 }

@@ -169,3 +169,18 @@ export const filmProjects = [
     platform: "vimeo"
   }
 ];
+
+export const gameProjects = [
+  {
+    id: "ossuarium",
+    title: "Ossuarium",
+    description: "Sound effects for Ossuarium, a narrative adventure game by Ariana Huber and Nina Hungerbühler, made as their Bachelor's project in Game Design at ZHdK. The game is set in an abstract world of bones, a creature that dreads change and has to face it, told through shadow play and typography.",
+    credits: "Sound effects by Yves Spiri\nGame by Ariana Huber and Nina Hungerbühler\nBA Game Design, ZHdK, 2026",
+    // stills from the trailer (gametrailer/, git-ignored): 0:33 and 1:20
+    stills: [
+      { name: "gameplay.jpg", image: "/images/ossuarium_gameplay.jpg", alt: "Gameplay still from Ossuarium: a pale world of bones with the words \"Are we lost?\"" },
+      { name: "title.jpg", image: "/images/ossuarium_title.jpg", alt: "Ossuarium title screen" },
+    ],
+    link: { name: "zhdk.url", href: "https://design.zhdk.ch/en/diploma-archive/2026/ossuarium/" },
+  },
+];

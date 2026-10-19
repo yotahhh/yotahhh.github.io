@@ -17,7 +17,7 @@ portfolio site, https://yvesspiri.net/.
 
 ## Project structure
 - `src/data/site.js`: meta, home readme, featured release, links, about, mixing & mastering.
-- `src/data/projects.js`: `musicProjects` and `filmProjects`.
+- `src/data/projects.js`: `musicProjects`, `filmProjects` and `gameProjects`.
 - `src/assets/site.css`: the shared stylesheet. Tokens are the custom properties in
   `:root`. The first part is the reference implementation; inner page additions are
   near the end, before the responsive and reduced-motion blocks.
@@ -28,12 +28,12 @@ portfolio site, https://yvesspiri.net/.
 - `images/`: cover art and photos (served as is).
 
 **Generated, do not hand-edit:** `index.html`, `404.html`, `about/`, `music/`,
-`film/`, `mixing/`, `contact/`, `assets/`. The build deletes and rewrites those folders.
+`film/`, `games/`, `mixing/`, `contact/`, `assets/`. The build deletes and rewrites those folders.
 
 ## Pages
 - `/` home: directory of the site, readme, the landing track player.
-- `/about/`, `/music/`, `/film/`, `/mixing/`: folder pages, one listing each, `../` first.
-- `/music/<id>/`, `/film/<id>/`: entry pages (tracks, cover, readme, embed).
+- `/about/`, `/music/`, `/film/`, `/games/`, `/mixing/`: folder pages, one listing each, `../` first.
+- `/music/<id>/`, `/film/<id>/`, `/games/<id>/`: entry pages (tracks, cover or stills, readme, embed).
 - `/contact/`: contact.txt shown in a window (old `/contact.txt` links forward there).
 - `/404.html`: "not found". It also forwards the old single-page site's `/<id>` release
   links to `/music/<id>/`.
@@ -72,6 +72,10 @@ Sizes are real byte sizes.
 - **Add a release:** put the cover in `images/`, add an entry to `musicProjects`
   (`id`, `title`, `description`, `image`, optional `extendedDescription`, `tracks` as
   `1. Name 04:23` lines, `credits`, `bandcampLink`, `embedUrl` or `soundcloudEmbed`).
+- **Add a game:** stills go in `images/` (from a trailer: `ffmpeg -ss <seconds> -i
+  <trailer> -frames:v 1 -vf scale=1600:-2 -q:v 4 images/<name>.jpg`), then an entry in
+  `gameProjects` (`id`, `title`, `description`, `credits`, `stills`, `link`). Trailers
+  live in `gametrailer/`, which is git-ignored and never published.
 - **Preview:** `npm run dev` (builds, then serves http://127.0.0.1:5173).
 - **Publish:** `npm run build`, commit the regenerated files, push `main`.
 
