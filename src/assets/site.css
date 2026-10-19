@@ -565,6 +565,12 @@ main.ghost .inset.docked .undock {
   .name h1, .name .ghost { font-size: 44px; }
   .row { grid-template-columns: minmax(0, 1fr) auto; padding: 9px 10px; }
   .hide-sm { display: none; }
+  /* the theme picker shrinks into the header's top-right corner */
+  .themes { position: absolute; top: 0; right: 0; }
+  .themes > span[aria-hidden] { display: none; }
+  .themes .swatches { gap: 5px; }
+  .swatch { width: 18px; height: 18px; border-width: 1.5px; box-shadow: none; }
+  .swatch[aria-pressed="true"] { outline-width: 1.5px; outline-offset: 1.5px; }
 }
 
 /* ---------- reduced motion: keep the look, stop the movement ---------- */

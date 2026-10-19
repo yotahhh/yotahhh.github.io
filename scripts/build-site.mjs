@@ -423,7 +423,7 @@ const releaseTime = (r) => fileTime(imgPath(r.image));
 const filmTime = (f) => (f.image ? fileTime(imgPath(f.image)) : T.projects);
 T.music = latest(...musicProjects.map(releaseTime));
 T.film = latest(...filmProjects.map(filmTime));
-const gameTime = (g) => latest(...g.stills.map((st) => fileTime(imgPath(st.image))));
+const gameTime = (g) => latest(...g.stills.map((st) => fileTime(imgPath(st.image))), ...(g.clips || []).map((c) => fileTime(`clips/${c.file}.mp4`)));
 T.games = latest(...gameProjects.map(gameTime));
 T.mixing = latest(T.site, ...mixing.references.map((r) => fileTime(imgPath(r.image))));
 T.about = latest(T.site, fileTime(imgPath(about.image)));
@@ -561,6 +561,7 @@ const pages = {};
 // games/
 {
   const files = (g) => [
+    ...(g.clips || []).map((c) => ({ href: `#clip-${c.name.replace(/\.\w+$/, "")}`, icon: icon.wave(), name: c.name, modified: fmtDate(fileTime(`clips/${c.file}.mp4`)), size: sizeOf(`clips/${c.file}.mp4`) })),
     ...g.stills.map((st) => ({ href: st.image, icon: icon.image(), name: st.name, modified: fmtDate(fileTime(imgPath(st.image))), size: sizeOf(imgPath(st.image)) })),
     g.link && { href: g.link.href, icon: icon.link(), name: g.link.name, modified: fmtDate(T.projects), size: "url" },
   ].filter(Boolean);
@@ -572,7 +573,7 @@ const pages = {};
     crumbs: [["games", "/games/"], [g.id]],
     desk: deskHtml(
       directory({ title: `${siteMeta.domain}/games/`, rows: tree("games", gameProjects, g.id, folder, files) }),
-      g.stills.map((st) => imageWin(st.name, st.image, st.alt)),
+      [...(g.clips || []).map(clipWin), ...g.stills.map((st) => imageWin(st.name, st.image, st.alt))],
       [readmeWin("readme.txt", p(esc(g.title), "entry-title") + p(g.description) + (g.credits ? p(esc(g.credits), "credits") : ""))],
     ),
   }), { title: `games · ${siteMeta.name}`, description: "Sound for games by Yves Spiri." });

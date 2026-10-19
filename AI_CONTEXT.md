@@ -127,7 +127,8 @@ pages; that is expected, commit them with the next change.
 - **Add a game:** stills in `images/` (from a trailer in `gametrailer/`:
   `ffmpeg -ss <seconds> -i <trailer> -frames:v 1 -vf scale=1600:-2 -q:v 4 images/<name>.jpg`),
   then an entry in `gameProjects` (`id`, `title`, `description`, `credits`, `stills`,
-  `link`).
+  `link`, optional `clips`). Game clips work like film clips; the Ossuarium trailer is
+  clean 1920x1080 at 60 fps, so no crop, just `scale=960:540:flags=lanczos,fps=30`.
 - **Add a theme:** reference image in `palettes/`, extract dominant and saturated colours
   (Pillow median-cut was used), add a full token set to `themes.js`; the build checks
   contrast.
@@ -167,4 +168,3 @@ pages; that is expected, commit them with the next change.
 - Not yet tested on Safari / iPhone (muted autoplay of clips, lock-screen controls,
   playing with the screen off). Lighthouse accessibility not run.
 - The Terminarch render is a work version with burned-in timecode.
-- Ossuarium has stills only; a trailer embed could be added if one is online.
