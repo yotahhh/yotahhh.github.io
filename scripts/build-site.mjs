@@ -119,11 +119,11 @@ const win = (title, body, { cls = "", label = title } = {}) => `
     </section>`;
 
 // One listing row. href makes it a link; external links open in a new tab.
-const row = ({ href, icon: ic, name, modified = "", size = "", current = false, glitch = false, corrupt = false }) => {
+const row = ({ href, icon: ic, name, modified = "", size = "", current = false, corrupt = false }) => {
   const tag = href ? "a" : "div";
   const ext = href && /^https?:/.test(href);
   const attrs = [
-    `class="row${glitch ? " glitch" : ""}"`,
+    `class="row"`,
     href ? `href="${esc(href)}"` : "",
     ext ? `target="_blank" rel="noopener"` : "",
     current ? `aria-current="page"` : "",
@@ -413,7 +413,7 @@ const pages = {};
   const rows = [
     { href: "/about/", icon: icon.folder(TINT.about), name: "about/", modified: fmtDate(T.about), size: "dir" },
     { href: "/music/", icon: icon.folder(TINT.music), name: "music/", modified: fmtDate(T.music), size: "dir" },
-    { href: "/film/", icon: icon.folder(TINT.film), name: "film/", modified: fmtDate(T.film), size: "dir", glitch: true },
+    { href: "/film/", icon: icon.folder(TINT.film), name: "film/", modified: fmtDate(T.film), size: "dir" },
     { href: "/games/", icon: icon.folder(TINT.games), name: "games/", modified: fmtDate(T.games), size: "dir" },
     { href: "/mixing/", icon: icon.folder(TINT.mixing), name: "mixing/", modified: fmtDate(T.mixing), size: "dir", corrupt: true },
     { href: "/contact/", icon: icon.file(), name: "contact.txt", modified: fmtDate(T.site), size: fmtSize(Buffer.byteLength(contactTxt)) },
@@ -512,13 +512,12 @@ const pages = {};
 {
   const rows = [
     UP("/"),
-    ...filmProjects.map((f, i) => ({
+    ...filmProjects.map((f) => ({
       href: `/film/${f.id}/`,
       icon: icon.folder(TINT.film),
       name: `${f.id}/`,
       modified: fmtDate(filmTime(f)),
       size: "dir",
-      glitch: i === 0,
     })),
   ];
   pages["film/index.html"] = page({

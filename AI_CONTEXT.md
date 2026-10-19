@@ -47,7 +47,7 @@ portfolio site, https://yvesspiri.net/.
   picks the default. The build appends them to `assets/site.css`: the default as the
   base `:root`, the others as `:root[data-theme="…"]` overrides. The `:root` block in
   `src/assets/site.css` is only the fallback for tokens a theme leaves out. Derived
-  colours (shadow, wallpaper stripes, scanlines, glitch row) use
+  colours (shadow, wallpaper stripes, scanlines, glitched rows) use
   `color-mix()` or `var()`, so they follow the theme.
 - The choice is stored in `localStorage` (`ys-theme`); an inline script in `<head>`
   applies it before first paint.
@@ -59,7 +59,9 @@ portfolio site, https://yvesspiri.net/.
 - Text is always dark on a light surface.
 - No all caps, no bold: every font is weight 400. Labels lowercase except proper names.
 - Dates as `DD.MM.YY`, times 24h. The build throws on an em dash in copy.
-- One corrupted detail per page at most (a cut-off date, a twitching row). No
+- Glitches stay subtle. On every page view `site.js` gives one random listing row a
+  glitch (`jitter`, `flicker`, `slip`, `chroma`, `stutter`, in rotation; CSS in
+  `site.css`). The home and music listings also have one cut-off date. No
   "unreadable" note in the status bar.
 - Respect `prefers-reduced-motion`.
 

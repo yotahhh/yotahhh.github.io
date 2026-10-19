@@ -246,8 +246,11 @@ body::before {
 .row[aria-current="page"] .meta,
 .rows a.row:hover .meta { color: var(--ink-2); }
 
-/* corrupted row: drifts right and twitches */
-.row.glitch {
+/* glitched rows: site.js picks one row per page view and gives it one of
+   these, rotating through them from view to view. Short steps, long rests. */
+
+/* jitter: drifts right and twitches */
+.row.glitch-jitter {
   background: color-mix(in srgb, var(--rust) 10%, transparent);
   animation: jitter 4s infinite steps(1);
 }
@@ -257,6 +260,44 @@ body::before {
   71% { transform: translateX(-4px); }
   73% { transform: translateX(18px); }
   75% { transform: translateX(12px); }
+}
+
+/* flicker: the row's text drops out like a failing tube */
+.row.glitch-flicker > span { animation: flicker 5.5s infinite steps(1); }
+@keyframes flicker {
+  0% { opacity: 1; }
+  58% { opacity: 0.2; }
+  59% { opacity: 1; }
+  61% { opacity: 0.45; }
+  62% { opacity: 1; }
+}
+
+/* slip: the row loses vertical hold for a moment */
+.row.glitch-slip { animation: slip 4.5s infinite steps(1); }
+@keyframes slip {
+  0% { transform: none; }
+  64% { transform: translateY(3px) skewX(-6deg); }
+  65.5% { transform: translateY(-2px); }
+  67% { transform: none; }
+}
+
+/* chroma: the text splits into red and teal, then snaps back */
+.row.glitch-chroma { animation: chroma 6s infinite steps(1); }
+@keyframes chroma {
+  0% { text-shadow: none; }
+  50% { text-shadow: 2px 0 0 rgba(140, 40, 25, 0.55), -2px 0 0 rgba(40, 80, 90, 0.5); }
+  53% { text-shadow: -3px 0 0 rgba(140, 40, 25, 0.55), 3px 0 0 rgba(40, 80, 90, 0.5); }
+  55% { text-shadow: none; }
+}
+
+/* stutter: the icon blinks out and lands in the wrong place */
+.row.glitch-stutter .name-cell svg { animation: stutter 5s infinite steps(1); }
+@keyframes stutter {
+  0% { opacity: 1; transform: none; }
+  40% { opacity: 0; }
+  41% { opacity: 1; transform: translateX(-4px); }
+  44% { transform: translateX(3px); }
+  46% { transform: none; }
 }
 
 .statusbar {
@@ -519,8 +560,10 @@ main.ghost .inset.docked .undock {
 /* ---------- reduced motion: keep the look, stop the movement ---------- */
 
 @media (prefers-reduced-motion: reduce) {
-  body::before, .row.glitch, .led.alarm { animation: none; }
-  .row.glitch { transform: translateX(12px); }
+  body::before, .led.alarm,
+  .row.glitch-jitter, .row.glitch-flicker > span, .row.glitch-slip, .row.glitch-chroma,
+  .row.glitch-stutter .name-cell svg { animation: none; }
+  .row.glitch-jitter { transform: translateX(12px); }
 }
 
 /* ---------- contact.txt page ---------- */

@@ -10,7 +10,8 @@
    3. appearance: the header swatches switch the colour theme (data-theme on
       <html>, remembered in localStorage; an inline script in <head> applies
       it before first paint).
-   4. once anything has been started, internal links swap the page content
+   4. glitches: one random row per page view twitches, in a rotating style.
+   5. once anything has been started, internal links swap the page content
       in place instead of loading a new page, so the music keeps going. A
       playing embed cannot be moved without reloading, so its old page stays
       in the document, invisible, with just that player pinned to the corner. */
@@ -239,9 +240,28 @@
     mark();
   }
 
+  // ---------- glitches ----------
+
+  // One row per page view gets a glitch: the row is random, the kind
+  // rotates through the list from view to view (remembered across visits).
+  var GLITCHES = ['jitter', 'flicker', 'slip', 'chroma', 'stutter'];
+
+  function bindGlitch() {
+    var rows = [].filter.call(document.querySelectorAll('main.page:not(.ghost) .rows a.row'), function (r) {
+      return !r.hasAttribute('aria-current') && r.textContent.trim().indexOf('../') !== 0;
+    });
+    if (!rows.length) return;
+    var n = 0;
+    try { n = (parseInt(localStorage.getItem('ys-glitch'), 10) || 0) + 1; localStorage.setItem('ys-glitch', n); }
+    catch (e) { n = Math.floor(Math.random() * GLITCHES.length); }
+    var r = rows[Math.floor(Math.random() * rows.length)];
+    r.classList.add('glitch-' + GLITCHES[n % GLITCHES.length]);
+  }
+
   function bindPage() {
     bindPlayer();
     bindThemes();
+    bindGlitch();
   }
   bindPage();
 })();
