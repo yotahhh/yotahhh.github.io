@@ -19,8 +19,12 @@ export const readme = [
   'The work moves between music, film and live performance. Music is released as <a href="/music/">Yotah</a>.',
 ];
 
-// The release featured in the home page player window (an id from musicProjects).
-export const featuredRelease = "slow-brained-remix";
+// The track in the home page player. The audio itself is prepared by
+// scripts/encode-landing.mjs, which writes src/data/landing-track.json.
+export const landingTrack = {
+  title: "Fight Fears Today",
+  note: "unreleased",
+};
 
 export const links = [
   { label: "instagram", display: "@yotahmusic", href: "https://instagram.com/yotahmusic" },

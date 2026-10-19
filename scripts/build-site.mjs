@@ -25,10 +25,11 @@ import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, statSync, wr
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { about, featuredRelease, links, mixing, readme, siteMeta } from "../src/data/site.js";
+import { about, landingTrack, links, mixing, readme, siteMeta } from "../src/data/site.js";
 import { filmProjects, musicProjects } from "../src/data/projects.js";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const landingAudio = JSON.parse(readFileSync(join(root, "src/data/landing-track.json"), "utf8"));
 const OWNED_DIRS = ["about", "music", "film", "mixing", "contact", "assets"];
 
 // ---------- facts about files ----------
@@ -212,6 +213,31 @@ function imageSize(src) {
   throw new Error(`no JPEG size in ${src}`);
 }
 
+// The home page player: the reference player, wired up by site.js. The audio
+// is scrambled (see scripts/encode-landing.mjs), so it carries the key.
+const fmtTime = (s) => `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
+const landingPlayer = () => {
+  const { title, note } = landingTrack;
+  const { file, key, duration, peaks } = landingAudio;
+  const bars = peaks
+    .map((v, i) => {
+      const h = Math.max(1, Math.round(v * 26));
+      return `<path d="M${2 + i * 4} ${15 - h / 2}v${h}"/>`;
+    })
+    .join("");
+  return `
+    <section class="window player" aria-label="${esc(title)}, ${esc(note)}" data-src="${file}" data-key="${key}">
+      <button type="button" class="play" aria-label="Play ${esc(title)}" aria-pressed="false">
+        <svg width="12" height="12" viewBox="0 0 10 10" aria-hidden="true"><path d="M2.5 1l7 4-7 4z" fill="var(--ink)"/></svg>
+      </button>
+      <div class="track">
+        <span class="label">${esc(title)} · <span class="status">${esc(note)}</span></span>
+        <svg class="wave" viewBox="0 0 ${peaks.length * 4} 30" preserveAspectRatio="none" fill="none" stroke-width="2.5" aria-hidden="true">${bars}</svg>
+      </div>
+      <span class="time">${fmtTime(duration)}</span>
+    </section>`;
+};
+
 // ---------- page shell ----------
 
 const FAVICON = `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 16"><path d="M1 2h7l2 2h9v11H1z" fill="#7A3B26" stroke="#1E211C" stroke-width="1.5"/></svg>`)}`;
@@ -306,7 +332,6 @@ const pages = {};
 
 // home
 {
-  const featured = musicProjects.find((r) => r.id === featuredRelease);
   const rows = [
     { href: "/about/", icon: icon.folder(TINT.about), name: "about/", modified: fmtDate(T.about), size: "dir" },
     { href: "/music/", icon: icon.folder(TINT.music), name: "music/", modified: fmtDate(T.music), size: "dir" },
@@ -317,7 +342,7 @@ const pages = {};
   ];
   const side = [
     readmeWin("readme.txt", readme.map((t) => p(t)).join("") + mailLine()),
-    embedWin("player", { bandcampUrl: featured.embedUrl, label: featured.title, href: `/music/${featured.id}/` }),
+    landingPlayer(),
     `
     <section class="window error" role="alertdialog" aria-label="Error" aria-describedby="error-msg">
       <div class="titlebar small">

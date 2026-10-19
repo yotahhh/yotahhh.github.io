@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "node scripts/build-site.mjs && node scripts/dev-server.mjs",
     "build": "node scripts/build-site.mjs",
-    "preview": "node scripts/dev-server.mjs"
+    "preview": "node scripts/dev-server.mjs",
+    "encode:landing": "node scripts/encode-landing.mjs"
   }
 }

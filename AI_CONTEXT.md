@@ -31,7 +31,7 @@ portfolio site, https://yvesspiri.net/.
 `film/`, `mixing/`, `contact/`, `assets/`. The build deletes and rewrites those folders.
 
 ## Pages
-- `/` home: directory of the site, readme, a player with the featured release, error dialog.
+- `/` home: directory of the site, readme, the landing track player, error dialog.
 - `/about/`, `/music/`, `/film/`, `/mixing/`: folder pages, one listing each, `../` first.
 - `/music/<id>/`, `/film/<id>/`: entry pages (tracks, cover, readme, embed).
 - `/contact/`: contact.txt shown in a window (old `/contact.txt` links forward there).
@@ -58,5 +58,15 @@ Sizes are real byte sizes.
 - **Publish:** `npm run build`, commit the regenerated files, push `main`.
 
 ## Playback
-The repo has no audio files, so all players are the existing Bandcamp/SoundCloud
-embeds (recoloured in `bandcamp()` / `soundcloud()`) and one Vimeo embed.
+- **Home page player:** plays one unreleased track. The WAV lives in `landing_music/`,
+  which is git-ignored and must never be committed. `npm run encode:landing --
+  landing_music/<file>.wav` encodes it to AAC 128k in an .m4a (plays everywhere,
+  ~4.5 MB), XOR-scrambles it with a random key into `media/<hash>.bin`, and writes
+  `src/data/landing-track.json` (file, key, duration, waveform). Then `npm run build`.
+  `site.js` fetches the file on first hover/focus/click of play, unscrambles it and
+  plays a blob URL. This only stops casual downloading; the key is in the page.
+  Title and note are `landingTrack` in `src/data/site.js`.
+- **Everything else:** the existing Bandcamp/SoundCloud embeds (recoloured in
+  `bandcamp()` / `soundcloud()`) and one Vimeo embed.
+- **Committing:** stage files by name, never `git add -A`, so nothing unreleased in the
+  working tree gets published by accident.
