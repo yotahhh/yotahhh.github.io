@@ -362,22 +362,6 @@ const pages = {};
   const side = [
     readmeWin("readme.txt", readme.map((t) => p(t)).join("") + mailLine()),
     landingPlayer(),
-    `
-    <section class="window error" role="alertdialog" aria-label="Error" aria-describedby="error-msg">
-      <div class="titlebar small">
-        <span class="stripes" aria-hidden="true"></span>
-        <span class="title">error</span>
-        <span class="stripes" aria-hidden="true"></span>
-      </div>
-      <div class="msg">
-        <svg width="28" height="26" viewBox="0 0 28 26" aria-hidden="true"><path d="M14 2 L26 24 H2 Z" fill="var(--warn)" stroke="var(--ink)" stroke-width="2"/><path d="M14 9v8M14 19.5v1.5" stroke="var(--ink)" stroke-width="2"/></svg>
-        <p id="error-msg">sector 07 could not be read. some files may be incomplete.</p>
-      </div>
-      <div class="actions">
-        <button type="button" class="bevel" data-error="retry">retry</button>
-        <button type="button" class="bevel" data-error="ignore">ignore</button>
-      </div>
-    </section>`,
   ];
   pages["index.html"] = page({
     path: "/",

@@ -1,13 +1,16 @@
 /* yvesspiri.net · the only script.
 
-   1. error dialog: retry flickers it, ignore dismisses it for the session.
-      It never blocks anything; it is decoration that happens to have buttons.
-   2. the landing track: one audio element shared by the home page player and
+   1. the landing track: one audio element shared by the home page player and
       the dock in the corner. The file on the server is XOR-scrambled (see
       scripts/encode-landing.mjs): it is fetched on first hover or play,
       unscrambled with the key on the dock, and played from a blob URL.
-   3. once the track has been started, internal links swap the page content
-      in place instead of loading a new page, so the music keeps going. */
+   2. embeds (Bandcamp, SoundCloud, Vimeo): only one thing plays at a time.
+      Bandcamp has no player API, so a click into an embed (focus moving into
+      its iframe) counts as it starting, and reloading the iframe stops it.
+   3. once anything has been started, internal links swap the page content
+      in place instead of loading a new page, so the music keeps going. A
+      playing embed cannot be moved without reloading, so its old page stays
+      in the document, invisible, with just that player pinned to the corner. */
 (function () {
   var dock = document.querySelector('.dock');
   var audio = new Audio();
@@ -105,6 +108,7 @@
   dock.querySelector('.play').addEventListener('click', toggle);
   audio.addEventListener('play', function () {
     started = true;
+    stopEmbed();
     dock.hidden = false;
     setStatus();
     paint();
@@ -123,25 +127,49 @@
     } catch (e) {}
   }
 
-  // ---------- error dialog ----------
+  // ---------- embeds ----------
 
-  function bindError() {
-    var dialog = document.querySelector('.error');
-    if (!dialog) return;
-    try { if (sessionStorage.getItem('ys-error-ignored') === '1') dialog.hidden = true; } catch (e) {}
-    dialog.addEventListener('click', function (e) {
-      var action = e.target.getAttribute('data-error');
-      if (action === 'ignore') {
-        dialog.hidden = true;
-        try { sessionStorage.setItem('ys-error-ignored', '1'); } catch (err) {}
-      } else if (action === 'retry') {
-        dialog.style.visibility = 'hidden';
-        setTimeout(function () { dialog.style.visibility = ''; }, 180);
-      }
-    });
+  var embed = null; // the iframe that was last started
+
+  function stopEmbed() {
+    if (!embed) return;
+    var ghost = embed.closest('main.ghost');
+    if (ghost) ghost.remove();
+    else {
+      embed.src = embed.src; // reload: the only way to stop a Bandcamp player
+      embed.closest('.inset').classList.remove('docked');
+    }
+    embed = null;
   }
 
-  // ---------- page swaps, only while the track is in play ----------
+  window.addEventListener('blur', function () {
+    setTimeout(function () {
+      var f = document.activeElement;
+      if (!f || f.tagName !== 'IFRAME' || !f.closest('.inset') || f === embed) return;
+      stopEmbed();
+      audio.pause();
+      dock.hidden = true;
+      embed = f;
+      started = true;
+    }, 0);
+  });
+
+  // the old page stays, invisible; only the playing embed shows, in the corner
+  function dockEmbed(main) {
+    main.classList.add('ghost');
+    // no aria-hidden: visibility: hidden already hides the rest, and the player stays reachable
+    var inset = embed.closest('.inset');
+    inset.classList.add('docked');
+    var close = document.createElement('button');
+    close.type = 'button';
+    close.className = 'bevel undock';
+    close.textContent = 'close';
+    close.setAttribute('aria-label', 'Close player');
+    close.addEventListener('click', stopEmbed);
+    inset.appendChild(close);
+  }
+
+  // ---------- page swaps, only once something has been played ----------
 
   function swap(url, push) {
     return fetch(url)
@@ -150,7 +178,16 @@
         var doc = new DOMParser().parseFromString(html, 'text/html');
         var main = doc.querySelector('main.page');
         if (!main) throw new Error('no page');
-        document.querySelector('main.page').replaceWith(document.adoptNode(main));
+        var current = document.querySelector('main.page:not(.ghost)');
+        main = document.adoptNode(main);
+        if (embed && current.contains(embed)) {
+          var old = document.querySelector('main.ghost');
+          if (old) old.remove();
+          current.before(main);
+          dockEmbed(current);
+        } else {
+          current.replaceWith(main);
+        }
         document.title = doc.title;
         if (push) history.pushState({ swapped: true }, '', url);
         window.scrollTo(0, 0);
@@ -179,7 +216,6 @@
 
   function bindPage() {
     bindPlayer();
-    bindError();
   }
   bindPage();
 })();

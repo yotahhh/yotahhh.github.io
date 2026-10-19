@@ -21,7 +21,7 @@ portfolio site, https://yvesspiri.net/.
 - `src/assets/site.css`: the shared stylesheet. Tokens are the custom properties in
   `:root`. The first part is the reference implementation; inner page additions are
   near the end, before the responsive and reduced-motion blocks.
-- `src/assets/site.js`: the only script: error dialog, landing track player and dock, page swaps.
+- `src/assets/site.js`: the only script: landing track player and dock, embeds, page swaps.
 - `scripts/build-site.mjs`: the components (window, directory listing, readme, inset,
   embed) and every page.
 - `scripts/dev-server.mjs`: static server that behaves like GitHub Pages.
@@ -31,7 +31,7 @@ portfolio site, https://yvesspiri.net/.
 `film/`, `mixing/`, `contact/`, `assets/`. The build deletes and rewrites those folders.
 
 ## Pages
-- `/` home: directory of the site, readme, the landing track player, error dialog.
+- `/` home: directory of the site, readme, the landing track player.
 - `/about/`, `/music/`, `/film/`, `/mixing/`: folder pages, one listing each, `../` first.
 - `/music/<id>/`, `/film/<id>/`: entry pages (tracks, cover, readme, embed).
 - `/contact/`: contact.txt shown in a window (old `/contact.txt` links forward there).
@@ -73,6 +73,13 @@ Sizes are real byte sizes.
   (images) open in a new tab. Before the track starts, links navigate normally. Media
   Session handlers give lock-screen and media-key control. Anything bound to page
   content goes in `bindPage()`, which runs after every swap.
+- **Embeds and the landing track never play together.** Bandcamp has no player API,
+  so a click into an embed (window blur with an iframe focused) counts as it starting:
+  the landing track pauses and its dock hides. Starting the landing track stops the
+  embed by reloading its iframe. A started embed survives page swaps: its page is kept
+  as `main.ghost` (fixed, clipped, invisible) and only its `.inset` shows, pinned to the
+  corner as `.docked` with a close button. An iframe cannot be moved without reloading,
+  which is why the whole old page stays.
 - **Everything else:** the existing Bandcamp/SoundCloud embeds (recoloured in
   `bandcamp()` / `soundcloud()`) and one Vimeo embed.
 - **Committing:** stage files by name, never `git add -A`, so nothing unreleased in the
