@@ -445,6 +445,29 @@ body::before {
 .readme-body ul { margin: 0; padding: 0; list-style: none; font-family: var(--font-mono); font-size: 13px; }
 .readme-body li + li { margin-top: 2px; }
 
+/* ---------- dock: the track's play/pause, pinned to the corner ---------- */
+
+.dock {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 50;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px 10px 8px;
+  max-width: calc(100vw - 32px);
+  background: var(--button);
+  font-size: 12px;
+}
+.dock[hidden] { display: none; }
+.dock .play { width: 32px; height: 32px; }
+.dock-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dock-time { flex: none; color: var(--ink-3); }
+/* progress, as a thin rust line along the bottom edge */
+.dock-bar { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; border-top: 1px solid var(--ink); }
+.dock-bar span { display: block; height: 100%; width: 0; background: var(--rust); }
+
 /* ---------- responsive ---------- */
 
 @media (max-width: 760px) {
@@ -453,7 +476,8 @@ body::before {
 }
 
 @media (max-width: 640px) {
-  .page { padding: 36px 12px 56px; }
+  .page { padding: 36px 12px 96px; }
+  .dock { right: 12px; bottom: 12px; max-width: calc(100vw - 24px); }
   .name h1, .name .ghost { font-size: 44px; }
   .row { grid-template-columns: minmax(0, 1fr) auto; padding: 9px 10px; }
   .hide-sm { display: none; }

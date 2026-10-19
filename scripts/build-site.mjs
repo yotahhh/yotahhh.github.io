@@ -214,11 +214,11 @@ function imageSize(src) {
 }
 
 // The home page player: the reference player, wired up by site.js. The audio
-// is scrambled (see scripts/encode-landing.mjs), so it carries the key.
+// is scrambled (see scripts/encode-landing.mjs); the key is on the dock.
 const fmtTime = (s) => `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
 const landingPlayer = () => {
   const { title, note } = landingTrack;
-  const { file, key, duration, peaks } = landingAudio;
+  const { duration, peaks } = landingAudio;
   const bars = peaks
     .map((v, i) => {
       const h = Math.max(1, Math.round(v * 26));
@@ -226,7 +226,7 @@ const landingPlayer = () => {
     })
     .join("");
   return `
-    <section class="window player" aria-label="${esc(title)}, ${esc(note)}" data-src="${file}" data-key="${key}">
+    <section class="window player" aria-label="${esc(title)}, ${esc(note)}" data-player>
       <button type="button" class="play" aria-label="Play ${esc(title)}" aria-pressed="false">
         <svg width="12" height="12" viewBox="0 0 10 10" aria-hidden="true"><path d="M2.5 1l7 4-7 4z" fill="var(--ink)"/></svg>
       </button>
@@ -238,12 +238,29 @@ const landingPlayer = () => {
     </section>`;
 };
 
+// The dock: a small play/pause window pinned to the corner of every page.
+// It stays hidden until the track is started, then follows you around, since
+// site.js swaps pages in place while music is playing. It carries the
+// track's data, so the player works from any page.
+const PLAY_ICON = `<svg width="12" height="12" viewBox="0 0 10 10" aria-hidden="true"><path d="M2.5 1l7 4-7 4z" fill="var(--ink)"/></svg>`;
+const dock = () => {
+  const { title, artist } = landingTrack;
+  const { file, key, duration } = landingAudio;
+  return `
+<div class="dock window" hidden data-src="${file}" data-key="${key}" data-title="${esc(title)}" data-artist="${esc(artist)}">
+  <button type="button" class="play" aria-label="Play ${esc(title)}" aria-pressed="false">${PLAY_ICON}</button>
+  <span class="dock-label">${esc(title)}</span>
+  <span class="dock-time">${fmtTime(duration)}</span>
+  <span class="dock-bar" aria-hidden="true"><span></span></span>
+</div>`;
+};
+
 // ---------- page shell ----------
 
 const FAVICON = `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 16"><path d="M1 2h7l2 2h9v11H1z" fill="#7A3B26" stroke="#1E211C" stroke-width="1.5"/></svg>`)}`;
 
 // path: the site path of the page ("/", "/music/", …). crumbs: [[label, href]].
-const page = ({ path, title, description = siteMeta.description, crumbs = null, desk, scripts = false }) => {
+const page = ({ path, title, description = siteMeta.description, crumbs = null, desk }) => {
   const home = path === "/";
   const name = home ? siteMeta.name : `<a href="/">${siteMeta.name}</a>`;
   const crumbHtml = crumbs
@@ -276,7 +293,9 @@ const page = ({ path, title, description = siteMeta.description, crumbs = null, 
   </header>
 ${desk}
 </main>
-${scripts ? `\n<script src="/assets/site.js"></script>\n` : ""}</body>
+${dock()}
+<script src="/assets/site.js"></script>
+</body>
 </html>
 `;
 };
@@ -364,7 +383,6 @@ const pages = {};
     path: "/",
     title: siteMeta.name,
     desk: deskHtml(directory({ title: `${siteMeta.domain}/`, rows, tearAfter: 2, unreadable: 1 }), side),
-    scripts: true,
   });
 }
 

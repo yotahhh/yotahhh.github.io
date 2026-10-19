@@ -23,6 +23,7 @@ export const readme = [
 // scripts/encode-landing.mjs, which writes src/data/landing-track.json.
 export const landingTrack = {
   title: "Fight Fears Today",
+  artist: "Yotah",
   note: "unreleased",
 };
 

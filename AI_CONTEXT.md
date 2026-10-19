@@ -21,7 +21,7 @@ portfolio site, https://yvesspiri.net/.
 - `src/assets/site.css`: the shared stylesheet. Tokens are the custom properties in
   `:root`. The first part is the reference implementation; inner page additions are
   near the end, before the responsive and reduced-motion blocks.
-- `src/assets/site.js`: the only script, for the atmospheric error dialog.
+- `src/assets/site.js`: the only script: error dialog, landing track player and dock, page swaps.
 - `scripts/build-site.mjs`: the components (window, directory listing, readme, inset,
   embed) and every page.
 - `scripts/dev-server.mjs`: static server that behaves like GitHub Pages.
@@ -65,7 +65,14 @@ Sizes are real byte sizes.
   `src/data/landing-track.json` (file, key, duration, waveform). Then `npm run build`.
   `site.js` fetches the file on first hover/focus/click of play, unscrambles it and
   plays a blob URL. This only stops casual downloading; the key is in the page.
-  Title and note are `landingTrack` in `src/data/site.js`.
+  Title, artist and note are `landingTrack` in `src/data/site.js`.
+- **Dock and background play:** every page carries a hidden `.dock` (the track's data
+  plus a play/pause button), pinned bottom-right once the track starts. From then on,
+  `site.js` swaps `main.page` in place for internal links ending in `/` (fetch +
+  pushState, popstate on Back), so the one audio element keeps playing; other files
+  (images) open in a new tab. Before the track starts, links navigate normally. Media
+  Session handlers give lock-screen and media-key control. Anything bound to page
+  content goes in `bindPage()`, which runs after every swap.
 - **Everything else:** the existing Bandcamp/SoundCloud embeds (recoloured in
   `bandcamp()` / `soundcloud()`) and one Vimeo embed.
 - **Committing:** stage files by name, never `git add -A`, so nothing unreleased in the
