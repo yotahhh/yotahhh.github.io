@@ -124,3 +124,7 @@ backup/
 
 # design handoff (local only)
 _REDESIGN/
+
+# unreleased source audio: never publish
+landing music/
+landing_music/
