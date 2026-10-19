@@ -118,20 +118,6 @@ const win = (title, body, { cls = "", label = title } = {}) => `
     <section class="window${cls ? " " + cls : ""}" aria-label="${esc(label)}">${titlebar(title)}${body}
     </section>`;
 
-const TEAR = `
-        <div class="tear-slot" aria-hidden="true"><svg class="tear" viewBox="0 0 400 6" preserveAspectRatio="none">
-          <defs>
-            <pattern id="noise" width="16" height="6" patternUnits="userSpaceOnUse">
-              <rect width="16" height="6" fill="var(--row-hover)"/>
-              <rect x="0" y="0" width="5" height="2" fill="var(--ink-4)"/>
-              <rect x="7" y="2" width="6" height="2" fill="var(--bevel-dark)"/>
-              <rect x="2" y="4" width="3" height="2" fill="var(--ink-2)"/>
-              <rect x="11" y="4" width="4" height="2" fill="var(--bevel-light)"/>
-            </pattern>
-          </defs>
-          <rect width="400" height="6" fill="url(#noise)"/>
-        </svg></div>`;
-
 // One listing row. href makes it a link; external links open in a new tab.
 const row = ({ href, icon: ic, name, modified = "", size = "", current = false, glitch = false, corrupt = false }) => {
   const tag = href ? "a" : "div";
@@ -151,8 +137,8 @@ const row = ({ href, icon: ic, name, modified = "", size = "", current = false, 
         </${tag}>`;
 };
 
-const directory = ({ title, rows, head = ["name", "modified", "size"], tearAfter = -1 }) => {
-  const body = rows.map((r, i) => row(r) + (i === tearAfter ? TEAR : "")).join("");
+const directory = ({ title, rows, head = ["name", "modified", "size"] }) => {
+  const body = rows.map(row).join("");
   const count = rows.filter((r) => r.name !== "../").length;
   const status = `${count} ${count === 1 ? "item" : "items"}`;
   return `
@@ -440,7 +426,7 @@ const pages = {};
   pages["index.html"] = page({
     path: "/",
     title: siteMeta.name,
-    desk: deskHtml(directory({ title: `${siteMeta.domain}/`, rows, tearAfter: 2 }), side),
+    desk: deskHtml(directory({ title: `${siteMeta.domain}/`, rows }), side),
   });
 }
 

@@ -259,18 +259,6 @@ body::before {
   75% { transform: translateX(12px); }
 }
 
-/* static tear running across the listing: a zero-height slot between two
-   rows, so it always sits on their boundary whatever the row heights are */
-.tear-slot { position: relative; height: 0; }
-.tear {
-  position: absolute;
-  left: -10px;
-  top: -3px;
-  width: calc(100% + 24px);
-  height: 6px;
-  pointer-events: none;
-}
-
 .statusbar {
   display: flex;
   justify-content: space-between;

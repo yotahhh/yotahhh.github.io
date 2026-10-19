@@ -47,7 +47,7 @@ portfolio site, https://yvesspiri.net/.
   picks the default. The build appends them to `assets/site.css`: the default as the
   base `:root`, the others as `:root[data-theme="…"]` overrides. The `:root` block in
   `src/assets/site.css` is only the fallback for tokens a theme leaves out. Derived
-  colours (shadow, wallpaper stripes, scanlines, glitch row, static strip) use
+  colours (shadow, wallpaper stripes, scanlines, glitch row) use
   `color-mix()` or `var()`, so they follow the theme.
 - The choice is stored in `localStorage` (`ys-theme`); an inline script in `<head>`
   applies it before first paint.
