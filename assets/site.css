@@ -429,6 +429,9 @@ body::before {
 .row .name-cell .label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .row .name-cell svg { flex: none; }
 
+/* the open entry's files, indented under its folder row in a section tree */
+.row.child .name-cell { padding-left: 30px; }
+
 .readme-body .entry-title { font-size: 22px; line-height: 1.2; }
 
 /* the home page player: a link to the release above its embed */

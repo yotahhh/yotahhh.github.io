@@ -64,10 +64,12 @@ folders.
 
 ## Pages
 - `/` home: directory of the site, readme, the landing track player.
-- `/about/`, `/music/`, `/film/`, `/games/`, `/mixing/`: folder pages, one listing each,
-  `../` first.
+- `/about/`, `/mixing/`: folder pages, one listing each, `../` first.
 - `/music/<id>/`, `/film/<id>/`, `/games/<id>/`: entry pages (tracks, cover/stills/clips,
-  readme, embed).
+  readme, embed). Their listing is the section as a tree (`tree()` in the build): every
+  entry, the open one expanded with its files indented under it.
+- `/music/`, `/film/`, `/games/`: a copy of the section's first entry page (canonical
+  points to the entry), so content is one click from home (`entryPages()`).
 - `/contact/`: contact.txt shown in a window (old `/contact.txt` links forward there).
 - `/404.html`: "not found". Forwards the old single-page site's `/<id>` release links to
   `/music/<id>/`, and `/contact.txt` to `/contact/`.

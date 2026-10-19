@@ -7,8 +7,9 @@
  * as is:
  *
  *   index.html                 home: directory of the site + readme + player
- *   about/ music/ film/ games/ mixing/  folder pages, one listing each
- *   music/<id>/ film/<id>/ games/<id>/  entry pages
+ *   about/ mixing/             folder pages, one listing each
+ *   music/<id>/ film/<id>/ games/<id>/  entry pages, the section listed as a tree
+ *   music/ film/ games/        the section's first entry page
  *   contact/                   contact.txt, shown in a window
  *   404.html                   "file not found", forwards the old /<id> links
  *   assets/                    site.css, site.js
@@ -119,11 +120,11 @@ const win = (title, body, { cls = "", label = title } = {}) => `
     </section>`;
 
 // One listing row. href makes it a link; external links open in a new tab.
-const row = ({ href, icon: ic, name, modified = "", size = "", current = false, corrupt = false }) => {
+const row = ({ href, icon: ic, name, modified = "", size = "", current = false, corrupt = false, child = false }) => {
   const tag = href ? "a" : "div";
   const ext = href && /^https?:/.test(href);
   const attrs = [
-    `class="row"`,
+    `class="row${child ? " child" : ""}"`,
     href ? `href="${esc(href)}"` : "",
     ext ? `target="_blank" rel="noopener"` : "",
     current ? `aria-current="page"` : "",
@@ -139,7 +140,7 @@ const row = ({ href, icon: ic, name, modified = "", size = "", current = false, 
 
 const directory = ({ title, rows, head = ["name", "modified", "size"] }) => {
   const body = rows.map(row).join("");
-  const count = rows.filter((r) => r.name !== "../").length;
+  const count = rows.filter((r) => r.name !== "../" && !r.child).length;
   const status = `${count} ${count === 1 ? "item" : "items"}`;
   return `
     <section class="window directory" aria-label="Directory ${esc(title)}">${titlebar(title)}
@@ -331,7 +332,7 @@ const FAVICON_FILL = themes.find((t) => t.id === defaultTheme).swatch[1];
 const FAVICON = `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 16"><path d="M1 2h7l2 2h9v11H1z" fill="${FAVICON_FILL}" stroke="#1E211C" stroke-width="1.5"/></svg>`)}`;
 
 // path: the site path of the page ("/", "/music/", …). crumbs: [[label, href]].
-const page = ({ path, title, description = siteMeta.description, crumbs = null, desk }) => {
+const page = ({ path, title, description = siteMeta.description, crumbs = null, desk, canonical = path }) => {
   const home = path === "/";
   const name = home ? siteMeta.name : `<a href="/">${siteMeta.name}</a>`;
   const crumbHtml = crumbs
@@ -344,10 +345,10 @@ const page = ({ path, title, description = siteMeta.description, crumbs = null, 
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(description)}">
-<link rel="canonical" href="https://${siteMeta.domain}${path}">
+<link rel="canonical" href="https://${siteMeta.domain}${canonical}">
 <meta property="og:title" content="${esc(title)}">
 <meta property="og:description" content="${esc(description)}">
-<meta property="og:url" content="https://${siteMeta.domain}${path}">
+<meta property="og:url" content="https://${siteMeta.domain}${canonical}">
 <link rel="icon" href="${FAVICON}">
 <link rel="preload" href="/assets/fonts/ChicagoFLF.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/assets/site.css">
@@ -390,6 +391,27 @@ ${side.join("\n")}
 `;
 
 const UP = (href) => ({ href, icon: icon.up(), name: "../", modified: "", size: "" });
+
+// A section listing as a tree: every entry of the section, the open one
+// expanded with its files indented under it. Section pages (/music/ …) open
+// on their first entry, so content is one click from home and every other
+// entry stays one click away.
+const tree = (section, entries, openId, folderRow, filesOf) => [
+  UP("/"),
+  ...entries.flatMap((e, i) => [
+    { ...folderRow(e, i), href: `/${section}/${e.id}/`, name: `${e.id}/`, size: "dir", current: e.id === openId },
+    ...(e.id === openId ? filesOf(e).map((r) => ({ ...r, child: true })) : []),
+  ]),
+];
+
+// Writes an entry page, and the section page as a copy of its first entry.
+const entryPages = (section, entries, render, sectionMeta) => {
+  for (const [i, e] of entries.entries()) {
+    const html = render(e);
+    pages[`${section}/${e.id}/index.html`] = page({ path: `/${section}/${e.id}/`, ...html });
+    if (i === 0) pages[`${section}/index.html`] = page({ ...html, path: `/${section}/`, canonical: `/${section}/${e.id}/`, ...sectionMeta });
+  }
+};
 
 // ---------- dates ----------
 
@@ -470,41 +492,22 @@ const pages = {};
 
 // music/
 {
-  const rows = [
-    UP("/"),
-    ...musicProjects.map((r, i) => ({
-      href: `/music/${r.id}/`,
-      icon: icon.folder(TINT.music),
-      name: `${r.id}/`,
-      modified: fmtDate(releaseTime(r)),
-      size: "dir",
-      corrupt: i === musicProjects.length - 1,
-    })),
-  ];
   const musicLinks = links.filter((l) => l.label !== "instagram");
-  const side = [
-    readmeWin("readme.txt",
-      p("Yotah is my experimental club music project.") +
-      `\n        <ul>${musicLinks.map((l) => `\n          <li>› <a href="${l.href}" target="_blank" rel="noopener">${esc(l.label)}</a></li>`).join("")}\n        </ul>`),
-  ];
-  pages["music/index.html"] = page({
-    path: "/music/",
-    title: `music · ${siteMeta.name}`,
-    description: "Releases, remixes and compilation tracks by Yotah.",
-    crumbs: [["music"]],
-    desk: deskHtml(directory({ title: `${siteMeta.domain}/music/`, rows }), side),
-  });
-
-  // music/<id>/
-  for (const r of musicProjects) {
-    const { tracks, notes } = parseTracks(r.tracks);
+  const yotah = readmeWin("yotah.txt",
+    p("Yotah is my experimental club music project.") +
+    `\n        <ul>${musicLinks.map((l) => `\n          <li>› <a href="${l.href}" target="_blank" rel="noopener">${esc(l.label)}</a></li>`).join("")}\n        </ul>`);
+  const files = (r) => {
     const t = fmtDate(releaseTime(r));
-    const rows = [
-      UP("/music/"),
-      ...tracks.map((tr) => ({ icon: icon.wave(), name: `${tr.n} ${tr.title}`, modified: tr.length, size: "" })),
+    return [
+      ...parseTracks(r.tracks).tracks.map((tr) => ({ icon: icon.wave(), name: `${tr.n} ${tr.title}`, modified: tr.length, size: "" })),
       { href: r.image, icon: icon.image(), name: "cover.jpg", modified: t, size: sizeOf(imgPath(r.image)) },
       r.bandcampLink && { href: r.bandcampLink, icon: icon.link(), name: "bandcamp.url", modified: t, size: "url" },
     ].filter(Boolean);
+  };
+  const folder = (r, i) => ({ icon: icon.folder(TINT.music), modified: fmtDate(releaseTime(r)), corrupt: i === musicProjects.length - 1 });
+
+  entryPages("music", musicProjects, (r) => {
+    const { notes } = parseTracks(r.tracks);
     const text =
       p(esc(r.title), "entry-title") +
       p(r.description) +
@@ -514,46 +517,28 @@ const pages = {};
     const side = [
       imageWin("cover.jpg", r.image, `Cover art for ${r.title}`),
       embedWin("player", { bandcampUrl: r.embedUrl, soundcloudUrl: r.soundcloudEmbed, label: r.title }),
+      readmeWin("readme.txt", text),
     ];
-    pages[`music/${r.id}/index.html`] = page({
-      path: `/music/${r.id}/`,
+    return {
       title: `${r.title} · ${siteMeta.name}`,
       description: r.description.replace(/<[^>]+>/g, ""),
       crumbs: [["music", "/music/"], [r.id]],
-      desk: deskHtml(directory({ title: `music/${r.id}/`, rows, head: ["name", "time", "size"] }), side, [readmeWin("readme.txt", text)]),
-    });
-  }
+      desk: deskHtml(directory({ title: `${siteMeta.domain}/music/`, rows: tree("music", musicProjects, r.id, folder, files) }), side, [yotah]),
+    };
+  }, { title: `music · ${siteMeta.name}`, description: "Releases, remixes and compilation tracks by Yotah." });
 }
 
 // film/
 {
-  const rows = [
-    UP("/"),
-    ...filmProjects.map((f) => ({
-      href: `/film/${f.id}/`,
-      icon: icon.folder(TINT.film),
-      name: `${f.id}/`,
-      modified: fmtDate(filmTime(f)),
-      size: "dir",
-    })),
-  ];
-  pages["film/index.html"] = page({
-    path: "/film/",
-    title: `film · ${siteMeta.name}`,
-    description: "Sound design for film and animation by Yves Spiri.",
-    crumbs: [["film"]],
-    desk: deskHtml(directory({ title: `${siteMeta.domain}/film/`, rows })),
-  });
+  const files = (f) => [
+    ...(f.clips || []).map((c) => ({ href: `#clip-${c.name.replace(/\.\w+$/, "")}`, icon: icon.wave(), name: c.name, modified: fmtDate(fileTime(`clips/${c.file}.mp4`)), size: sizeOf(`clips/${c.file}.mp4`) })),
+    f.image && { href: f.image, icon: icon.image(), name: "poster.jpg", modified: fmtDate(filmTime(f)), size: sizeOf(imgPath(f.image)) },
+    f.embedUrl && { href: f.embedUrl.split("?")[0].replace("player.vimeo.com/video", "vimeo.com"), icon: icon.link(), name: "vimeo.url", modified: fmtDate(filmTime(f)), size: "url" },
+  ].filter(Boolean);
+  const folder = (f) => ({ icon: icon.folder(TINT.film), modified: fmtDate(filmTime(f)) });
 
-  for (const f of filmProjects) {
-    const t = fmtDate(filmTime(f));
-    const rows = [
-      UP("/film/"),
-      f.image && { href: f.image, icon: icon.image(), name: "poster.jpg", modified: t, size: sizeOf(imgPath(f.image)) },
-      ...(f.clips || []).map((c) => ({ href: `#clip-${c.name.replace(/\.\w+$/, "")}`, icon: icon.wave(), name: c.name, modified: fmtDate(fileTime(`clips/${c.file}.mp4`)), size: sizeOf(`clips/${c.file}.mp4`) })),
-      f.embedUrl && { href: f.embedUrl.split("?")[0].replace("player.vimeo.com/video", "vimeo.com"), icon: icon.link(), name: "vimeo.url", modified: t, size: "url" },
-    ].filter(Boolean);
-    // clips split between the columns: the first half under the readme, the rest under the poster
+  entryPages("film", filmProjects, (f) => {
+    // clips split between the columns: the first half under the readme, the rest beside
     const clips = f.clips || [];
     const half = Math.ceil(clips.length / 2);
     const side = [
@@ -561,57 +546,36 @@ const pages = {};
       f.embedUrl && embedWin("video", { vimeoUrl: f.embedUrl, label: f.title }),
       ...clips.slice(half).map(clipWin),
     ].filter(Boolean);
-    pages[`film/${f.id}/index.html`] = page({
-      path: `/film/${f.id}/`,
+    return {
       title: `${f.title} · ${siteMeta.name}`,
       description: f.description,
       crumbs: [["film", "/film/"], [f.id]],
-      desk: deskHtml(directory({ title: `film/${f.id}/`, rows }), side, [
+      desk: deskHtml(directory({ title: `${siteMeta.domain}/film/`, rows: tree("film", filmProjects, f.id, folder, files) }), side, [
         readmeWin("readme.txt", p(esc(f.title), "entry-title") + p(f.description) + (f.status ? p(esc(`status: ${f.status.toLowerCase()}`), "note") : "")),
         ...clips.slice(0, half).map(clipWin),
       ]),
-    });
-  }
+    };
+  }, { title: `film · ${siteMeta.name}`, description: "Sound design for film and animation by Yves Spiri." });
 }
 
 // games/
 {
-  const rows = [
-    UP("/"),
-    ...gameProjects.map((g) => ({
-      href: `/games/${g.id}/`,
-      icon: icon.folder(TINT.games),
-      name: `${g.id}/`,
-      modified: fmtDate(gameTime(g)),
-      size: "dir",
-    })),
-  ];
-  pages["games/index.html"] = page({
-    path: "/games/",
-    title: `games · ${siteMeta.name}`,
-    description: "Sound for games by Yves Spiri.",
-    crumbs: [["games"]],
-    desk: deskHtml(directory({ title: `${siteMeta.domain}/games/`, rows })),
-  });
+  const files = (g) => [
+    ...g.stills.map((st) => ({ href: st.image, icon: icon.image(), name: st.name, modified: fmtDate(fileTime(imgPath(st.image))), size: sizeOf(imgPath(st.image)) })),
+    g.link && { href: g.link.href, icon: icon.link(), name: g.link.name, modified: fmtDate(T.projects), size: "url" },
+  ].filter(Boolean);
+  const folder = (g) => ({ icon: icon.folder(TINT.games), modified: fmtDate(gameTime(g)) });
 
-  for (const g of gameProjects) {
-    const rows = [
-      UP("/games/"),
-      ...g.stills.map((st) => ({ href: st.image, icon: icon.image(), name: st.name, modified: fmtDate(fileTime(imgPath(st.image))), size: sizeOf(imgPath(st.image)) })),
-      g.link && { href: g.link.href, icon: icon.link(), name: g.link.name, modified: fmtDate(T.projects), size: "url" },
-    ].filter(Boolean);
-    pages[`games/${g.id}/index.html`] = page({
-      path: `/games/${g.id}/`,
-      title: `${g.title} · ${siteMeta.name}`,
-      description: g.description,
-      crumbs: [["games", "/games/"], [g.id]],
-      desk: deskHtml(
-        directory({ title: `games/${g.id}/`, rows }),
-        g.stills.map((st) => imageWin(st.name, st.image, st.alt)),
-        [readmeWin("readme.txt", p(esc(g.title), "entry-title") + p(g.description) + (g.credits ? p(esc(g.credits), "credits") : ""))],
-      ),
-    });
-  }
+  entryPages("games", gameProjects, (g) => ({
+    title: `${g.title} · ${siteMeta.name}`,
+    description: g.description,
+    crumbs: [["games", "/games/"], [g.id]],
+    desk: deskHtml(
+      directory({ title: `${siteMeta.domain}/games/`, rows: tree("games", gameProjects, g.id, folder, files) }),
+      g.stills.map((st) => imageWin(st.name, st.image, st.alt)),
+      [readmeWin("readme.txt", p(esc(g.title), "entry-title") + p(g.description) + (g.credits ? p(esc(g.credits), "credits") : ""))],
+    ),
+  }), { title: `games · ${siteMeta.name}`, description: "Sound for games by Yves Spiri." });
 }
 
 // mixing/
