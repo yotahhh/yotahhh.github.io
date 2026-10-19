@@ -552,6 +552,30 @@ main.ghost .inset.docked .undock {
 /* ---------- themes (generated from src/data/themes.js) ---------- */
 
 :root {
+  --ground: #97A596;
+  --window: #C8D6E4;
+  --paper: #E0E9F2;
+  --button: #D1DDE9;
+  --row-hover: #B4C6D8;
+  --row-current: #E6C8B0;
+  --ink: #18241B;
+  --ink-2: #223326;
+  --ink-3: #2F4234;
+  --ink-4: #394B3D;
+  --rust: #8E3B12;
+  --rust-btn: #D2652E;
+  --led-dead: #576350;
+  --led-alarm: #D2652E;
+  --f-about: #A78567;
+  --f-music: #3A9CBE;
+  --f-film: #8E3B12;
+  --f-live: #576350;
+  --f-sound: #6FA9C5;
+  --bevel-dark: #97A8BA;
+  --bevel-light: #F2F6FA;
+}
+
+:root[data-theme="glitter"] {
   --ground: #B09AA3;
   --window: #DDCED5;
   --paper: #EEE4E9;
@@ -621,28 +645,4 @@ main.ghost .inset.docked .undock {
   --f-sound: #B0BECE;
   --bevel-dark: #8E99A6;
   --bevel-light: #F5F7FA;
-}
-
-:root[data-theme="dumbo"] {
-  --ground: #97A596;
-  --window: #C8D6E4;
-  --paper: #E0E9F2;
-  --button: #D1DDE9;
-  --row-hover: #B4C6D8;
-  --row-current: #E6C8B0;
-  --ink: #18241B;
-  --ink-2: #223326;
-  --ink-3: #2F4234;
-  --ink-4: #394B3D;
-  --rust: #8E3B12;
-  --rust-btn: #D2652E;
-  --led-dead: #576350;
-  --led-alarm: #D2652E;
-  --f-about: #A78567;
-  --f-music: #3A9CBE;
-  --f-film: #8E3B12;
-  --f-live: #576350;
-  --f-sound: #6FA9C5;
-  --bevel-dark: #97A8BA;
-  --bevel-light: #F2F6FA;
 }

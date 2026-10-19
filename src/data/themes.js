@@ -7,9 +7,38 @@
 // ("rust" in token names) from their most saturated colour. Text stays dark on light in every theme, and the
 // build checks every text/surface pair for at least 4.5:1 contrast.
 
-export const defaultTheme = "glitter";
+export const defaultTheme = "dumbo";
 
 export const themes = [
+  {
+    // the octopus: pale sky blue skin, burnt orange fins, moss behind
+    id: "dumbo",
+    label: "dumbo",
+    swatch: ["#7F8F80", "#D2652E"],
+    tokens: {
+      ground: "#97A596",
+      window: "#C8D6E4",
+      paper: "#E0E9F2",
+      button: "#D1DDE9",
+      "row-hover": "#B4C6D8",
+      "row-current": "#E6C8B0",
+      ink: "#18241B",
+      "ink-2": "#223326",
+      "ink-3": "#2F4234",
+      "ink-4": "#394B3D",
+      rust: "#8E3B12",
+      "rust-btn": "#D2652E",
+      "led-dead": "#576350",
+      "led-alarm": "#D2652E",
+      "f-about": "#A78567",
+      "f-music": "#3A9CBE",
+      "f-film": "#8E3B12",
+      "f-live": "#576350",
+      "f-sound": "#6FA9C5",
+      "bevel-dark": "#97A8BA",
+      "bevel-light": "#F2F6FA",
+    },
+  },
   {
     // the glitter face: mauve skin, violet shadow, green and pink glitter
     id: "glitter",
@@ -95,35 +124,6 @@ export const themes = [
       "f-sound": "#B0BECE",
       "bevel-dark": "#8E99A6",
       "bevel-light": "#F5F7FA",
-    },
-  },
-  {
-    // the octopus: pale sky blue skin, burnt orange fins, moss behind
-    id: "dumbo",
-    label: "dumbo",
-    swatch: ["#7F8F80", "#D2652E"],
-    tokens: {
-      ground: "#97A596",
-      window: "#C8D6E4",
-      paper: "#E0E9F2",
-      button: "#D1DDE9",
-      "row-hover": "#B4C6D8",
-      "row-current": "#E6C8B0",
-      ink: "#18241B",
-      "ink-2": "#223326",
-      "ink-3": "#2F4234",
-      "ink-4": "#394B3D",
-      rust: "#8E3B12",
-      "rust-btn": "#D2652E",
-      "led-dead": "#576350",
-      "led-alarm": "#D2652E",
-      "f-about": "#A78567",
-      "f-music": "#3A9CBE",
-      "f-film": "#8E3B12",
-      "f-live": "#576350",
-      "f-sound": "#6FA9C5",
-      "bevel-dark": "#97A8BA",
-      "bevel-light": "#F2F6FA",
     },
   },
 ];

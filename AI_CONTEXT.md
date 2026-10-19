@@ -39,8 +39,8 @@ portfolio site, https://yvesspiri.net/.
   links to `/music/<id>/`.
 
 ## Themes
-- Four colour themes, switched by the swatches in every page header: `glitter`
-  (default), `backroom` (the original design), `glare` and `dumbo`. All but backroom
+- Four colour themes, switched by the swatches in every page header: `dumbo`
+  (default), `backroom` (the original design), `glare` and `glitter`. All but backroom
   are drawn from reference images in `palettes/` (git-ignored, local only: never
   commit it).
 - Themes live in `src/data/themes.js`, each with its full token set; `defaultTheme`
