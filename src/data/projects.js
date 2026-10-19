@@ -159,6 +159,14 @@ export const filmProjects = [
     description: "Sound Design for the upcoming HSLU graduation film by Lea Glitsch, Janine Varga, and Ella Cattaneo. In a world threatened by rising tides and a looming planet, Gaia struggles with the loss of her mentor and her own creative voice.",
     image: "/images/terminarch.jpg",
     status: "Work in Progress (2026)",
+    // short loops with sound, cut from the stereo render (movietrailer/,
+    // git-ignored) into clips/; see "Add film clips" in AI_CONTEXT.md
+    clips: [
+      { name: "horizon.mp4", file: "terminarch_horizon", from: "02:15", to: "02:21", alt: "A lone figure on a burning red horizon, then a man in red light" },
+      { name: "glow.mp4", file: "terminarch_glow", from: "02:38", to: "02:44", alt: "A boy lying in red light slowly dissolves into a glow" },
+      { name: "eyes.mp4", file: "terminarch_eyes", from: "02:55", to: "03:02", alt: "Teal close-up of a face opening and closing its eyes" },
+      { name: "stars.mp4", file: "terminarch_stars", from: "03:51", to: "03:59", alt: "A boy under the stars with a glowing orb, quick cuts to a reaching hand" },
+    ],
     platform: "ongoing"
   },
   {

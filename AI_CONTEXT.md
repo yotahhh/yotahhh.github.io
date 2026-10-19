@@ -78,6 +78,15 @@ Sizes are real byte sizes.
   <trailer> -frames:v 1 -vf scale=1600:-2 -q:v 4 images/<name>.jpg`), then an entry in
   `gameProjects` (`id`, `title`, `description`, `credits`, `stills`, `link`). Trailers
   live in `gametrailer/`, which is git-ignored and never published.
+- **Add film clips:** short loops with sound live in `clips/` (committed, served as is)
+  and are listed under a film's `clips` in `projects.js`. Renders live in
+  `movietrailer/`, git-ignored and never published. The Terminarch render has burned-in
+  timecode top-left and 20px black bars, so it is cropped below them:
+  `ffmpeg -ss <start> -i <render> -t <seconds> -vf "crop=1600:900:160:160,scale=960:540:flags=lanczos,format=yuv420p" -c:v libx264 -preset slow -crf 25 -movflags +faststart -af "afade=t=in:d=0.15,afade=t=out:st=<seconds-0.15>:d=0.15" -c:a aac -b:a 128k clips/<film>_<name>.mp4`,
+  then the first frame as `clips/<film>_<name>.jpg` for the poster. Cut on shot changes
+  (`select='gt(scene,0.2)',showinfo` finds them) and avoid animatic shots. On the page
+  they loop muted while on screen (IntersectionObserver), the sound button unmutes one
+  at a time, and sound takes turns with the landing track and the embeds.
 - **Preview:** `npm run dev` (builds, then serves http://127.0.0.1:5173).
 - **Publish:** `npm run build`, commit the regenerated files, push `main`.
 

@@ -11,7 +11,9 @@
       <html>, remembered in localStorage; an inline script in <head> applies
       it before first paint).
    4. glitches: one random row per page view twitches, in a rotating style.
-   5. once anything has been started, internal links swap the page content
+   5. film clips: loop silently while on screen; the sound button unmutes
+      one and silences the landing track and embeds (and vice versa).
+   6. once anything has been started, internal links swap the page content
       in place instead of loading a new page, so the music keeps going. A
       playing embed cannot be moved without reloading, so its old page stays
       in the document, invisible, with just that player pinned to the corner. */
@@ -113,6 +115,7 @@
   audio.addEventListener('play', function () {
     started = true;
     stopEmbed();
+    muteClips();
     dock.hidden = false;
     setStatus();
     paint();
@@ -152,6 +155,7 @@
       if (!f || f.tagName !== 'IFRAME' || !f.closest('.inset') || f === embed) return;
       stopEmbed();
       audio.pause();
+      muteClips();
       dock.hidden = true;
       embed = f;
       started = true;
@@ -161,6 +165,7 @@
   // the old page stays, invisible; only the playing embed shows, in the corner
   function dockEmbed(main) {
     main.classList.add('ghost');
+    main.querySelectorAll('video').forEach(function (v) { v.pause(); });
     // no aria-hidden: visibility: hidden already hides the rest, and the player stays reachable
     var inset = embed.closest('.inset');
     inset.classList.add('docked');
@@ -171,6 +176,50 @@
     close.setAttribute('aria-label', 'Close player');
     close.addEventListener('click', stopEmbed);
     inset.appendChild(close);
+  }
+
+  // ---------- film clips ----------
+
+  // Clips loop silently while on screen, like GIFs. The sound button unmutes
+  // one at a time and silences the landing track and any embed.
+  var calm = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var watcher = 'IntersectionObserver' in window ? new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      var v = e.target;
+      if (e.isIntersecting && !calm) v.play().catch(function () {});
+      else if (!e.isIntersecting && v.muted) v.pause();
+    });
+  }, { threshold: 0.5 }) : null;
+
+  function setSound(btn, on) {
+    btn.setAttribute('aria-pressed', String(on));
+    btn.querySelector('span').textContent = on ? 'sound on' : 'sound off';
+  }
+
+  function muteClips() {
+    document.querySelectorAll('.window.clip video').forEach(function (v) {
+      if (v.muted) return;
+      v.muted = true;
+      setSound(v.closest('.clip').querySelector('.sound'), false);
+      if (calm) v.pause();
+    });
+  }
+
+  function bindClips() {
+    document.querySelectorAll('main.page:not(.ghost) .window.clip').forEach(function (win) {
+      var v = win.querySelector('video');
+      var btn = win.querySelector('.sound');
+      if (watcher) watcher.observe(v);
+      btn.addEventListener('click', function () {
+        if (!v.muted) { muteClips(); return; }
+        muteClips();
+        audio.pause();
+        stopEmbed();
+        v.muted = false;
+        setSound(btn, true);
+        v.play().catch(function () {});
+      });
+    });
   }
 
   // ---------- page swaps, only once something has been played ----------
@@ -262,6 +311,7 @@
     bindPlayer();
     bindThemes();
     bindGlitch();
+    bindClips();
   }
   bindPage();
 })();

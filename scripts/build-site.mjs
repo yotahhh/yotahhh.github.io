@@ -172,6 +172,23 @@ const imageWin = (title, src, alt, caption = "") => {
       </div>`);
 };
 
+// A looping clip with sound: plays muted while on screen, like a GIF; the
+// sound button unmutes it (and silences everything else). site.js drives it.
+const SPEAKER = `<svg width="14" height="12" viewBox="0 0 14 12" aria-hidden="true"><path d="M1 4h3l4-3v10L4 8H1z" fill="var(--ink)"/><path class="waves" d="M10 3.5c1 1.4 1 3.6 0 5M12 2c1.8 2.3 1.8 5.7 0 8" fill="none" stroke="var(--ink)" stroke-width="1.3"/></svg>`;
+const clipWin = (c) => {
+  const id = `clip-${c.name.replace(/\.\w+$/, "")}`;
+  return `
+    <section class="window clip" id="${id}" aria-label="${esc(c.name)}">${titlebar(c.name)}
+      <div class="inset">
+        <video src="/clips/${c.file}.mp4" poster="/clips/${c.file}.jpg" width="960" height="540" muted loop playsinline preload="none" aria-label="${esc(c.alt)}"></video>
+        <p class="caption clip-bar">
+          <button type="button" class="bevel sound" aria-pressed="false">${SPEAKER}<span>sound off</span></button>
+          <span>${c.from} to ${c.to}</span>
+        </p>
+      </div>
+    </section>`;
+};
+
 const embedWin = (title, { bandcampUrl, soundcloudUrl, vimeoUrl, label, href }) => {
   let frame = "";
   if (bandcampUrl) frame = `<iframe src="${esc(bandcamp(bandcampUrl))}" height="42" title="${esc(label)} on Bandcamp" loading="lazy" seamless></iframe>`;
@@ -533,11 +550,16 @@ const pages = {};
     const rows = [
       UP("/film/"),
       f.image && { href: f.image, icon: icon.image(), name: "poster.jpg", modified: t, size: sizeOf(imgPath(f.image)) },
+      ...(f.clips || []).map((c) => ({ href: `#clip-${c.name.replace(/\.\w+$/, "")}`, icon: icon.wave(), name: c.name, modified: fmtDate(fileTime(`clips/${c.file}.mp4`)), size: sizeOf(`clips/${c.file}.mp4`) })),
       f.embedUrl && { href: f.embedUrl.split("?")[0].replace("player.vimeo.com/video", "vimeo.com"), icon: icon.link(), name: "vimeo.url", modified: t, size: "url" },
     ].filter(Boolean);
+    // clips split between the columns: the first half under the readme, the rest under the poster
+    const clips = f.clips || [];
+    const half = Math.ceil(clips.length / 2);
     const side = [
       f.image && imageWin("poster.jpg", f.image, `Poster for ${f.title}`),
       f.embedUrl && embedWin("video", { vimeoUrl: f.embedUrl, label: f.title }),
+      ...clips.slice(half).map(clipWin),
     ].filter(Boolean);
     pages[`film/${f.id}/index.html`] = page({
       path: `/film/${f.id}/`,
@@ -546,6 +568,7 @@ const pages = {};
       crumbs: [["film", "/film/"], [f.id]],
       desk: deskHtml(directory({ title: `film/${f.id}/`, rows }), side, [
         readmeWin("readme.txt", p(esc(f.title), "entry-title") + p(f.description) + (f.status ? p(esc(`status: ${f.status.toLowerCase()}`), "note") : "")),
+        ...clips.slice(0, half).map(clipWin),
       ]),
     });
   }

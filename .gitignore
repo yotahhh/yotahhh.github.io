@@ -134,3 +134,7 @@ palettes/
 
 # game trailer source (local only)
 gametrailer/
+
+# film renders (local only)
+movietrailer/
+movietrailers/

@@ -453,6 +453,13 @@ body::before {
 .inset .caption a { text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--rust); }
 .inset.video iframe { aspect-ratio: 16 / 9; height: auto; }
 
+/* film clips: a looping video with a sound toggle under it */
+.inset video { display: block; width: 100%; height: auto; background: var(--ink); }
+.clip-bar { display: flex; align-items: center; gap: 14px; }
+.bevel.sound { display: inline-flex; align-items: center; gap: 6px; min-height: 26px; padding: 0 10px; }
+.bevel.sound .waves { opacity: 0.25; }
+.bevel.sound[aria-pressed="true"] .waves { opacity: 1; }
+
 /* readme extras: credits, notes, the "more" disclosure */
 .readme-body .credits {
   font-family: var(--font-mono);
