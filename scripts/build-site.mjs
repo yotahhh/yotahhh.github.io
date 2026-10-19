@@ -9,7 +9,7 @@
  *   index.html                 home: directory of the site + readme + player
  *   about/ music/ film/ mixing/ folder pages, one listing each
  *   music/<id>/ film/<id>/     entry pages
- *   contact.txt                plain text
+ *   contact/                   contact.txt, shown in a window
  *   404.html                   "file not found", forwards the old /<id> links
  *   assets/                    site.css, site.js
  *
@@ -29,7 +29,7 @@ import { about, featuredRelease, links, mixing, readme, siteMeta } from "../src/
 import { filmProjects, musicProjects } from "../src/data/projects.js";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const OWNED_DIRS = ["about", "music", "film", "mixing", "assets"];
+const OWNED_DIRS = ["about", "music", "film", "mixing", "contact", "assets"];
 
 // ---------- facts about files ----------
 
@@ -214,19 +214,6 @@ function imageSize(src) {
 
 // ---------- page shell ----------
 
-const STAINS = `
-<svg class="stains" aria-hidden="true" viewBox="0 0 1200 1000" preserveAspectRatio="xMidYMid slice">
-  <g fill="#5E5A3A" fill-opacity="0.16">
-    <path d="M0 0 H260 C240 60 280 110 220 150 C170 190 120 140 80 200 C50 240 20 230 0 260 Z"/>
-    <path d="M940 0 H1200 V320 C1160 300 1150 240 1100 230 C1040 216 1060 150 1010 120 C970 96 990 40 940 0 Z"/>
-    <path d="M1200 780 V1000 H900 C930 960 980 950 1010 910 C1050 860 1110 880 1140 830 C1160 800 1180 790 1200 780 Z"/>
-  </g>
-  <g fill="#5E5A3A" fill-opacity="0.22">
-    <circle cx="240" cy="160" r="9"/><circle cx="270" cy="120" r="5"/><circle cx="1000" cy="150" r="7"/><circle cx="960" cy="960" r="6"/>
-  </g>
-  <path d="M1050 0 C1046 60 1056 110 1048 180 C1044 230 1052 260 1050 300" fill="none" stroke="#4E4A30" stroke-opacity="0.2" stroke-width="3"/>
-</svg>`;
-
 const FAVICON = `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 16"><path d="M1 2h7l2 2h9v11H1z" fill="#7A3B26" stroke="#1E211C" stroke-width="1.5"/></svg>`)}`;
 
 // path: the site path of the page ("/", "/music/", …). crumbs: [[label, href]].
@@ -248,13 +235,10 @@ const page = ({ path, title, description = siteMeta.description, crumbs = null, 
 <meta property="og:description" content="${esc(description)}">
 <meta property="og:url" content="https://${siteMeta.domain}${path}">
 <link rel="icon" href="${FAVICON}">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet">
+<link rel="preload" href="/assets/fonts/ChicagoFLF.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/assets/site.css">
 </head>
 <body>
-${STAINS}
 
 <main class="page">
 
@@ -328,7 +312,7 @@ const pages = {};
     { href: "/music/", icon: icon.folder(TINT.music), name: "music/", modified: fmtDate(T.music), size: "dir" },
     { href: "/film/", icon: icon.folder(TINT.film), name: "film/", modified: fmtDate(T.film), size: "dir", glitch: true },
     { href: "/mixing/", icon: icon.folder(TINT.mixing), name: "mixing/", modified: fmtDate(T.mixing), size: "dir", corrupt: true },
-    { href: "/contact.txt", icon: icon.file(), name: "contact.txt", modified: fmtDate(T.site), size: fmtSize(Buffer.byteLength(contactTxt)) },
+    { href: "/contact/", icon: icon.file(), name: "contact.txt", modified: fmtDate(T.site), size: fmtSize(Buffer.byteLength(contactTxt)) },
     { href: "/", icon: icon.file(), name: "readme.txt", modified: fmtDate(T.site), size: fmtSize(Buffer.byteLength(readme.join(" "))), current: true },
   ];
   const side = [
@@ -365,7 +349,7 @@ const pages = {};
     UP("/"),
     { href: about.image, icon: icon.image(), name: "portrait.jpg", modified: fmtDate(fileTime(imgPath(about.image))), size: sizeOf(imgPath(about.image)) },
     ...links.map((l) => ({ href: l.href, icon: icon.link(), name: `${l.label}.url`, modified: fmtDate(T.site), size: "url" })),
-    { href: "/contact.txt", icon: icon.file(), name: "contact.txt", modified: fmtDate(T.site), size: fmtSize(Buffer.byteLength(contactTxt)) },
+    { href: "/contact/", icon: icon.file(), name: "contact.txt", modified: fmtDate(T.site), size: fmtSize(Buffer.byteLength(contactTxt)) },
   ];
   const credit = `photo <a href="${about.photoCredit.href}" target="_blank" rel="noopener">${esc(about.photoCredit.display)}</a>`;
   const side = [
@@ -492,7 +476,7 @@ const pages = {};
       modified: fmtDate(fileTime(imgPath(r.image))),
       size: "url",
     })),
-    { href: "/contact.txt", icon: icon.file(), name: "contact.txt", modified: fmtDate(T.site), size: fmtSize(Buffer.byteLength(contactTxt)) },
+    { href: "/contact/", icon: icon.file(), name: "contact.txt", modified: fmtDate(T.site), size: fmtSize(Buffer.byteLength(contactTxt)) },
   ];
   const side = [
     readmeWin("readme.txt", p(mixing.lead) + p(mixing.closing) + mailLine()),
@@ -516,12 +500,38 @@ const pages = {};
   });
 }
 
-// 404: the old single-page site had /<id> routes for releases; forward them.
+// contact/: contact.txt opened in a window rather than as a raw file
+{
+  const entries = [
+    ["email", `<a href="mailto:${siteMeta.email}">${siteMeta.email}</a>`],
+    ...links.map((l) => [l.label, `<a href="${l.href}" target="_blank" rel="noopener">${esc(l.href.replace(/^https:\/\//, ""))}</a>`]),
+  ];
+  const body =
+    p("Yves Spiri<br>Zürich") +
+    `\n        <dl class="contact-list">${entries.map(([k, v]) => `\n          <dt>${k}</dt><dd>${v}</dd>`).join("")}\n        </dl>` +
+    p("Available for film and game scoring, mixing and mastering, and music production tutoring, online or in person.");
+  const rows = [
+    UP("/"),
+    { href: "/contact/", icon: icon.file(), name: "contact.txt", modified: fmtDate(T.site), size: fmtSize(Buffer.byteLength(contactTxt)), current: true },
+  ];
+  pages["contact/index.html"] = page({
+    path: "/contact/",
+    title: `contact · ${siteMeta.name}`,
+    description: `Contact Yves Spiri: ${siteMeta.email}`,
+    crumbs: [["contact.txt"]],
+    desk: deskHtml(directory({ title: `${siteMeta.domain}/`, rows }), [
+      readmeWin("contact.txt", body),
+    ]),
+  });
+}
+
+// 404: the old single-page site had /<id> routes for releases, and
+// contact.txt used to be a raw file; forward them.
 {
   const rows = [
     UP("/"),
     { href: "/music/", icon: icon.folder(TINT.music), name: "music/", modified: "", size: "dir" },
-    { href: "/contact.txt", icon: icon.file(), name: "contact.txt", modified: "", size: "" },
+    { href: "/contact/", icon: icon.file(), name: "contact.txt", modified: "", size: "" },
   ];
   const side = [readmeWin("error.log", p("file not found. it may have moved, or never existed.", "note"))];
   const ids = JSON.stringify(musicProjects.map((r) => r.id));
@@ -530,7 +540,7 @@ const pages = {};
     title: `not found · ${siteMeta.name}`,
     crumbs: [["▒▒▒"]],
     desk: deskHtml(directory({ title: "not found", rows, unreadable: 1 }), side) +
-      `<script>(function(){var ids=${ids};var m=location.pathname.match(/^\\/([^/]+)\\/?$/);if(m&&ids.indexOf(m[1])!==-1)location.replace('/music/'+m[1]+'/');})();</script>\n`,
+      `<script>(function(){var ids=${ids};var m=location.pathname.match(/^\\/([^/]+)\\/?$/);if(m&&ids.indexOf(m[1])!==-1)location.replace('/music/'+m[1]+'/');else if(m&&m[1]==='contact.txt')location.replace('/contact/');})();</script>\n`,
   });
 }
 
@@ -542,9 +552,10 @@ for (const [rel, html] of Object.entries(pages)) {
   mkdirSync(dirname(out), { recursive: true });
   writeFileSync(out, html);
 }
-writeFileSync(join(root, "contact.txt"), contactTxt);
 mkdirSync(join(root, "assets"), { recursive: true });
 copyFileSync(join(root, "src/assets/site.css"), join(root, "assets/site.css"));
 copyFileSync(join(root, "src/assets/site.js"), join(root, "assets/site.js"));
+mkdirSync(join(root, "assets/fonts"), { recursive: true });
+copyFileSync(join(root, "src/assets/fonts/ChicagoFLF.woff2"), join(root, "assets/fonts/ChicagoFLF.woff2"));
 
-console.log(`built ${Object.keys(pages).length} pages + contact.txt`);
+console.log(`built ${Object.keys(pages).length} pages`);

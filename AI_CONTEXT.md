@@ -24,14 +24,14 @@ portfolio site, https://yvesspiri.net/.
 - `scripts/dev-server.mjs`: static server that behaves like GitHub Pages.
 - `images/`: cover art and photos (served as is).
 
-**Generated, do not hand-edit:** `index.html`, `404.html`, `contact.txt`, `about/`,
-`music/`, `film/`, `mixing/`, `assets/`. The build deletes and rewrites those folders.
+**Generated, do not hand-edit:** `index.html`, `404.html`, `about/`, `music/`,
+`film/`, `mixing/`, `contact/`, `assets/`. The build deletes and rewrites those folders.
 
 ## Pages
 - `/` home: directory of the site, readme, a player with the featured release, error dialog.
 - `/about/`, `/music/`, `/film/`, `/mixing/`: folder pages, one listing each, `../` first.
 - `/music/<id>/`, `/film/<id>/`: entry pages (tracks, cover, readme, embed).
-- `/contact.txt`: plain text.
+- `/contact/`: contact.txt shown in a window (old `/contact.txt` links forward there).
 - `/404.html`: "not found". It also forwards the old single-page site's `/<id>` release
   links to `/music/<id>/`.
 
