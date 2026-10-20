@@ -429,6 +429,14 @@ body::before {
 .row .name-cell .label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .row .name-cell svg { flex: none; }
 
+/* a window a row jumped to (cover.jpg, a track) blinks twice */
+.window { scroll-margin-top: 16px; }
+.window.called { animation: called 0.9s steps(1); }
+@keyframes called {
+  0%, 50% { outline: 2px solid var(--rust); outline-offset: 3px; }
+  25%, 75% { outline: none; }
+}
+
 /* the open entry's files, indented under its folder row in a section tree */
 .row.child .name-cell { padding-left: 30px; }
 
@@ -578,7 +586,7 @@ main.ghost .inset.docked .undock {
 @media (prefers-reduced-motion: reduce) {
   body::before, .led.alarm,
   .row.glitch-jitter, .row.glitch-flicker > span, .row.glitch-slip, .row.glitch-chroma,
-  .row.glitch-stutter .name-cell svg { animation: none; }
+  .row.glitch-stutter .name-cell svg, .window.called { animation: none; }
   .row.glitch-jitter { transform: translateX(12px); }
 }
 

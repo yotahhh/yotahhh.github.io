@@ -32,6 +32,7 @@ import { defaultTheme, themes } from "../src/data/themes.js";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const landingAudio = JSON.parse(readFileSync(join(root, "src/data/landing-track.json"), "utf8"));
+const bandcampTracks = JSON.parse(readFileSync(join(root, "src/data/bandcamp-tracks.json"), "utf8"));
 const OWNED_DIRS = ["about", "music", "film", "games", "mixing", "contact", "assets"];
 
 // ---------- facts about files ----------
@@ -115,12 +116,12 @@ const titlebar = (title, { small = false, boxes = true } = {}) => `
         <span class="box" aria-hidden="true"></span>` : ""}
       </div>`;
 
-const win = (title, body, { cls = "", label = title } = {}) => `
-    <section class="window${cls ? " " + cls : ""}" aria-label="${esc(label)}">${titlebar(title)}${body}
+const win = (title, body, { cls = "", label = title, id = "" } = {}) => `
+    <section class="window${cls ? " " + cls : ""}"${id ? ` id="${id}"` : ""} aria-label="${esc(label)}">${titlebar(title)}${body}
     </section>`;
 
 // One listing row. href makes it a link; external links open in a new tab.
-const row = ({ href, icon: ic, name, modified = "", size = "", current = false, corrupt = false, child = false }) => {
+const row = ({ href, icon: ic, name, modified = "", size = "", current = false, corrupt = false, child = false, track = "" }) => {
   const tag = href ? "a" : "div";
   const ext = href && /^https?:/.test(href);
   const attrs = [
@@ -128,6 +129,7 @@ const row = ({ href, icon: ic, name, modified = "", size = "", current = false, 
     href ? `href="${esc(href)}"` : "",
     ext ? `target="_blank" rel="noopener"` : "",
     current ? `aria-current="page"` : "",
+    track ? `data-track="${esc(track)}"` : "",
   ].filter(Boolean).join(" ");
   // the one unreadable date: its last digit is gone
   const mod = corrupt && modified ? modified.slice(0, -1) + "▒" : modified;
@@ -164,13 +166,16 @@ const readmeWin = (title, inner) => win(title, `
 const p = (html, cls) => `\n        <p${cls ? ` class="${cls}"` : ""}>${copy(html)}</p>`;
 const mailLine = () => p(`› <a href="mailto:${siteMeta.email}" style="text-decoration:none">${siteMeta.email}</a>`, "mail");
 
+// Windows that a row of the listing jumps to: #win-cover for cover.jpg …
+const winId = (name) => `win-${name.replace(/\.\w+$/, "")}`;
+
 const imageWin = (title, src, alt, caption = "") => {
   const [w, h] = imageSize(src);
   return win(title, `
       <div class="inset">
         <img src="${src}" alt="${esc(alt)}" width="${w}" height="${h}" loading="lazy" decoding="async">${caption ? `
         <p class="caption">${caption}</p>` : ""}
-      </div>`);
+      </div>`, { id: winId(title) });
 };
 
 // A looping clip with sound: plays muted while on screen, like a GIF; the
@@ -199,7 +204,7 @@ const embedWin = (title, { bandcampUrl, soundcloudUrl, vimeoUrl, label, href }) 
       <p class="player-label"><a href="${href}">${esc(label)}</a></p>` : ""}
       <div class="inset${vimeoUrl ? " video" : ""}">
         ${frame}
-      </div>`, { label: `${title}: ${label}` });
+      </div>`, { label: `${title}: ${label}`, id: winId(title) });
 };
 
 // intrinsic size of a JPEG, so images reserve their space (no layout shift)
@@ -473,7 +478,7 @@ const pages = {};
 {
   const rows = [
     UP("/"),
-    { href: about.image, icon: icon.image(), name: "portrait.jpg", modified: fmtDate(fileTime(imgPath(about.image))), size: sizeOf(imgPath(about.image)) },
+    { href: "#win-portrait", icon: icon.image(), name: "portrait.jpg", modified: fmtDate(fileTime(imgPath(about.image))), size: sizeOf(imgPath(about.image)) },
     ...links.map((l) => ({ href: l.href, icon: icon.link(), name: `${l.label}.url`, modified: fmtDate(T.site), size: "url" })),
     { href: "/contact/", icon: icon.file(), name: "contact.txt", modified: fmtDate(T.site), size: fmtSize(Buffer.byteLength(contactTxt)) },
   ];
@@ -499,8 +504,12 @@ const pages = {};
   const files = (r) => {
     const t = fmtDate(releaseTime(r));
     return [
-      ...parseTracks(r.tracks).tracks.map((tr) => ({ icon: icon.wave(), name: `${tr.n} ${tr.title}`, modified: tr.length, size: "" })),
-      { href: r.image, icon: icon.image(), name: "cover.jpg", modified: t, size: sizeOf(imgPath(r.image)) },
+      ...parseTracks(r.tracks).tracks.map((tr, i) => {
+        const id = bandcampTracks[r.id]?.tracks[i]?.id;
+        const track = id && r.embedUrl ? bandcamp(r.embedUrl).replace(/\/?$/, `/track=${id}/`) : "";
+        return { href: r.embedUrl || r.soundcloudEmbed ? "#win-player" : "", icon: icon.wave(), name: `${tr.n} ${tr.title}`, modified: tr.length, size: "", track };
+      }),
+      { href: "#win-cover", icon: icon.image(), name: "cover.jpg", modified: t, size: sizeOf(imgPath(r.image)) },
       r.bandcampLink && { href: r.bandcampLink, icon: icon.link(), name: "bandcamp.url", modified: t, size: "url" },
     ].filter(Boolean);
   };
@@ -532,7 +541,7 @@ const pages = {};
 {
   const files = (f) => [
     ...(f.clips || []).map((c) => ({ href: `#clip-${c.name.replace(/\.\w+$/, "")}`, icon: icon.wave(), name: c.name, modified: fmtDate(fileTime(`clips/${c.file}.mp4`)), size: sizeOf(`clips/${c.file}.mp4`) })),
-    f.image && { href: f.image, icon: icon.image(), name: "poster.jpg", modified: fmtDate(filmTime(f)), size: sizeOf(imgPath(f.image)) },
+    f.image && { href: "#win-poster", icon: icon.image(), name: "poster.jpg", modified: fmtDate(filmTime(f)), size: sizeOf(imgPath(f.image)) },
     f.embedUrl && { href: f.embedUrl.split("?")[0].replace("player.vimeo.com/video", "vimeo.com"), icon: icon.link(), name: "vimeo.url", modified: fmtDate(filmTime(f)), size: "url" },
   ].filter(Boolean);
   const folder = (f) => ({ icon: icon.folder(TINT.film), modified: fmtDate(filmTime(f)) });
@@ -562,7 +571,7 @@ const pages = {};
 {
   const files = (g) => [
     ...(g.clips || []).map((c) => ({ href: `#clip-${c.name.replace(/\.\w+$/, "")}`, icon: icon.wave(), name: c.name, modified: fmtDate(fileTime(`clips/${c.file}.mp4`)), size: sizeOf(`clips/${c.file}.mp4`) })),
-    ...g.stills.map((st) => ({ href: st.image, icon: icon.image(), name: st.name, modified: fmtDate(fileTime(imgPath(st.image))), size: sizeOf(imgPath(st.image)) })),
+    ...g.stills.map((st) => ({ href: `#${winId(st.name)}`, icon: icon.image(), name: st.name, modified: fmtDate(fileTime(imgPath(st.image))), size: sizeOf(imgPath(st.image)) })),
     g.link && { href: g.link.href, icon: icon.link(), name: g.link.name, modified: fmtDate(T.projects), size: "url" },
   ].filter(Boolean);
   const folder = (g) => ({ icon: icon.folder(TINT.games), modified: fmtDate(gameTime(g)) });

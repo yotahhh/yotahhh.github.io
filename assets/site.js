@@ -11,6 +11,8 @@
       <html>, remembered in localStorage; an inline script in <head> applies
       it before first paint).
    4. glitches: one random row per page view twitches, in a rotating style.
+      Rows that point at a window on the page (cover.jpg, a track) jump to it;
+      a track of an album also loads into the album's player.
    5. film clips: loop silently while on screen; the sound button unmutes
       one and silences the landing track and embeds (and vice versa).
    6. once anything has been started, internal links swap the page content
@@ -177,6 +179,31 @@
     close.addEventListener('click', stopEmbed);
     inset.appendChild(close);
   }
+
+  // ---------- rows that point at a window on the page ----------
+
+  // cover.jpg, a track, a clip: the row jumps to its window (unless it is
+  // already in full view), and the window blinks so you see where it is. A track of an
+  // album also loads that track into the album's Bandcamp player. Bandcamp
+  // offers no way to start it from outside, so it waits for its play button.
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest('main.page:not(.ghost) a.row[href^="#"]');
+    if (!a) return;
+    var win = document.getElementById(a.getAttribute('href').slice(1));
+    if (!win) return;
+    var src = a.getAttribute('data-track');
+    var f = src && win.querySelector('iframe');
+    if (f && f.src !== src) {
+      if (f === embed) embed = null; // loading another track stops this one
+      f.src = src;
+    }
+    // already in full view (side column on a wide screen): blink, don't scroll
+    var box = win.getBoundingClientRect();
+    if (box.top >= 0 && box.bottom <= window.innerHeight) e.preventDefault();
+    win.classList.remove('called');
+    void win.offsetWidth; // restart the blink
+    win.classList.add('called');
+  });
 
   // ---------- film clips ----------
 

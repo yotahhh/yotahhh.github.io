@@ -1,0 +1,97 @@
+{
+  "true-bug": {
+    "album": 1857918484,
+    "tracks": [
+      {
+        "n": 1,
+        "title": "Corroded",
+        "id": 4106242530
+      },
+      {
+        "n": 2,
+        "title": "Slide",
+        "id": 2633563953
+      },
+      {
+        "n": 3,
+        "title": "OK",
+        "id": 2044321005
+      },
+      {
+        "n": 4,
+        "title": "Steppa",
+        "id": 658356367
+      }
+    ]
+  },
+  "rewiring": {
+    "album": 2696578243,
+    "tracks": [
+      {
+        "n": 1,
+        "title": "Lungs",
+        "id": 4137611024
+      },
+      {
+        "n": 2,
+        "title": "Arc Blast",
+        "id": 4067910249
+      },
+      {
+        "n": 3,
+        "title": "Bouncer",
+        "id": 394059949
+      },
+      {
+        "n": 4,
+        "title": "Landing Sequence",
+        "id": 1110062122
+      }
+    ]
+  },
+  "lidar": {
+    "album": 962557884,
+    "tracks": [
+      {
+        "n": 1,
+        "title": "Disperse",
+        "id": 3366071147
+      },
+      {
+        "n": 2,
+        "title": "Propagate",
+        "id": 3090191728
+      },
+      {
+        "n": 3,
+        "title": "Refract",
+        "id": 2690759288
+      },
+      {
+        "n": 4,
+        "title": "Scatter",
+        "id": 675153076
+      },
+      {
+        "n": 5,
+        "title": "Submerge",
+        "id": 149560381
+      }
+    ]
+  },
+  "y-fe2o3": {
+    "album": 3730518178,
+    "tracks": [
+      {
+        "n": 1,
+        "title": "y-Fe2O3",
+        "id": 1941611784
+      },
+      {
+        "n": 2,
+        "title": "y-Fe2O3 (Artefact Mix)",
+        "id": 3224423667
+      }
+    ]
+  }
+}
