@@ -72,7 +72,9 @@ folders.
   entry, the open one expanded with its files indented under it.
 - `/music/`, `/film/`, `/games/`: a copy of the section's first entry page (canonical
   points to the entry), so content is one click from home (`entryPages()`).
-- `/contact/`: contact.txt shown in a window (old `/contact.txt` links forward there).
+- `/contact/`: contact.txt, a file of the root folder: the home listing with
+  contact.txt selected and its text where readme.txt is (old `/contact.txt` links
+  forward there). The contact.txt rows in about/ and mixing/ open it too.
 - `/404.html`: "not found". Forwards the old single-page site's `/<id>` release links to
   `/music/<id>/`, and `/contact.txt` to `/contact/`.
 
@@ -80,14 +82,15 @@ folders.
 On a desktop (`(pointer: fine) and (min-width: 761px)`, class `can-move` on `<html>`)
 windows can be dragged by their title bar, and the window you touch comes to the front
 (rising `z-index`). A move is only a `transform` offset from where the layout put it,
-so the initial layout is unchanged. Offsets and stacking are remembered in
-`sessionStorage` (`ys-placed`) per kind of window and its order among that kind on the
-page: the build tags every window `data-kind` `directory`, `text` (readme, bio, contact),
-`image` (cover, portrait, stills, mixing references), `video` (clips, Vimeo) or
-`player` (Bandcamp/SoundCloud, the home player). So the first image window you moved
-puts the first image window of the next page in the same spot, until the browser tab
-is closed. `data-later` (yotah.txt) counts after the other windows of its kind, so a
-release's readme is the first text window like everywhere else.
+so the initial layout is unchanged. Like the spatial Finder, every window remembers its
+own place for the browser session (`sessionStorage` `ys-spots`):
+- The directory, the one window on every page, keeps its place everywhere.
+- Any other window keeps its place on its own page only (`data-path` on `main.page`,
+  set from `page({ spot })`, by default the canonical path; `/contact/` shares `/`, so
+  contact.txt opens where you left readme.txt). A page you have not arranged opens in
+  its plain layout, so nothing jumps.
+- On a new page the directory starts behind the other windows, so a moved directory
+  never covers the page's content.
 The title bar stays reachable (not above the page, 80px inside the viewport). Phones
 and touch screens get no dragging.
 

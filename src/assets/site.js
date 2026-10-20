@@ -18,8 +18,8 @@
    6. on a desktop (mouse, wide screen) windows can be dragged by their
       title bar, and the one you touch comes to the front. A move only
       offsets a window from where the layout put it, so the layout stays,
-      and it is remembered per kind of window (text, image, video …) as
-      you go to other pages.
+      and it is remembered: the directory's everywhere, any other window's
+      on its own page.
    7. once anything has been started, internal links swap the page content
       in place instead of loading a new page, so the music keeps going. A
       playing embed cannot be moved without reloading, so its old page stays
@@ -344,25 +344,27 @@
 
   // ---------- moving windows (desktop only) ----------
 
-  // Offsets and stacking are kept for the browser session per kind of
-  // window (data-kind from the build: directory, text, image, video,
-  // player) and its order among that kind on the page, so the first text
-  // window you moved puts the first text window of the next page there too.
+  // Like the spatial Finder, every window remembers its own place for the
+  // browser session. The directory is the one window on every page, so it
+  // keeps its place everywhere; any other window keeps its place on its own
+  // page (data-path on main.page, the same for /music/ and its first
+  // entry), and a page you have not arranged opens in its plain layout.
+  // On a new page the directory starts behind the other windows, so moving
+  // it never covers what the page is about.
   var desktop = window.matchMedia('(pointer: fine) and (min-width: 761px)');
   var placed = {};
-  try { placed = JSON.parse(sessionStorage.getItem('ys-placed')) || {}; } catch (e) {}
+  try { placed = JSON.parse(sessionStorage.getItem('ys-spots')) || {}; } catch (e) {}
   var front = 10; // z-index of the window most recently touched
   Object.keys(placed).forEach(function (k) { front = Math.max(front, placed[k][2] || 0); });
 
   function keyOf(win) {
-    var kind = win.getAttribute('data-kind') || 'text';
+    if (win.classList.contains('directory')) return 'directory';
     var main = win.closest('main.page');
-    var sel = '.desk .window[data-kind="' + kind + '"]';
-    var same = main ? [].slice.call(main.querySelectorAll(sel + ':not([data-later])')).concat([].slice.call(main.querySelectorAll(sel + '[data-later]'))) : [win];
-    return kind + ':' + same.indexOf(win);
+    var all = [].slice.call(main.querySelectorAll('.desk .window'));
+    return (main.getAttribute('data-path') || location.pathname) + ' ' + all.indexOf(win);
   }
   function save() {
-    try { sessionStorage.setItem('ys-placed', JSON.stringify(placed)); } catch (e) {}
+    try { sessionStorage.setItem('ys-spots', JSON.stringify(placed)); } catch (e) {}
   }
   // box: where the layout puts the window. The title bar stays within reach:
   // below the top of the page, and at least 80px inside the viewport.
@@ -388,7 +390,7 @@
       var p = placed[keyOf(w)];
       if (!p) return;
       place(w, boxes[i], p[0], p[1]);
-      if (p[2]) w.style.zIndex = p[2];
+      if (p[2] && !w.classList.contains('directory')) w.style.zIndex = p[2];
     });
   }
 

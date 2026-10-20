@@ -116,11 +116,8 @@ const titlebar = (title, { small = false, boxes = true } = {}) => `
         <span class="box" aria-hidden="true"></span>` : ""}
       </div>`;
 
-// kind: text, image, video or player. On a desktop, site.js remembers where
-// you moved a window by its kind and its order among that kind on the page;
-// "later" windows count after the others of their kind.
-const win = (title, body, { cls = "", label = title, id = "", kind = "text", later = false } = {}) => `
-    <section class="window${cls ? " " + cls : ""}"${id ? ` id="${id}"` : ""} data-kind="${kind}"${later ? " data-later" : ""} aria-label="${esc(label)}">${titlebar(title)}${body}
+const win = (title, body, { cls = "", label = title, id = "" } = {}) => `
+    <section class="window${cls ? " " + cls : ""}"${id ? ` id="${id}"` : ""} aria-label="${esc(label)}">${titlebar(title)}${body}
     </section>`;
 
 // One listing row. href makes it a link; external links open in a new tab.
@@ -148,7 +145,7 @@ const directory = ({ title, rows, head = ["name", "modified", "size"] }) => {
   const count = rows.filter((r) => r.name !== "../" && !r.child).length;
   const status = `${count} ${count === 1 ? "item" : "items"}`;
   return `
-    <section class="window directory" data-kind="directory" aria-label="Directory ${esc(title)}">${titlebar(title)}
+    <section class="window directory" aria-label="Directory ${esc(title)}">${titlebar(title)}
 
       <div class="row head" aria-hidden="true"><span>${head[0]}</span><span>${head[1]}</span><span class="hide-sm">${head[2]}</span></div>
 
@@ -162,9 +159,9 @@ const directory = ({ title, rows, head = ["name", "modified", "size"] }) => {
     </section>`;
 };
 
-const readmeWin = (title, inner, opts) => win(title, `
+const readmeWin = (title, inner) => win(title, `
       <div class="readme-body">${inner}
-      </div>`, opts);
+      </div>`);
 
 const p = (html, cls) => `\n        <p${cls ? ` class="${cls}"` : ""}>${copy(html)}</p>`;
 const mailLine = () => p(`› <a href="mailto:${siteMeta.email}" style="text-decoration:none">${siteMeta.email}</a>`, "mail");
@@ -178,7 +175,7 @@ const imageWin = (title, src, alt, caption = "") => {
       <div class="inset">
         <img src="${src}" alt="${esc(alt)}" width="${w}" height="${h}" loading="lazy" decoding="async">${caption ? `
         <p class="caption">${caption}</p>` : ""}
-      </div>`, { id: winId(title), kind: "image" });
+      </div>`, { id: winId(title) });
 };
 
 // A looping clip with sound: plays muted while on screen, like a GIF; the
@@ -187,7 +184,7 @@ const SPEAKER = `<svg width="14" height="12" viewBox="0 0 14 12" aria-hidden="tr
 const clipWin = (c) => {
   const id = `clip-${c.name.replace(/\.\w+$/, "")}`;
   return `
-    <section class="window clip" id="${id}" data-kind="video" aria-label="${esc(c.name)}">${titlebar(c.name)}
+    <section class="window clip" id="${id}" aria-label="${esc(c.name)}">${titlebar(c.name)}
       <div class="inset">
         <video src="/clips/${c.file}.mp4" poster="/clips/${c.file}.jpg" width="960" height="540" muted loop playsinline preload="none" aria-label="${esc(c.alt)}"></video>
         <p class="caption clip-bar">
@@ -207,7 +204,7 @@ const embedWin = (title, { bandcampUrl, soundcloudUrl, vimeoUrl, label, href }) 
       <p class="player-label"><a href="${href}">${esc(label)}</a></p>` : ""}
       <div class="inset${vimeoUrl ? " video" : ""}">
         ${frame}
-      </div>`, { label: `${title}: ${label}`, id: winId(title), kind: vimeoUrl ? "video" : "player" });
+      </div>`, { label: `${title}: ${label}`, id: winId(title) });
 };
 
 // intrinsic size of a JPEG, so images reserve their space (no layout shift)
@@ -239,7 +236,7 @@ const landingPlayer = () => {
     })
     .join("");
   return `
-    <section class="window player" data-kind="player" aria-label="${esc(title)}, ${esc(note)}" data-player>
+    <section class="window player" aria-label="${esc(title)}, ${esc(note)}" data-player>
       <button type="button" class="play" aria-label="Play ${esc(title)}" aria-pressed="false">
         <svg width="12" height="12" viewBox="0 0 10 10" aria-hidden="true"><path d="M2.5 1l7 4-7 4z" fill="var(--ink)"/></svg>
       </button>
@@ -340,7 +337,9 @@ const FAVICON_FILL = themes.find((t) => t.id === defaultTheme).swatch[1];
 const FAVICON = `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 16"><path d="M1 2h7l2 2h9v11H1z" fill="${FAVICON_FILL}" stroke="#1E211C" stroke-width="1.5"/></svg>`)}`;
 
 // path: the site path of the page ("/", "/music/", …).
-const page = ({ path, title, description = siteMeta.description, desk, canonical = path }) => {
+// spot: the page whose window arrangement this one shares (site.js), by
+// default its canonical path.
+const page = ({ path, title, description = siteMeta.description, desk, canonical = path, spot = canonical }) => {
   const home = path === "/";
   const name = home ? siteMeta.name : `<a href="/">${siteMeta.name}</a>`;
   return `<!doctype html>
@@ -361,7 +360,7 @@ ${THEME_BOOT}
 </head>
 <body>
 
-<main class="page">
+<main class="page" data-path="${spot}">
 
   <header class="site-header">
     <div class="lead">
@@ -451,25 +450,43 @@ const contactTxt = [
 
 const pages = {};
 
-// home
+// home: the root folder. Its two files, readme.txt and contact.txt, open in
+// the same spot: the same listing with the file selected, its text beside it.
 {
-  const rows = [
+  const entries = [
+    ["email", `<a href="mailto:${siteMeta.email}">${siteMeta.email}</a>`],
+    ...links.map((l) => [l.label, `<a href="${l.href}" target="_blank" rel="noopener">${esc(l.href.replace(/^https:\/\//, ""))}</a>`]),
+  ];
+  const contactBody =
+    p("Yves Spiri<br>Zürich") +
+    `\n        <dl class="contact-list">${entries.map(([k, v]) => `\n          <dt>${k}</dt><dd>${v}</dd>`).join("")}\n        </dl>` +
+    p("Available for film and game scoring, mixing and mastering, and music production tutoring, online or in person.");
+  const rows = (open) => [
     { href: "/about/", icon: icon.folder(TINT.about), name: "about/", modified: fmtDate(T.about), size: "dir" },
     { href: "/music/", icon: icon.folder(TINT.music), name: "music/", modified: fmtDate(T.music), size: "dir" },
     { href: "/film/", icon: icon.folder(TINT.film), name: "film/", modified: fmtDate(T.film), size: "dir" },
     { href: "/games/", icon: icon.folder(TINT.games), name: "games/", modified: fmtDate(T.games), size: "dir" },
     { href: "/mixing/", icon: icon.folder(TINT.mixing), name: "mixing/", modified: fmtDate(T.mixing), size: "dir", corrupt: true },
-    { href: "/contact/", icon: icon.file(), name: "contact.txt", modified: fmtDate(T.site), size: fmtSize(Buffer.byteLength(contactTxt)) },
-    { href: "/", icon: icon.file(), name: "readme.txt", modified: fmtDate(T.site), size: fmtSize(Buffer.byteLength(readme.join(" "))), current: true },
-  ];
-  const side = [
-    readmeWin("readme.txt", readme.map((t) => p(t)).join("") + mailLine()),
-    landingPlayer(),
+    { href: "/contact/", icon: icon.file(), name: "contact.txt", modified: fmtDate(T.site), size: fmtSize(Buffer.byteLength(contactTxt)), current: open === "contact" },
+    { href: "/", icon: icon.file(), name: "readme.txt", modified: fmtDate(T.site), size: fmtSize(Buffer.byteLength(readme.join(" "))), current: open === "readme" },
   ];
   pages["index.html"] = page({
     path: "/",
     title: siteMeta.name,
-    desk: deskHtml(directory({ title: `${siteMeta.domain}/`, rows }), side),
+    desk: deskHtml(directory({ title: `${siteMeta.domain}/`, rows: rows("readme") }), [
+      readmeWin("readme.txt", readme.map((t) => p(t)).join("") + mailLine()),
+      landingPlayer(),
+    ]),
+  });
+  pages["contact/index.html"] = page({
+    path: "/contact/",
+    spot: "/",
+    title: `contact · ${siteMeta.name}`,
+    description: `Contact Yves Spiri: ${siteMeta.email}`,
+    desk: deskHtml(directory({ title: `${siteMeta.domain}/`, rows: rows("contact") }), [
+      readmeWin("contact.txt", contactBody),
+      landingPlayer(),
+    ]),
   });
 }
 
@@ -498,7 +515,7 @@ const pages = {};
   const musicLinks = links.filter((l) => l.label !== "instagram");
   const yotah = readmeWin("yotah.txt",
     p("Yotah is my experimental club music project.") +
-    `\n        <ul>${musicLinks.map((l) => `\n          <li>› <a href="${l.href}" target="_blank" rel="noopener">${esc(l.label)}</a></li>`).join("")}\n        </ul>`, { later: true });
+    `\n        <ul>${musicLinks.map((l) => `\n          <li>› <a href="${l.href}" target="_blank" rel="noopener">${esc(l.label)}</a></li>`).join("")}\n        </ul>`);
   const files = (r) => {
     const t = fmtDate(releaseTime(r));
     return [
@@ -606,7 +623,7 @@ const pages = {};
       </div>
       <div class="inset">
         <iframe src="${esc(bandcamp(r.embedUrl))}" height="42" title="${esc(r.title)} on Bandcamp" loading="lazy" seamless></iframe>
-      </div>`, { label: `${r.artist}, ${r.title}`, kind: "image" }),
+      </div>`, { label: `${r.artist}, ${r.title}` }),
     ]),
   ];
   pages["mixing/index.html"] = page({
@@ -614,30 +631,6 @@ const pages = {};
     title: `mixing & mastering · ${siteMeta.name}`,
     description: mixing.lead,
     desk: deskHtml(directory({ title: `${siteMeta.domain}/mixing/`, rows }), side),
-  });
-}
-
-// contact/: contact.txt opened in a window rather than as a raw file
-{
-  const entries = [
-    ["email", `<a href="mailto:${siteMeta.email}">${siteMeta.email}</a>`],
-    ...links.map((l) => [l.label, `<a href="${l.href}" target="_blank" rel="noopener">${esc(l.href.replace(/^https:\/\//, ""))}</a>`]),
-  ];
-  const body =
-    p("Yves Spiri<br>Zürich") +
-    `\n        <dl class="contact-list">${entries.map(([k, v]) => `\n          <dt>${k}</dt><dd>${v}</dd>`).join("")}\n        </dl>` +
-    p("Available for film and game scoring, mixing and mastering, and music production tutoring, online or in person.");
-  const rows = [
-    UP("/"),
-    { href: "/contact/", icon: icon.file(), name: "contact.txt", modified: fmtDate(T.site), size: fmtSize(Buffer.byteLength(contactTxt)), current: true },
-  ];
-  pages["contact/index.html"] = page({
-    path: "/contact/",
-    title: `contact · ${siteMeta.name}`,
-    description: `Contact Yves Spiri: ${siteMeta.email}`,
-    desk: deskHtml(directory({ title: `${siteMeta.domain}/`, rows }), [
-      readmeWin("contact.txt", body),
-    ]),
   });
 }
 
