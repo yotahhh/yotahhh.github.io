@@ -289,7 +289,7 @@ if (!themes.some((t) => t.id === defaultTheme)) throw new Error(`defaultTheme "$
 // Every text colour on every surface it actually appears on must reach 4.5:1.
 const USED = {
   ink: ["window", "paper", "button", "row-hover", "row-current", "ground"],
-  "ink-2": ["window", "row-hover", "row-current", "ground"], // hovered/current dates, path
+  "ink-2": ["window", "row-hover", "row-current", "ground"], // hovered/current dates, theme label
   "ink-3": ["window", "paper", "button"], // list header, credits, mail, dock time
   "ink-4": ["window"], // dates, sizes, status bar
 };
@@ -336,13 +336,10 @@ const themeSwitcher = () => `
 const FAVICON_FILL = themes.find((t) => t.id === defaultTheme).swatch[1];
 const FAVICON = `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 16"><path d="M1 2h7l2 2h9v11H1z" fill="${FAVICON_FILL}" stroke="#1E211C" stroke-width="1.5"/></svg>`)}`;
 
-// path: the site path of the page ("/", "/music/", …). crumbs: [[label, href]].
-const page = ({ path, title, description = siteMeta.description, crumbs = null, desk, canonical = path }) => {
+// path: the site path of the page ("/", "/music/", …).
+const page = ({ path, title, description = siteMeta.description, desk, canonical = path }) => {
   const home = path === "/";
   const name = home ? siteMeta.name : `<a href="/">${siteMeta.name}</a>`;
-  const crumbHtml = crumbs
-    ? `\n    <p class="path"><a href="/">${siteMeta.domain}</a>/${crumbs.map(([l, h]) => (h ? `<a href="${h}">${esc(l)}</a>/` : `${esc(l)}/`)).join("")}</p>`
-    : "";
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -368,7 +365,7 @@ ${THEME_BOOT}
     <div class="name">
       <h1>${name}</h1>
       <span class="ghost" aria-hidden="true">${siteMeta.name}</span>
-    </div>${crumbHtml}
+    </div>
     </div>${themeSwitcher()}
   </header>
 ${desk}
@@ -490,7 +487,6 @@ const pages = {};
   pages["about/index.html"] = page({
     path: "/about/",
     title: `about · ${siteMeta.name}`,
-    crumbs: [["about"]],
     desk: deskHtml(directory({ title: `${siteMeta.domain}/about/`, rows }), side),
   });
 }
@@ -531,7 +527,6 @@ const pages = {};
     return {
       title: `${r.title} · ${siteMeta.name}`,
       description: r.description.replace(/<[^>]+>/g, ""),
-      crumbs: [["music", "/music/"], [r.id]],
       desk: deskHtml(directory({ title: `${siteMeta.domain}/music/`, rows: tree("music", musicProjects, r.id, folder, files) }), side, [yotah]),
     };
   }, { title: `music · ${siteMeta.name}`, description: "Releases, remixes and compilation tracks by Yotah." });
@@ -558,7 +553,6 @@ const pages = {};
     return {
       title: `${f.title} · ${siteMeta.name}`,
       description: f.description,
-      crumbs: [["film", "/film/"], [f.id]],
       desk: deskHtml(directory({ title: `${siteMeta.domain}/film/`, rows: tree("film", filmProjects, f.id, folder, files) }), side, [
         readmeWin("readme.txt", p(esc(f.title), "entry-title") + p(f.description) + (f.status ? p(esc(`status: ${f.status.toLowerCase()}`), "note") : "")),
         ...clips.slice(0, half).map(clipWin),
@@ -579,7 +573,6 @@ const pages = {};
   entryPages("games", gameProjects, (g) => ({
     title: `${g.title} · ${siteMeta.name}`,
     description: g.description,
-    crumbs: [["games", "/games/"], [g.id]],
     desk: deskHtml(
       directory({ title: `${siteMeta.domain}/games/`, rows: tree("games", gameProjects, g.id, folder, files) }),
       [...(g.clips || []).map(clipWin), ...g.stills.map((st) => imageWin(st.name, st.image, st.alt))],
@@ -618,7 +611,6 @@ const pages = {};
     path: "/mixing/",
     title: `mixing & mastering · ${siteMeta.name}`,
     description: mixing.lead,
-    crumbs: [["mixing"]],
     desk: deskHtml(directory({ title: `${siteMeta.domain}/mixing/`, rows }), side),
   });
 }
@@ -641,7 +633,6 @@ const pages = {};
     path: "/contact/",
     title: `contact · ${siteMeta.name}`,
     description: `Contact Yves Spiri: ${siteMeta.email}`,
-    crumbs: [["contact.txt"]],
     desk: deskHtml(directory({ title: `${siteMeta.domain}/`, rows }), [
       readmeWin("contact.txt", body),
     ]),
@@ -661,7 +652,6 @@ const pages = {};
   pages["404.html"] = page({
     path: "/404.html",
     title: `not found · ${siteMeta.name}`,
-    crumbs: [["▒▒▒"]],
     desk: deskHtml(directory({ title: "not found", rows }), side) +
       `<script>(function(){var ids=${ids};var m=location.pathname.match(/^\\/([^/]+)\\/?$/);if(m&&ids.indexOf(m[1])!==-1)location.replace('/music/'+m[1]+'/');else if(m&&m[1]==='contact.txt')location.replace('/contact/');})();</script>\n`,
   });
