@@ -17,8 +17,14 @@ site, https://yvesspiri.net/ (repo `yotahhh/yotahhh.github.io`).
 ## Overview
 - **Design:** direction H2 "backroom, broken": a slightly broken retro-futurist file
   browser. Striped window title bars, a directory listing as navigation, colour themes
-  drawn from reference images, scanlines, a fluorescent wash that drops out once every
-  18s and a few small glitches. Type is the Mac OS 9 pairing: Geneva for all text
+  drawn from reference images on a plain ground, scanlines, a fluorescent wash that
+  drops out once every 18s and a few small glitches. Everything sits behind CRT glass
+  (`.crt`, a fixed layer after the dock): rounded tube corners showing the bezel, the
+  face darkening towards the edges, a slight blur near the rim for the glass thickness
+  (`backdrop-filter`), and faint reflections (glare top right, a streak, a bounce low
+  left). It is optical cues only: a real barrel warp would mean filtering the whole
+  page, which blurs the text and breaks the embeds. The name is scanlined with a
+  blinking block cursor. Type is the Mac OS 9 pairing: Geneva for all text
   (system font on macOS, Verdana elsewhere, nothing hosted) and ChicagoFLF, a
   public-domain Chicago revival self-hosted from `src/assets/fonts/`, only for window
   titles. Chicago everywhere read as too bold.
@@ -100,8 +106,8 @@ and touch screens get no dragging.
   from reference images in `palettes/`.
 - Each theme in `themes.js` has its full token set; `defaultTheme` picks the default.
   The build appends them to `assets/site.css`: the default as the base `:root`, the
-  others as `:root[data-theme="…"]` overrides. Derived colours (shadow, wallpaper
-  stripes, scanlines, glitched rows) use `color-mix()`/`var()`, so they follow the theme.
+  others as `:root[data-theme="…"]` overrides. Derived colours (shadow, scanlines,
+  glitched rows) use `color-mix()`/`var()`, so they follow the theme.
 - The choice is stored in `localStorage` (`ys-theme`); an inline script in `<head>`
   applies it before first paint. The favicon uses the default theme's accent.
 - The build fails if a text colour is below 4.5:1 on a surface it is used on (the

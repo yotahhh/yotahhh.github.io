@@ -372,6 +372,7 @@ ${THEME_BOOT}
 ${desk}
 </main>
 ${dock()}
+<div class="crt" aria-hidden="true"></div>
 <script src="/assets/site.js"></script>
 </body>
 </html>
