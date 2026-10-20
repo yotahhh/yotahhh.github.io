@@ -364,7 +364,6 @@ ${THEME_BOOT}
     <div class="lead">
     <div class="name">
       <h1>${name}</h1>
-      <span class="ghost" aria-hidden="true">${siteMeta.name}</span>
     </div>
     </div>${themeSwitcher()}
   </header>
