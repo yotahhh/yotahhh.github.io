@@ -80,9 +80,14 @@ folders.
 On a desktop (`(pointer: fine) and (min-width: 761px)`, class `can-move` on `<html>`)
 windows can be dragged by their title bar, and the window you touch comes to the front
 (rising `z-index`). A move is only a `transform` offset from where the layout put it,
-so the initial layout is unchanged. Offsets and stacking are remembered per kind of
-window (the directory, or a title such as `cover.jpg`) in `sessionStorage`
-(`ys-windows`), so they carry over to other pages until the browser tab is closed.
+so the initial layout is unchanged. Offsets and stacking are remembered in
+`sessionStorage` (`ys-placed`) per kind of window and its order among that kind on the
+page: the build tags every window `data-kind` `directory`, `text` (readme, bio, contact),
+`image` (cover, portrait, stills, mixing references), `video` (clips, Vimeo) or
+`player` (Bandcamp/SoundCloud, the home player). So the first image window you moved
+puts the first image window of the next page in the same spot, until the browser tab
+is closed. `data-later` (yotah.txt) counts after the other windows of its kind, so a
+release's readme is the first text window like everywhere else.
 The title bar stays reachable (not above the page, 80px inside the viewport). Phones
 and touch screens get no dragging.
 

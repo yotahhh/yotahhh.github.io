@@ -18,7 +18,8 @@
    6. on a desktop (mouse, wide screen) windows can be dragged by their
       title bar, and the one you touch comes to the front. A move only
       offsets a window from where the layout put it, so the layout stays,
-      and it is remembered per kind of window as you go to other pages.
+      and it is remembered per kind of window (text, image, video …) as
+      you go to other pages.
    7. once anything has been started, internal links swap the page content
       in place instead of loading a new page, so the music keeps going. A
       playing embed cannot be moved without reloading, so its old page stays
@@ -343,22 +344,25 @@
 
   // ---------- moving windows (desktop only) ----------
 
-  // Offsets and stacking are kept per kind of window (the directory, or a
-  // title such as cover.jpg or readme.txt) for the browser session, so a
-  // window you moved stays put when you go to another page.
+  // Offsets and stacking are kept for the browser session per kind of
+  // window (data-kind from the build: directory, text, image, video,
+  // player) and its order among that kind on the page, so the first text
+  // window you moved puts the first text window of the next page there too.
   var desktop = window.matchMedia('(pointer: fine) and (min-width: 761px)');
   var placed = {};
-  try { placed = JSON.parse(sessionStorage.getItem('ys-windows')) || {}; } catch (e) {}
+  try { placed = JSON.parse(sessionStorage.getItem('ys-placed')) || {}; } catch (e) {}
   var front = 10; // z-index of the window most recently touched
   Object.keys(placed).forEach(function (k) { front = Math.max(front, placed[k][2] || 0); });
 
   function keyOf(win) {
-    if (win.classList.contains('directory')) return 'directory';
-    var t = win.querySelector('.titlebar .title');
-    return t ? t.textContent : '';
+    var kind = win.getAttribute('data-kind') || 'text';
+    var main = win.closest('main.page');
+    var sel = '.desk .window[data-kind="' + kind + '"]';
+    var same = main ? [].slice.call(main.querySelectorAll(sel + ':not([data-later])')).concat([].slice.call(main.querySelectorAll(sel + '[data-later]'))) : [win];
+    return kind + ':' + same.indexOf(win);
   }
   function save() {
-    try { sessionStorage.setItem('ys-windows', JSON.stringify(placed)); } catch (e) {}
+    try { sessionStorage.setItem('ys-placed', JSON.stringify(placed)); } catch (e) {}
   }
   // box: where the layout puts the window. The title bar stays within reach:
   // below the top of the page, and at least 80px inside the viewport.

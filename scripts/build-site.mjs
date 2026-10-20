@@ -116,8 +116,11 @@ const titlebar = (title, { small = false, boxes = true } = {}) => `
         <span class="box" aria-hidden="true"></span>` : ""}
       </div>`;
 
-const win = (title, body, { cls = "", label = title, id = "" } = {}) => `
-    <section class="window${cls ? " " + cls : ""}"${id ? ` id="${id}"` : ""} aria-label="${esc(label)}">${titlebar(title)}${body}
+// kind: text, image, video or player. On a desktop, site.js remembers where
+// you moved a window by its kind and its order among that kind on the page;
+// "later" windows count after the others of their kind.
+const win = (title, body, { cls = "", label = title, id = "", kind = "text", later = false } = {}) => `
+    <section class="window${cls ? " " + cls : ""}"${id ? ` id="${id}"` : ""} data-kind="${kind}"${later ? " data-later" : ""} aria-label="${esc(label)}">${titlebar(title)}${body}
     </section>`;
 
 // One listing row. href makes it a link; external links open in a new tab.
@@ -145,7 +148,7 @@ const directory = ({ title, rows, head = ["name", "modified", "size"] }) => {
   const count = rows.filter((r) => r.name !== "../" && !r.child).length;
   const status = `${count} ${count === 1 ? "item" : "items"}`;
   return `
-    <section class="window directory" aria-label="Directory ${esc(title)}">${titlebar(title)}
+    <section class="window directory" data-kind="directory" aria-label="Directory ${esc(title)}">${titlebar(title)}
 
       <div class="row head" aria-hidden="true"><span>${head[0]}</span><span>${head[1]}</span><span class="hide-sm">${head[2]}</span></div>
 
@@ -159,9 +162,9 @@ const directory = ({ title, rows, head = ["name", "modified", "size"] }) => {
     </section>`;
 };
 
-const readmeWin = (title, inner) => win(title, `
+const readmeWin = (title, inner, opts) => win(title, `
       <div class="readme-body">${inner}
-      </div>`);
+      </div>`, opts);
 
 const p = (html, cls) => `\n        <p${cls ? ` class="${cls}"` : ""}>${copy(html)}</p>`;
 const mailLine = () => p(`› <a href="mailto:${siteMeta.email}" style="text-decoration:none">${siteMeta.email}</a>`, "mail");
@@ -175,7 +178,7 @@ const imageWin = (title, src, alt, caption = "") => {
       <div class="inset">
         <img src="${src}" alt="${esc(alt)}" width="${w}" height="${h}" loading="lazy" decoding="async">${caption ? `
         <p class="caption">${caption}</p>` : ""}
-      </div>`, { id: winId(title) });
+      </div>`, { id: winId(title), kind: "image" });
 };
 
 // A looping clip with sound: plays muted while on screen, like a GIF; the
@@ -184,7 +187,7 @@ const SPEAKER = `<svg width="14" height="12" viewBox="0 0 14 12" aria-hidden="tr
 const clipWin = (c) => {
   const id = `clip-${c.name.replace(/\.\w+$/, "")}`;
   return `
-    <section class="window clip" id="${id}" aria-label="${esc(c.name)}">${titlebar(c.name)}
+    <section class="window clip" id="${id}" data-kind="video" aria-label="${esc(c.name)}">${titlebar(c.name)}
       <div class="inset">
         <video src="/clips/${c.file}.mp4" poster="/clips/${c.file}.jpg" width="960" height="540" muted loop playsinline preload="none" aria-label="${esc(c.alt)}"></video>
         <p class="caption clip-bar">
@@ -204,7 +207,7 @@ const embedWin = (title, { bandcampUrl, soundcloudUrl, vimeoUrl, label, href }) 
       <p class="player-label"><a href="${href}">${esc(label)}</a></p>` : ""}
       <div class="inset${vimeoUrl ? " video" : ""}">
         ${frame}
-      </div>`, { label: `${title}: ${label}`, id: winId(title) });
+      </div>`, { label: `${title}: ${label}`, id: winId(title), kind: vimeoUrl ? "video" : "player" });
 };
 
 // intrinsic size of a JPEG, so images reserve their space (no layout shift)
@@ -236,7 +239,7 @@ const landingPlayer = () => {
     })
     .join("");
   return `
-    <section class="window player" aria-label="${esc(title)}, ${esc(note)}" data-player>
+    <section class="window player" data-kind="player" aria-label="${esc(title)}, ${esc(note)}" data-player>
       <button type="button" class="play" aria-label="Play ${esc(title)}" aria-pressed="false">
         <svg width="12" height="12" viewBox="0 0 10 10" aria-hidden="true"><path d="M2.5 1l7 4-7 4z" fill="var(--ink)"/></svg>
       </button>
@@ -495,7 +498,7 @@ const pages = {};
   const musicLinks = links.filter((l) => l.label !== "instagram");
   const yotah = readmeWin("yotah.txt",
     p("Yotah is my experimental club music project.") +
-    `\n        <ul>${musicLinks.map((l) => `\n          <li>› <a href="${l.href}" target="_blank" rel="noopener">${esc(l.label)}</a></li>`).join("")}\n        </ul>`);
+    `\n        <ul>${musicLinks.map((l) => `\n          <li>› <a href="${l.href}" target="_blank" rel="noopener">${esc(l.label)}</a></li>`).join("")}\n        </ul>`, { later: true });
   const files = (r) => {
     const t = fmtDate(releaseTime(r));
     return [
@@ -603,7 +606,7 @@ const pages = {};
       </div>
       <div class="inset">
         <iframe src="${esc(bandcamp(r.embedUrl))}" height="42" title="${esc(r.title)} on Bandcamp" loading="lazy" seamless></iframe>
-      </div>`, { label: `${r.artist}, ${r.title}` }),
+      </div>`, { label: `${r.artist}, ${r.title}`, kind: "image" }),
     ]),
   ];
   pages["mixing/index.html"] = page({
