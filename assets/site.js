@@ -17,7 +17,8 @@
       one and silences the landing track and embeds (and vice versa).
    6. on a desktop (mouse, wide screen) windows can be dragged by their
       title bar, and the one you touch comes to the front. A move only
-      offsets a window from where the layout put it, so the layout stays.
+      offsets a window from where the layout put it, so the layout stays,
+      and it is remembered per kind of window as you go to other pages.
    7. once anything has been started, internal links swap the page content
       in place instead of loading a new page, so the music keeps going. A
       playing embed cannot be moved without reloading, so its old page stays
@@ -342,47 +343,85 @@
 
   // ---------- moving windows (desktop only) ----------
 
+  // Offsets and stacking are kept per kind of window (the directory, or a
+  // title such as cover.jpg or readme.txt) for the browser session, so a
+  // window you moved stays put when you go to another page.
   var desktop = window.matchMedia('(pointer: fine) and (min-width: 761px)');
+  var placed = {};
+  try { placed = JSON.parse(sessionStorage.getItem('ys-windows')) || {}; } catch (e) {}
   var front = 10; // z-index of the window most recently touched
+  Object.keys(placed).forEach(function (k) { front = Math.max(front, placed[k][2] || 0); });
+
+  function keyOf(win) {
+    if (win.classList.contains('directory')) return 'directory';
+    var t = win.querySelector('.titlebar .title');
+    return t ? t.textContent : '';
+  }
+  function save() {
+    try { sessionStorage.setItem('ys-windows', JSON.stringify(placed)); } catch (e) {}
+  }
+  // box: where the layout puts the window. The title bar stays within reach:
+  // below the top of the page, and at least 80px inside the viewport.
+  function place(win, box, x, y) {
+    var vw = document.documentElement.clientWidth;
+    x = Math.min(Math.max(x, 80 - box.right), vw - 80 - box.left);
+    y = Math.max(y, -(box.top + window.scrollY));
+    win.style.transform = x || y ? 'translate(' + x + 'px,' + y + 'px)' : '';
+    win.dataset.x = x; win.dataset.y = y; // the offset actually applied
+    return [x, y];
+  }
+  function layoutBox(win) {
+    var r = win.getBoundingClientRect();
+    var x = +win.dataset.x || 0, y = +win.dataset.y || 0;
+    return { left: r.left - x, right: r.right - x, top: r.top - y };
+  }
+
+  function bindWindows() {
+    if (!desktop.matches) return;
+    var wins = [].slice.call(document.querySelectorAll('main.page:not(.ghost) .desk .window'));
+    var boxes = wins.map(function (w) { return w.getBoundingClientRect(); });
+    wins.forEach(function (w, i) {
+      var p = placed[keyOf(w)];
+      if (!p) return;
+      place(w, boxes[i], p[0], p[1]);
+      if (p[2]) w.style.zIndex = p[2];
+    });
+  }
 
   function setDesktop() {
     document.documentElement.classList.toggle('can-move', desktop.matches);
-    if (desktop.matches) return;
+    if (desktop.matches) { bindWindows(); return; }
     document.querySelectorAll('.desk .window').forEach(function (w) {
       w.style.transform = w.style.zIndex = '';
-      delete w.dataset.dx; delete w.dataset.dy;
+      delete w.dataset.x; delete w.dataset.y;
     });
   }
   if (desktop.addEventListener) desktop.addEventListener('change', setDesktop);
-  setDesktop();
+  document.documentElement.classList.toggle('can-move', desktop.matches);
 
   document.addEventListener('pointerdown', function (e) {
     if (!desktop.matches || e.button !== 0) return;
     var win = e.target.closest('main.page:not(.ghost) .desk .window');
     if (!win) return;
-    win.style.zIndex = ++front;
+    var key = keyOf(win);
+    var p = placed[key] || (placed[key] = [0, 0, 0]);
+    win.style.zIndex = p[2] = ++front;
+    save();
     var bar = e.target.closest('.titlebar');
     if (!bar || bar.parentElement !== win) return;
     e.preventDefault(); // no text selection while dragging
     var x0 = e.clientX, y0 = e.clientY;
-    var dx = +win.dataset.dx || 0, dy = +win.dataset.dy || 0;
-    var box = win.getBoundingClientRect();
-    var pageTop = box.top + window.scrollY;
+    var box = layoutBox(win);
+    var dx = +win.dataset.x || 0, dy = +win.dataset.y || 0;
     bar.setPointerCapture(e.pointerId);
     win.classList.add('moving');
     function move(ev) {
-      var mx = ev.clientX - x0, my = ev.clientY - y0;
-      // keep the title bar within reach: below the top of the page, and at
-      // least 80px of the window inside the viewport on either side
-      var vw = document.documentElement.clientWidth;
-      mx = Math.min(Math.max(mx, 80 - box.right), vw - 80 - box.left);
-      my = Math.max(my, -pageTop);
-      win.dataset.dx = dx + mx;
-      win.dataset.dy = dy + my;
-      win.style.transform = 'translate(' + (dx + mx) + 'px,' + (dy + my) + 'px)';
+      var xy = place(win, box, dx + ev.clientX - x0, dy + ev.clientY - y0);
+      p[0] = xy[0]; p[1] = xy[1];
     }
     function end() {
       win.classList.remove('moving');
+      save();
       bar.removeEventListener('pointermove', move);
       bar.removeEventListener('pointerup', end);
       bar.removeEventListener('pointercancel', end);
@@ -397,6 +436,7 @@
     bindThemes();
     bindGlitch();
     bindClips();
+    bindWindows();
   }
   bindPage();
 })();

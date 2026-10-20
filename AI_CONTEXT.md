@@ -80,9 +80,11 @@ folders.
 On a desktop (`(pointer: fine) and (min-width: 761px)`, class `can-move` on `<html>`)
 windows can be dragged by their title bar, and the window you touch comes to the front
 (rising `z-index`). A move is only a `transform` offset from where the layout put it,
-so the initial layout is unchanged, and a page swap or reload resets it. The title bar
-stays reachable (not above the page, 80px inside the viewport). Phones and touch
-screens get no dragging.
+so the initial layout is unchanged. Offsets and stacking are remembered per kind of
+window (the directory, or a title such as `cover.jpg`) in `sessionStorage`
+(`ys-windows`), so they carry over to other pages until the browser tab is closed.
+The title bar stays reachable (not above the page, 80px inside the viewport). Phones
+and touch screens get no dragging.
 
 ## Themes
 - Four colour themes, switched by the swatches in every page header: `dumbo` (default),
