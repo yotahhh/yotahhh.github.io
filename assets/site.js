@@ -15,7 +15,10 @@
       a track of an album also loads into the album's player.
    5. film clips: loop silently while on screen; the sound button unmutes
       one and silences the landing track and embeds (and vice versa).
-   6. once anything has been started, internal links swap the page content
+   6. on a desktop (mouse, wide screen) windows can be dragged by their
+      title bar, and the one you touch comes to the front. A move only
+      offsets a window from where the layout put it, so the layout stays.
+   7. once anything has been started, internal links swap the page content
       in place instead of loading a new page, so the music keeps going. A
       playing embed cannot be moved without reloading, so its old page stays
       in the document, invisible, with just that player pinned to the corner. */
@@ -167,6 +170,9 @@
   // the old page stays, invisible; only the playing embed shows, in the corner
   function dockEmbed(main) {
     main.classList.add('ghost');
+    // a moved window would become the fixed player's containing block
+    var moved = embed.closest('.window');
+    if (moved) moved.style.transform = '';
     main.querySelectorAll('video').forEach(function (v) { v.pause(); });
     // no aria-hidden: visibility: hidden already hides the rest, and the player stays reachable
     var inset = embed.closest('.inset');
@@ -333,6 +339,58 @@
     var r = rows[Math.floor(Math.random() * rows.length)];
     r.classList.add('glitch-' + GLITCHES[n % GLITCHES.length]);
   }
+
+  // ---------- moving windows (desktop only) ----------
+
+  var desktop = window.matchMedia('(pointer: fine) and (min-width: 761px)');
+  var front = 10; // z-index of the window most recently touched
+
+  function setDesktop() {
+    document.documentElement.classList.toggle('can-move', desktop.matches);
+    if (desktop.matches) return;
+    document.querySelectorAll('.desk .window').forEach(function (w) {
+      w.style.transform = w.style.zIndex = '';
+      delete w.dataset.dx; delete w.dataset.dy;
+    });
+  }
+  if (desktop.addEventListener) desktop.addEventListener('change', setDesktop);
+  setDesktop();
+
+  document.addEventListener('pointerdown', function (e) {
+    if (!desktop.matches || e.button !== 0) return;
+    var win = e.target.closest('main.page:not(.ghost) .desk .window');
+    if (!win) return;
+    win.style.zIndex = ++front;
+    var bar = e.target.closest('.titlebar');
+    if (!bar || bar.parentElement !== win) return;
+    e.preventDefault(); // no text selection while dragging
+    var x0 = e.clientX, y0 = e.clientY;
+    var dx = +win.dataset.dx || 0, dy = +win.dataset.dy || 0;
+    var box = win.getBoundingClientRect();
+    var pageTop = box.top + window.scrollY;
+    bar.setPointerCapture(e.pointerId);
+    win.classList.add('moving');
+    function move(ev) {
+      var mx = ev.clientX - x0, my = ev.clientY - y0;
+      // keep the title bar within reach: below the top of the page, and at
+      // least 80px of the window inside the viewport on either side
+      var vw = document.documentElement.clientWidth;
+      mx = Math.min(Math.max(mx, 80 - box.right), vw - 80 - box.left);
+      my = Math.max(my, -pageTop);
+      win.dataset.dx = dx + mx;
+      win.dataset.dy = dy + my;
+      win.style.transform = 'translate(' + (dx + mx) + 'px,' + (dy + my) + 'px)';
+    }
+    function end() {
+      win.classList.remove('moving');
+      bar.removeEventListener('pointermove', move);
+      bar.removeEventListener('pointerup', end);
+      bar.removeEventListener('pointercancel', end);
+    }
+    bar.addEventListener('pointermove', move);
+    bar.addEventListener('pointerup', end);
+    bar.addEventListener('pointercancel', end);
+  });
 
   function bindPage() {
     bindPlayer();

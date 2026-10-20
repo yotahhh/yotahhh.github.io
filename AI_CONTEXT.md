@@ -45,7 +45,7 @@ Source:
   additions, clips, dock, swatches come after it, then the responsive and
   reduced-motion blocks.
 - `src/assets/site.js`: the only script. Sections: landing track + dock, embeds, theme
-  swatches, row glitches, film clips, in-place page swaps. Everything bound to page
+  swatches, row glitches, film clips, moving windows, in-place page swaps. Everything bound to page
   content runs from `bindPage()`, which runs on load and after every swap.
 - `src/assets/fonts/ChicagoFLF.woff2`.
 - `scripts/build-site.mjs`: components (window, directory listing, row, readme, inset,
@@ -75,6 +75,14 @@ folders.
 - `/contact/`: contact.txt shown in a window (old `/contact.txt` links forward there).
 - `/404.html`: "not found". Forwards the old single-page site's `/<id>` release links to
   `/music/<id>/`, and `/contact.txt` to `/contact/`.
+
+## Moving windows
+On a desktop (`(pointer: fine) and (min-width: 761px)`, class `can-move` on `<html>`)
+windows can be dragged by their title bar, and the window you touch comes to the front
+(rising `z-index`). A move is only a `transform` offset from where the layout put it,
+so the initial layout is unchanged, and a page swap or reload resets it. The title bar
+stays reachable (not above the page, 80px inside the viewport). Phones and touch
+screens get no dragging.
 
 ## Themes
 - Four colour themes, switched by the swatches in every page header: `dumbo` (default),

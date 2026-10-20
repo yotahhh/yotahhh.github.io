@@ -433,6 +433,16 @@ body::before {
   25%, 75% { outline: none; }
 }
 
+/* desktop: windows move by their title bar (site.js). The side column
+   loses its own stacking layer, so any window can come to the front; its
+   windows keep sitting over the directory until one is touched. */
+.can-move body { overflow-x: clip; } /* a window pushed past the edge adds no scrollbar */
+.can-move .desk > .side { z-index: auto; }
+.can-move .desk > .side > .window { z-index: 2; }
+.can-move .desk .titlebar { cursor: grab; touch-action: none; }
+.can-move .desk .window.moving .titlebar { cursor: grabbing; }
+.can-move .desk .window.moving { box-shadow: 10px 10px 0 color-mix(in srgb, var(--ink) 40%, transparent); }
+
 /* the open entry's files, indented under its folder row in a section tree */
 .row.child .name-cell { padding-left: 30px; }
 
