@@ -27,12 +27,11 @@
   <path d="M300 72Q600 48 900 62" stroke="#f6fbff" stroke-width="12" stroke-linecap="round" fill="none" opacity="0.8" filter="url(#edge)"/>
   <!-- the window, its light spilling around it -->
   <path d="M1110 190Q1290 172 1470 196Q1486 360 1474 520Q1290 506 1118 512Q1100 350 1110 190Z" fill="#fff" opacity="0.5" filter="url(#haze)"/>
-  <!-- its shutters: two leaves of slats, the light coming through in bands -->
+  <!-- its shutters: slats, the light coming through in bands -->
   <g filter="url(#wash)">
     <g clip-path="url(#pane)">
       <rect x="1090" y="160" width="400" height="380" fill="url(#sky)"/>
       <rect x="1090" y="160" width="400" height="380" fill="url(#slats)"/>
-      <path d="M1290 176Q1297 350 1290 516" stroke="#5a5a5a" stroke-width="16" fill="none"/>
     </g>
   </g>
   <!-- daylight from the window on the floor -->
