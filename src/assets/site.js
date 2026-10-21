@@ -616,7 +616,7 @@
   // and up over anything you can click. The speaker in the header turns it
   // off (remembered in localStorage ys-sound). Short enough to sit on top of
   // whatever is playing, so it does not take turns with the music.
-  var click = { ctx: null, buf: null, data: null, on: true, down: false };
+  var click = { ctx: null, buf: null, data: null, on: true, down: false, at: 0 };
   try { click.on = localStorage.getItem('ys-sound') !== 'off'; } catch (e) {}
   var AC = window.AudioContext || window.webkitAudioContext;
   if (AC) fetch('/sounds/mouse.wav').then(function (r) { return r.arrayBuffer(); }).then(function (b) { click.data = b; }).catch(function () {});
@@ -634,11 +634,18 @@
     }
     var src = click.ctx.createBufferSource();
     var gain = click.ctx.createGain();
-    gain.gain.value = 0.55;
+    gain.gain.value = 0.35;
     src.buffer = click.buf;
     src.connect(gain).connect(click.ctx.destination);
-    if (part === 'down') src.start(0, 0, 0.06);
-    else src.start(0, 0.14, 0.05);
+    var now = click.ctx.currentTime;
+    if (part === 'down') {
+      click.at = now;
+      src.start(now, 0, 0.06);
+    } else {
+      // a quick click still sounds like one: the release waits until at
+      // least 80ms after the press, as a real button needs to travel back
+      src.start(Math.max(now, (click.at || 0) + 0.08), 0.14, 0.05);
+    }
   }
   var CLICKABLE = 'a[href], button, summary, .titlebar, .rows .row';
   document.addEventListener('pointerdown', function (e) {
