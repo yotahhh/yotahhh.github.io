@@ -170,11 +170,16 @@ pages; that is expected, commit them with the next change.
   hover/focus/click of play, unscrambles it and plays a blob URL. This only stops casual
   downloading; the key is in the page.
 - **Dock and background play:** every page carries a hidden `.dock` (the track's data
-  plus a play/pause button), pinned bottom-right once the track starts. From then on,
-  `site.js` swaps `main.page` in place for internal links ending in `/` (fetch +
-  pushState, popstate on Back), so audio keeps playing; other files (images) open in a
-  new tab. Before anything plays, links navigate normally. Media Session gives
-  lock-screen and media-key control.
+  plus a play/pause button), pinned bottom-right once the track starts. `site.js` swaps
+  `main.page` in place for internal links ending in `/` (fetch + pushState, popstate on
+  Back), so audio keeps playing and the glass never flashes. Once something plays,
+  other files open in a new tab. Media Session gives lock-screen and media-key control.
+- **Navigating (Mac OS 9):** pages are fetched on hover or focus of a link (`get()`
+  caches them), so most swaps are instant. The clicked row stays selected, the pointer
+  shows `progress`, and outline rectangles zoom from the row to the window the new page
+  is about (`zoom()`, the first window beside the directory); its windows appear once
+  the zoom lands (`.unveil`). `../` zooms the other way, from the window into the row,
+  before the swap. No zoom with `prefers-reduced-motion`.
 - **Embeds:** Bandcamp/SoundCloud (recoloured in `bandcamp()`/`soundcloud()`) and one
   Vimeo. Bandcamp has no player API, so a click into an embed (window blur with an
   iframe focused) counts as it starting; reloading the iframe is the only way to stop

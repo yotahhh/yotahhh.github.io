@@ -20,8 +20,8 @@
       offsets a window from where the layout put it, so the layout stays,
       and it is remembered: the directory's everywhere, any other window's
       on its own page.
-   7. once anything has been started, internal links swap the page content
-      in place instead of loading a new page, so the music keeps going. A
+   7. internal links swap the page content in place instead of loading a
+      new page, with Mac OS 9 zoom rectangles, so the music keeps going. A
       playing embed cannot be moved without reloading, so its old page stays
       in the document, invisible, with just that player pinned to the corner. */
 (function () {
@@ -257,49 +257,130 @@
     });
   }
 
-  // ---------- page swaps, only once something has been played ----------
+  // ---------- page swaps ----------
 
-  function swap(url, push) {
-    return fetch(url)
-      .then(function (r) { return r.text(); })
-      .then(function (html) {
-        var doc = new DOMParser().parseFromString(html, 'text/html');
-        var main = doc.querySelector('main.page');
-        if (!main) throw new Error('no page');
-        var current = document.querySelector('main.page:not(.ghost)');
-        main = document.adoptNode(main);
-        if (embed && current.contains(embed)) {
-          var old = document.querySelector('main.ghost');
-          if (old) old.remove();
-          current.before(main);
-          dockEmbed(current);
-        } else {
-          current.replaceWith(main);
-        }
-        document.title = doc.title;
-        if (push) history.pushState({ swapped: true }, '', url);
-        window.scrollTo(0, 0);
-        bindPage();
-      })
-      .catch(function () { location.href = url; });
+  // Internal links swap main.page in place instead of loading a new page,
+  // so the glass, the dock and whatever is playing stay and nothing
+  // flashes. Pages are fetched on hover, so most swaps are instant. Like
+  // the Mac OS 9 Finder opening a folder, outline rectangles zoom out from
+  // the row you clicked to the window that opens, and back in for ../.
+  var cache = {};
+  var calm = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  function get(url) {
+    var key = url.split('#')[0];
+    if (!cache[key]) {
+      cache[key] = fetch(key).then(function (r) {
+        if (!r.ok && r.status !== 404) throw new Error(r.status);
+        return r.text();
+      });
+      cache[key].catch(function () { delete cache[key]; });
+    }
+    return cache[key];
+  }
+
+  function internal(a) {
+    return a && !a.target && !a.hasAttribute('download') && a.origin === location.origin && /\/$/.test(a.pathname);
+  }
+
+  // the window a page is about: the first one beside the directory
+  function focusWindow(main) {
+    return main.querySelector('.desk > .side > .window') ||
+      main.querySelector('.desk .window:not(.directory)') ||
+      main.querySelector('.desk .window');
+  }
+
+  function zoom(from, to) {
+    if (calm.matches || !from || !to) return Promise.resolve();
+    return new Promise(function (done) {
+      var layer = document.createElement('div');
+      layer.className = 'zoom';
+      layer.setAttribute('aria-hidden', 'true');
+      document.body.appendChild(layer);
+      var steps = 6; // from the row itself to the window itself
+      for (var i = 1; i <= steps; i++) (function (i) {
+        setTimeout(function () {
+          var k = 1 - Math.pow(1 - (i - 1) / (steps - 1), 2); // big steps first, settling in
+          var r = document.createElement('span');
+          r.style.left = from.left + (to.left - from.left) * k + 'px';
+          r.style.top = from.top + (to.top - from.top) * k + 'px';
+          r.style.width = from.width + (to.width - from.width) * k + 'px';
+          r.style.height = from.height + (to.height - from.height) * k + 'px';
+          layer.appendChild(r);
+          setTimeout(function () { r.remove(); }, 60);
+          if (i === steps) setTimeout(function () { layer.remove(); done(); }, 60);
+        }, (i - 1) * 22);
+      })(i);
+    });
+  }
+
+  function swap(html, url, push, from) {
+    var doc = new DOMParser().parseFromString(html, 'text/html');
+    var main = doc.querySelector('main.page');
+    if (!main) throw new Error('no page');
+    var current = document.querySelector('main.page:not(.ghost)');
+    main = document.adoptNode(main);
+    if (from && !calm.matches) main.classList.add('unveil'); // windows wait for the zoom
+    if (embed && current.contains(embed)) {
+      var old = document.querySelector('main.ghost');
+      if (old) old.remove();
+      current.before(main);
+      dockEmbed(current);
+    } else {
+      current.replaceWith(main);
+    }
+    document.title = doc.title;
+    if (push) history.pushState({ swapped: true }, '', url);
+    window.scrollTo(0, 0);
+    bindPage();
+    var win = focusWindow(main);
+    return zoom(from, win && win.getBoundingClientRect()).then(function () {
+      main.classList.remove('unveil');
+    });
+  }
+
+  function go(a) {
+    var url = a.href;
+    if (!history.state) history.replaceState({ swapped: true }, '');
+    var row = a.closest('.row');
+    var from = (row || a).getBoundingClientRect();
+    var up = row && row.textContent.trim().indexOf('../') === 0;
+    if (row) row.classList.add('opening'); // selected while it opens
+    document.documentElement.classList.add('busy');
+    var current = document.querySelector('main.page:not(.ghost)');
+    var win = up && focusWindow(current);
+    // ../ closes: the zoom runs from the window back into the row first
+    var closing = up ? zoom(win && win.getBoundingClientRect(), from) : Promise.resolve();
+    Promise.all([get(url), closing])
+      .then(function (r) { return swap(r[0], url, true, up ? null : from); })
+      .catch(function () { location.href = url; })
+      .then(function () { document.documentElement.classList.remove('busy'); });
   }
 
   document.addEventListener('click', function (e) {
-    if (!started || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
     var a = e.target.closest('a[href]');
     if (!a || a.target || a.hasAttribute('download') || a.origin !== location.origin) return;
-    if (!/\/$/.test(a.pathname)) { // images and other files: a new tab, so the music keeps going
-      e.preventDefault();
+    if (!internal(a)) {
+      if (!started) return; // a file: it opens as usual
+      e.preventDefault(); // once something plays, files open in a new tab so it keeps going
       window.open(a.href, '_blank', 'noopener');
       return;
     }
     if (a.pathname === location.pathname && a.hash) return;
     e.preventDefault();
-    if (!history.state) history.replaceState({ swapped: true }, '');
-    swap(a.href, true);
+    go(a);
+  });
+  ['pointerover', 'focusin'].forEach(function (type) {
+    document.addEventListener(type, function (e) {
+      var a = e.target.closest && e.target.closest('a[href]');
+      if (internal(a) && a.pathname !== location.pathname) get(a.href).catch(function () {});
+    });
   });
   window.addEventListener('popstate', function (e) {
-    if (e.state && e.state.swapped) swap(location.href, false);
+    if (!e.state || !e.state.swapped) return;
+    var url = location.href;
+    get(url).then(function (html) { return swap(html, url, false, null); }).catch(function () { location.reload(); });
   });
 
   // ---------- appearance ----------
