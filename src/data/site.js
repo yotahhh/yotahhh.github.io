@@ -31,7 +31,7 @@ export const links = [
   { label: "instagram", display: "@yotahmusic", href: "https://instagram.com/yotahmusic" },
   { label: "spotify", display: "Yotah", href: "https://open.spotify.com/artist/7fs3wG76Bmdh2z3MIh2uib" },
   { label: "soundcloud", display: "soundcloud.com/yotahh", href: "https://soundcloud.com/yotahh" },
-  { label: "bandcamp", display: "CRTTR", href: "https://crttrcollective.bandcamp.com" },
+  { label: "bandcamp", display: "Rewiring", href: "https://nostrohoodsystem.bandcamp.com/album/rewiring" },
 ];
 
 export const about = {

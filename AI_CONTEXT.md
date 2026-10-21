@@ -169,7 +169,8 @@ pages; that is expected, commit them with the next change.
   newest first. For an album (`bandcampLink` is an `/album/` page), run
   `npm run fetch:bandcamp` so its track rows can load their track.
 - **Add a film:** entry in `filmProjects` (`id`, `title`, `description`, optional
-  `image` poster, `status`, `embedUrl` for Vimeo, `clips`).
+  `image` poster, `status`, `embedUrl` for Vimeo, `clips`, `links` as
+  `{ name: "instagram.url", href }` rows).
 - **Add film clips:** renders go in `movietrailer/`. The Terminarch render has burned-in
   timecode top-left and 20px black bars, so it is cropped below them:
   `ffmpeg -ss <start> -i <render> -t <seconds> -vf "crop=1600:900:160:160,scale=960:540:flags=lanczos,format=yuv420p" -c:v libx264 -preset slow -crf 25 -movflags +faststart -af "afade=t=in:d=0.15,afade=t=out:st=<seconds-0.15>:d=0.15" -c:a aac -b:a 128k clips/<film>_<name>.mp4`,

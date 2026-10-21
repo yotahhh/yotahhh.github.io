@@ -561,6 +561,7 @@ const pages = {};
     ...(f.clips || []).map((c) => ({ href: `#clip-${c.name.replace(/\.\w+$/, "")}`, icon: icon.wave(), name: c.name, modified: fmtDate(fileTime(`clips/${c.file}.mp4`)), size: sizeOf(`clips/${c.file}.mp4`) })),
     f.image && { href: "#win-poster", icon: icon.image(), name: "poster.jpg", modified: fmtDate(filmTime(f)), size: sizeOf(imgPath(f.image)) },
     f.embedUrl && { href: f.embedUrl.split("?")[0].replace("player.vimeo.com/video", "vimeo.com"), icon: icon.link(), name: "vimeo.url", modified: fmtDate(filmTime(f)), size: "url" },
+    ...(f.links || []).map((l) => ({ href: l.href, icon: icon.link(), name: l.name, modified: fmtDate(T.projects), size: "url" })),
   ].filter(Boolean);
   const folder = (f) => ({ icon: icon.folder(TINT.film), modified: fmtDate(filmTime(f)) });
 

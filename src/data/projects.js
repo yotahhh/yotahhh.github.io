@@ -164,6 +164,7 @@ export const filmProjects = [
       { name: "glow.mp4", file: "terminarch_glow", from: "02:38", to: "02:49", alt: "A boy lying in red light slowly dissolves into a glow, then a fish-shaped vessel in dim red light" },
       { name: "stars.mp4", file: "terminarch_stars", from: "03:51", to: "04:02", alt: "A boy under the stars with a glowing orb, quick cuts to a reaching hand, then light trails over a dark blue building" },
     ],
+    links: [{ name: "instagram.url", href: "https://www.instagram.com/terminarch.film/" }],
     platform: "ongoing"
   },
   {
