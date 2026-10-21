@@ -331,8 +331,7 @@ const themeSwitcher = () => `
           (t) =>
             `<button type="button" class="swatch" data-theme-id="${t.id}" aria-pressed="false" aria-label="${esc(t.label)}" title="${esc(t.label)}" style="--a:${t.swatch[0]};--b:${t.swatch[1]}"></button>`,
         )
-        .join("")}</span>
-      <button type="button" class="ui-sound" aria-pressed="true" aria-label="Interface sounds" title="Interface sounds">${SPEAKER}</button>
+        .join("")}<button type="button" class="ui-sound" aria-pressed="true" aria-label="Interface sounds" title="Interface sounds">${SPEAKER}</button></span>
     </div>`;
 
 // ---------- page shell ----------

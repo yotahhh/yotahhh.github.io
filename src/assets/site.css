@@ -497,12 +497,11 @@ body::before {
 .can-move .desk .window:not(.active) > .titlebar .box { opacity: 0; } /* still reachable by keyboard */
 .can-move .desk .window:not(.active) > .titlebar .title { color: var(--ink-3); }
 
-/* interface sounds on or off, beside the theme swatches */
+/* interface sounds on or off, in line with the theme swatches (same gap) */
 .ui-sound {
   width: 26px;
   height: 26px;
   padding: 0;
-  margin-left: 4px;
   display: grid;
   place-items: center;
   border: 2px solid var(--ink);
