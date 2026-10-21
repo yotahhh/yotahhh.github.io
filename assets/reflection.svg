@@ -19,9 +19,10 @@
   <!-- the window: four panes, the frame and a curtain drawn over one side -->
   <g filter="url(#soft)">
     <path d="M1110 190Q1290 172 1470 196Q1486 360 1474 520Q1290 506 1118 512Q1100 350 1110 190Z" fill="url(#sky)"/>
-    <path d="M1290 180Q1297 350 1290 514" stroke="#000" stroke-width="22" fill="none"/>
-    <path d="M1108 352Q1290 340 1480 356" stroke="#000" stroke-width="18" fill="none"/>
-    <path d="M1086 176Q1140 360 1098 532L1182 532Q1204 360 1172 174Z" fill="#000" opacity="0.8"/>
+    <!-- frame and curtain catch a little light too, so they are not holes -->
+    <path d="M1290 180Q1297 350 1290 514" stroke="#4a4a4a" stroke-width="22" fill="none"/>
+    <path d="M1108 352Q1290 340 1480 356" stroke="#4a4a4a" stroke-width="18" fill="none"/>
+    <path d="M1086 176Q1140 360 1098 532L1182 532Q1204 360 1172 174Z" fill="#3a3a3a" opacity="0.8"/>
   </g>
   <!-- daylight from the window on the floor -->
   <path d="M1040 820Q1300 790 1560 830L1600 1000H980Z" fill="#fff" opacity="0.14" filter="url(#haze)"/>

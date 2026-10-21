@@ -4,7 +4,7 @@
   <defs>
     <filter id="blur" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="30"/></filter>
   </defs>
-  <g filter="url(#blur)" fill="#000" fill-opacity="0.075">
+  <g filter="url(#blur)" fill="#000" fill-opacity="0.05">
     <ellipse cx="800" cy="640" rx="112" ry="138"/>
     <path d="M500 1000Q520 818 672 784Q800 760 928 784Q1080 818 1100 1000Z"/>
   </g>
