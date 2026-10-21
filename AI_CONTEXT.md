@@ -22,8 +22,11 @@ site, https://yvesspiri.net/ (repo `yotahhh/yotahhh.github.io`).
   drops out once every 18s and a few small glitches. Everything sits behind CRT glass
   (`.crt`, a fixed layer after the dock): rounded tube corners showing the bezel, the
   face darkening towards the edges, a slight blur near the rim for the glass thickness
-  (`backdrop-filter`), and faint reflections (glare top right, a streak, a bounce low
-  left). It is optical cues only: a real barrel warp would mean filtering the whole
+  (`backdrop-filter`), and the room behind the viewer reflected in it:
+  `src/assets/reflection.svg` (a curtained window, a fluorescent tube, an open door,
+  light on the floor; light on black, screen-blended) and `reflection-shade.svg` (the
+  viewer's faint head and shoulders). The build copies both into `assets/`. Phones get
+  a lighter rim and vignette and a fainter room, since the small screen darkened more. It is optical cues only: a real barrel warp would mean filtering the whole
   page, which blurs the text and breaks the embeds. The name is scanlined with a
   blinking block cursor. Type is the Mac OS 9 pairing: Geneva for all text
   (system font on macOS, Verdana elsewhere, nothing hosted) and ChicagoFLF, a

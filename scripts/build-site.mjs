@@ -668,6 +668,7 @@ for (const [rel, html] of Object.entries(pages)) {
 mkdirSync(join(root, "assets"), { recursive: true });
 writeFileSync(join(root, "assets/site.css"), readFileSync(join(root, "src/assets/site.css"), "utf8") + themeCss);
 copyFileSync(join(root, "src/assets/site.js"), join(root, "assets/site.js"));
+for (const f of ["reflection.svg", "reflection-shade.svg"]) copyFileSync(join(root, "src/assets", f), join(root, "assets", f));
 mkdirSync(join(root, "assets/fonts"), { recursive: true });
 copyFileSync(join(root, "src/assets/fonts/ChicagoFLF.woff2"), join(root, "assets/fonts/ChicagoFLF.woff2"));
 
