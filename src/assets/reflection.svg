@@ -1,33 +1,44 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" preserveAspectRatio="none">
   <!-- The room behind you, as the convex CRT glass reflects it: drawn light
        on black and screen-blended over the page (site.css, .crt::after), so
-       only the light shows. Lines bow outwards like on a curved mirror. -->
+       only the light shows. Lines bow outwards like on a curved mirror, and
+       everything is washed out, the way a reflection in glass is. -->
   <defs>
-    <filter id="soft" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="16"/></filter>
-    <filter id="haze" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="42"/></filter>
-    <filter id="edge" x="-10%" y="-20%" width="120%" height="140%"><feGaussianBlur stdDeviation="5"/></filter>
+    <filter id="soft" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="24"/></filter>
+    <filter id="haze" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="52"/></filter>
+    <filter id="edge" x="-10%" y="-20%" width="120%" height="140%"><feGaussianBlur stdDeviation="9"/></filter>
+    <filter id="wash" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="10"/></filter>
     <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="#fffaf0"/>
-      <stop offset="1" stop-color="#e6edf2" stop-opacity="0.7"/>
+      <stop offset="1" stop-color="#eef2f4" stop-opacity="0.9"/>
     </linearGradient>
+    <!-- shutter slats: light in the gaps between them -->
+    <pattern id="slats" width="40" height="28" patternUnits="userSpaceOnUse">
+      <rect width="40" height="13" fill="#5a5a5a"/>
+    </pattern>
+    <clipPath id="pane">
+      <path d="M1110 190Q1290 172 1470 196Q1486 360 1474 520Q1290 506 1118 512Q1100 350 1110 190Z"/>
+    </clipPath>
   </defs>
   <!-- the ceiling, lighter than the back wall it meets along a bowed line -->
-  <path d="M0 0H1600V150Q800 92 0 160Z" fill="#fff" opacity="0.2" filter="url(#soft)"/>
-  <!-- a fluorescent tube: its glow, then its bright core -->
-  <path d="M300 72Q600 48 900 62" stroke="#eef7ff" stroke-width="44" stroke-linecap="round" fill="none" opacity="0.5" filter="url(#haze)"/>
-  <path d="M300 72Q600 48 900 62" stroke="#f6fbff" stroke-width="12" stroke-linecap="round" fill="none" opacity="0.95" filter="url(#edge)"/>
-  <!-- the window: four panes, the frame and a curtain drawn over one side -->
-  <g filter="url(#soft)">
-    <path d="M1110 190Q1290 172 1470 196Q1486 360 1474 520Q1290 506 1118 512Q1100 350 1110 190Z" fill="url(#sky)"/>
-    <!-- frame and curtain catch a little light too, so they are not holes -->
-    <path d="M1290 180Q1297 350 1290 514" stroke="#4a4a4a" stroke-width="22" fill="none"/>
-    <path d="M1108 352Q1290 340 1480 356" stroke="#4a4a4a" stroke-width="18" fill="none"/>
-    <path d="M1086 176Q1140 360 1098 532L1182 532Q1204 360 1172 174Z" fill="#3a3a3a" opacity="0.8"/>
+  <path d="M0 0H1600V150Q800 92 0 160Z" fill="#fff" opacity="0.18" filter="url(#soft)"/>
+  <!-- a fluorescent tube: its glow, then its core -->
+  <path d="M300 72Q600 48 900 62" stroke="#eef7ff" stroke-width="44" stroke-linecap="round" fill="none" opacity="0.45" filter="url(#haze)"/>
+  <path d="M300 72Q600 48 900 62" stroke="#f6fbff" stroke-width="12" stroke-linecap="round" fill="none" opacity="0.8" filter="url(#edge)"/>
+  <!-- the window, its light spilling around it -->
+  <path d="M1110 190Q1290 172 1470 196Q1486 360 1474 520Q1290 506 1118 512Q1100 350 1110 190Z" fill="#fff" opacity="0.5" filter="url(#haze)"/>
+  <!-- its shutters: two leaves of slats, the light coming through in bands -->
+  <g filter="url(#wash)">
+    <g clip-path="url(#pane)">
+      <rect x="1090" y="160" width="400" height="380" fill="url(#sky)"/>
+      <rect x="1090" y="160" width="400" height="380" fill="url(#slats)"/>
+      <path d="M1290 176Q1297 350 1290 516" stroke="#5a5a5a" stroke-width="16" fill="none"/>
+    </g>
   </g>
   <!-- daylight from the window on the floor -->
-  <path d="M1040 820Q1300 790 1560 830L1600 1000H980Z" fill="#fff" opacity="0.14" filter="url(#haze)"/>
+  <path d="M1040 820Q1300 790 1560 830L1600 1000H980Z" fill="#fff" opacity="0.13" filter="url(#haze)"/>
   <!-- an open door on the left, lit from the corridor -->
-  <path d="M120 300Q190 292 262 296Q270 600 264 900Q190 905 118 910Q106 600 120 300Z" fill="#fff" opacity="0.3" filter="url(#soft)"/>
+  <path d="M120 300Q190 292 262 296Q270 600 264 900Q190 905 118 910Q106 600 120 300Z" fill="#fff" opacity="0.26" filter="url(#soft)"/>
   <!-- the corner where two walls meet -->
-  <path d="M560 150Q546 560 566 1000" stroke="#fff" stroke-width="6" opacity="0.16" fill="none" filter="url(#edge)"/>
+  <path d="M560 150Q546 560 566 1000" stroke="#fff" stroke-width="8" opacity="0.13" fill="none" filter="url(#edge)"/>
 </svg>
