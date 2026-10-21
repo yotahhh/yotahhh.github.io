@@ -6,7 +6,8 @@ site, https://yvesspiri.net/ (repo `yotahhh/yotahhh.github.io`).
 ## Ground rules
 - **Never commit the local-only folders** (all git-ignored, keep them that way):
   `landing_music/` (unreleased audio), `gametrailer/`, `movietrailer/` (video sources),
-  `palettes/` (theme reference images), `_REDESIGN/` (the design handoff).
+  `palettes/` (theme reference images), `_REDESIGN/` (the design handoff), and the
+  sound source `sounds/click.wav`.
 - **Stage files by name, never `git add -A` or `git add .`** An unreleased WAV was once
   published that way (see Open items).
 - **Generated files are never hand-edited** (list below); change `src/` or `scripts/`
@@ -63,7 +64,7 @@ Source:
   video from it; GitHub Pages does serve ranges.
 
 Served as is (committed, not generated): `images/` (covers, photos, game stills),
-`clips/` (film loops + posters), `media/` (the scrambled landing track; replaced by
+`clips/` (film loops + posters), `sounds/` (interface sounds), `media/` (the scrambled landing track; replaced by
 `encode-landing.mjs`).
 
 **Generated, do not hand-edit:** `index.html`, `404.html`, `about/`, `music/`,
@@ -99,6 +100,28 @@ own place for the browser session (`sessionStorage` `ys-spots`):
   never covers the page's content.
 The title bar stays reachable (not above the page, 80px inside the viewport). Phones
 and touch screens get no dragging.
+
+Mac OS 9 window behaviour on top of that:
+- **Active window:** on a desktop only the front window (`.active`, the window a page
+  opens on, or the one you last clicked or tabbed into) has stripes and boxes; the ones
+  behind have a plain bar with a greyed title.
+- **Close box** (left, a button): the window zooms back into its row and is hidden
+  (`.closed`, its space stays); its row opens it again. Not remembered across visits.
+  The directory has no close box.
+- **Windowshade** (right box, or double-click the title bar): rolls the window up to
+  its title bar (`.shaded`); a bottom margin keeps its space so nothing moves.
+  Remembered like the window's place (`ys-spots`).
+- **The directory stays open:** a page swap keeps the same directory element and only
+  replaces its contents, so its place, stacking and shade carry over. While the new
+  page's window zooms out of the clicked row, the old one zooms back into it.
+
+## Interface sound
+`sounds/mouse.wav` (16 kB, mono) is Yves' recording of a mouse press and release:
+`site.js` plays the press (0 to 0.06s) on pointer down and the release (from 0.14s)
+on pointer up over anything clickable, through Web Audio. On by default; the speaker
+button beside the theme swatches switches it off (`localStorage` `ys-sound`). The
+source, `sounds/click.wav`, is git-ignored; the web file was made with
+`ffmpeg -ss 0.011 -i sounds/click.wav -t 0.19 -ac 1 -c:a pcm_s16le -af "afade=t=out:st=0.17:d=0.02" sounds/mouse.wav`.
 
 ## Themes
 - Four colour themes, switched by the swatches in every page header: `dumbo` (default),

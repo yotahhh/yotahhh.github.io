@@ -482,6 +482,34 @@ body::before {
 .can-move .desk .window.moving .titlebar { cursor: grabbing; }
 .can-move .desk .window.moving { box-shadow: 10px 10px 0 color-mix(in srgb, var(--ink) 40%, transparent); }
 
+/* title bar boxes are buttons: close (left) and windowshade (right) */
+.titlebar button.box { padding: 0; background: transparent; cursor: default; }
+.titlebar button.box:active { background: var(--ink); }
+.window.closed { visibility: hidden; pointer-events: none; }
+.window.shaded > :not(.titlebar) { display: none; }
+.window.shaded > .titlebar { border-bottom: 0; }
+
+/* desktop: only the front window is active, as in Mac OS 9. The ones behind
+   have a plain title bar: no stripes, no boxes, the title greyed. */
+.can-move .desk .window:not(.active) > .titlebar .stripes { visibility: hidden; }
+.can-move .desk .window:not(.active) > .titlebar .box { opacity: 0; } /* still reachable by keyboard */
+.can-move .desk .window:not(.active) > .titlebar .title { color: var(--ink-3); }
+
+/* interface sounds on or off, beside the theme swatches */
+.ui-sound {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  margin-left: 4px;
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--ink);
+  box-shadow: 2px 2px 0 color-mix(in srgb, var(--ink) 40%, transparent);
+  background: var(--button);
+  cursor: pointer;
+}
+.ui-sound[aria-pressed="false"] .waves { display: none; }
+
 /* opening a page (site.js): the clicked row stays selected, the pointer
    shows it is busy, and outline rectangles zoom from the row to the window
    that opens, as in the Mac OS 9 Finder; the new windows appear once the
@@ -633,7 +661,8 @@ main.ghost .inset.docked .undock {
   .themes { position: absolute; top: 0; right: 0; }
   .themes > span[aria-hidden] { display: none; }
   .themes .swatches { gap: 5px; }
-  .swatch { width: 18px; height: 18px; border-width: 1.5px; box-shadow: none; }
+  .swatch, .ui-sound { width: 18px; height: 18px; border-width: 1.5px; box-shadow: none; }
+  .ui-sound svg { width: 11px; height: 10px; }
   .swatch[aria-pressed="true"] { outline-width: 1.5px; outline-offset: 1.5px; }
 }
 

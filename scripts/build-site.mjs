@@ -107,13 +107,16 @@ const icon = {
 
 // ---------- components ----------
 
-const titlebar = (title, { small = false, boxes = true } = {}) => `
-      <div class="titlebar${small ? " small" : ""}">${boxes ? `
-        <span class="box" aria-hidden="true"></span>` : ""}
+// The left box closes the window (site.js), the right one rolls it up to its
+// title bar. The directory cannot be closed: its left box is only drawn.
+const titlebar = (title, { close = true } = {}) => `
+      <div class="titlebar">${close ? `
+        <button type="button" class="box close" aria-label="Close ${esc(title)}"></button>` : `
+        <span class="box" aria-hidden="true"></span>`}
         <span class="stripes" aria-hidden="true"></span>
         <span class="title">${esc(title)}</span>
-        <span class="stripes" aria-hidden="true"></span>${boxes ? `
-        <span class="box" aria-hidden="true"></span>` : ""}
+        <span class="stripes" aria-hidden="true"></span>
+        <button type="button" class="box shade" aria-label="Collapse ${esc(title)}" aria-expanded="true"></button>
       </div>`;
 
 const win = (title, body, { cls = "", label = title, id = "" } = {}) => `
@@ -145,7 +148,7 @@ const directory = ({ title, rows, head = ["name", "modified", "size"] }) => {
   const count = rows.filter((r) => r.name !== "../" && !r.child).length;
   const status = `${count} ${count === 1 ? "item" : "items"}`;
   return `
-    <section class="window directory" aria-label="Directory ${esc(title)}">${titlebar(title)}
+    <section class="window directory" aria-label="Directory ${esc(title)}">${titlebar(title, { close: false })}
 
       <div class="row head" aria-hidden="true"><span>${head[0]}</span><span>${head[1]}</span><span class="hide-sm">${head[2]}</span></div>
 
@@ -321,7 +324,7 @@ ${themes
 const THEME_BOOT = `<script>try{var t=localStorage.getItem("ys-theme");if(t&&t!=="${defaultTheme}")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>`;
 
 const themeSwitcher = () => `
-    <div class="themes" role="group" aria-label="Appearance" data-default="${defaultTheme}">
+    <div class="themes" role="group" aria-label="Appearance and sound" data-default="${defaultTheme}">
       <span aria-hidden="true">appearance</span>
       <span class="swatches">${themes
         .map(
@@ -329,6 +332,7 @@ const themeSwitcher = () => `
             `<button type="button" class="swatch" data-theme-id="${t.id}" aria-pressed="false" aria-label="${esc(t.label)}" title="${esc(t.label)}" style="--a:${t.swatch[0]};--b:${t.swatch[1]}"></button>`,
         )
         .join("")}</span>
+      <button type="button" class="ui-sound" aria-pressed="true" aria-label="Interface sounds" title="Interface sounds">${SPEAKER}</button>
     </div>`;
 
 // ---------- page shell ----------

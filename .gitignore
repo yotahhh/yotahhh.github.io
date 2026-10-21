@@ -138,3 +138,6 @@ gametrailer/
 # film renders (local only)
 movietrailer/
 movietrailers/
+
+# interface sound sources (local only); the site serves the prepared sounds/mouse.wav
+sounds/click.wav

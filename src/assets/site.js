@@ -23,7 +23,8 @@
    7. internal links swap the page content in place instead of loading a
       new page, with Mac OS 9 zoom rectangles, so the music keeps going. A
       playing embed cannot be moved without reloading, so its old page stays
-      in the document, invisible, with just that player pinned to the corner. */
+      in the document, invisible, with just that player pinned to the corner.
+   8. a mouse click sound on anything you can click, unless switched off. */
 (function () {
   var dock = document.querySelector('.dock');
   var audio = new Audio();
@@ -199,6 +200,11 @@
     if (!a) return;
     var win = document.getElementById(a.getAttribute('href').slice(1));
     if (!win) return;
+    if (win.classList.contains('closed')) { // its row opens it again
+      win.classList.remove('closed');
+      zoom(a.getBoundingClientRect(), win.getBoundingClientRect());
+    }
+    bringToFront(win);
     var src = a.getAttribute('data-track');
     var f = src && win.querySelector('iframe');
     if (f && f.src !== src) {
@@ -265,7 +271,7 @@
   // the Mac OS 9 Finder opening a folder, outline rectangles zoom out from
   // the row you clicked to the window that opens, and back in for ../.
   var cache = {};
-  var calm = window.matchMedia('(prefers-reduced-motion: reduce)');
+  var still = window.matchMedia('(prefers-reduced-motion: reduce)'); // checked per zoom
 
   function get(url) {
     var key = url.split('#')[0];
@@ -291,7 +297,7 @@
   }
 
   function zoom(from, to) {
-    if (calm.matches || !from || !to) return Promise.resolve();
+    if (still.matches || !from || !to) return Promise.resolve();
     return new Promise(function (done) {
       var layer = document.createElement('div');
       layer.className = 'zoom';
@@ -320,7 +326,15 @@
     if (!main) throw new Error('no page');
     var current = document.querySelector('main.page:not(.ghost)');
     main = document.adoptNode(main);
-    if (from && !calm.matches) main.classList.add('unveil'); // windows wait for the zoom
+    if (from && !still.matches) main.classList.add('unveil'); // windows wait for the zoom
+    // the directory is one window that stays open: only its contents change
+    var dir = current.querySelector('.desk .directory'), next = main.querySelector('.desk .directory');
+    if (dir && next) {
+      shade(dir, false); // bindWindows rolls it up again, at its new height
+      dir.innerHTML = next.innerHTML;
+      dir.setAttribute('aria-label', next.getAttribute('aria-label'));
+      next.replaceWith(dir);
+    }
     if (embed && current.contains(embed)) {
       var old = document.querySelector('main.ghost');
       if (old) old.remove();
@@ -339,6 +353,15 @@
     });
   }
 
+  // the window a page opens on is the active one, in front
+  function bringToFront(win) {
+    if (!win || !desktop.matches) return;
+    win.style.zIndex = ++front;
+    var main = win.closest('main.page');
+    main.querySelectorAll('.desk .window.active').forEach(function (w) { w.classList.remove('active'); });
+    win.classList.add('active');
+  }
+
   function go(a) {
     var url = a.href;
     if (!history.state) history.replaceState({ swapped: true }, '');
@@ -348,11 +371,16 @@
     if (row) row.classList.add('opening'); // selected while it opens
     document.documentElement.classList.add('busy');
     var current = document.querySelector('main.page:not(.ghost)');
-    var win = up && focusWindow(current);
-    // ../ closes: the zoom runs from the window back into the row first
-    var closing = up ? zoom(win && win.getBoundingClientRect(), from) : Promise.resolve();
+    var win = focusWindow(current);
+    var old = win && !win.classList.contains('directory') && !win.classList.contains('closed') && win.getBoundingClientRect();
+    // ../ closes: the zoom runs from the window back into the row first.
+    // Otherwise the old window shrinks into the row while the new one opens.
+    var closing = up ? zoom(old, from) : Promise.resolve();
     Promise.all([get(url), closing])
-      .then(function (r) { return swap(r[0], url, true, up ? null : from); })
+      .then(function (r) {
+        if (!up) zoom(old, from);
+        return swap(r[0], url, true, up ? null : from);
+      })
       .catch(function () { location.href = url; })
       .then(function () { document.documentElement.classList.remove('busy'); });
   }
@@ -464,21 +492,83 @@
   }
 
   function bindWindows() {
+    var main = document.querySelector('main.page:not(.ghost)');
+    var wins = [].slice.call(main.querySelectorAll('.desk .window'));
+    wins.forEach(function (w) { var p = placed[keyOf(w)]; shade(w, !!(p && p[3])); });
     if (!desktop.matches) return;
-    var wins = [].slice.call(document.querySelectorAll('main.page:not(.ghost) .desk .window'));
-    var boxes = wins.map(function (w) { return w.getBoundingClientRect(); });
+    var boxes = wins.map(layoutBox); // the directory may arrive already moved
     wins.forEach(function (w, i) {
       var p = placed[keyOf(w)];
       if (!p) return;
       place(w, boxes[i], p[0], p[1]);
       if (p[2] && !w.classList.contains('directory')) w.style.zIndex = p[2];
     });
+    bringToFront(focusWindow(main));
   }
+
+  // ---------- close and windowshade boxes ----------
+
+  // The left box closes a window: it zooms back into its row, which opens
+  // it again (the directory has no close box, it is always there). The
+  // right box, or a double-click on the title bar, rolls a window up to its
+  // title bar, as Mac OS 9 did; the space it leaves stays, so nothing else
+  // moves, and the window remembers it like its place.
+  function shade(win, on) {
+    var bar = win.querySelector('.titlebar');
+    var btn = bar && bar.querySelector('.shade');
+    if (!bar || win.classList.contains('shaded') === on) return;
+    if (on) {
+      var full = win.offsetHeight;
+      win.classList.add('shaded');
+      win.style.marginBottom = (full - win.offsetHeight) + 'px'; // keep its space
+    } else {
+      win.classList.remove('shaded');
+      win.style.marginBottom = '';
+    }
+    if (btn) {
+      btn.setAttribute('aria-expanded', String(!on));
+      btn.setAttribute('aria-label', (on ? 'Expand ' : 'Collapse ') + bar.querySelector('.title').textContent);
+    }
+  }
+  function toggleShade(win) {
+    var on = !win.classList.contains('shaded');
+    shade(win, on);
+    var key = keyOf(win);
+    var p = placed[key] || (placed[key] = [0, 0, 0]);
+    p[3] = on ? 1 : 0;
+    save();
+  }
+  function closeWindow(win) {
+    var box = win.getBoundingClientRect();
+    var row = win.id && document.querySelector('main.page:not(.ghost) .rows a.row[href="#' + win.id + '"]');
+    var into = row ? row.getBoundingClientRect() : win.querySelector('.close').getBoundingClientRect();
+    if (embed && win.contains(embed)) stopEmbed();
+    win.querySelectorAll('video').forEach(function (v) { if (!v.muted) muteClips(); v.pause(); });
+    win.classList.add('closed');
+    zoom(box, into);
+  }
+  document.addEventListener('click', function (e) {
+    var btn = e.target.closest('main.page:not(.ghost) .titlebar button.box');
+    if (!btn) return;
+    var win = btn.closest('.window');
+    if (btn.classList.contains('close')) closeWindow(win);
+    else toggleShade(win);
+  });
+  // tabbing into a window activates it, like clicking it
+  document.addEventListener('focusin', function (e) {
+    var win = e.target.closest && e.target.closest('main.page:not(.ghost) .desk .window');
+    if (win && !win.classList.contains('active')) bringToFront(win);
+  });
+  document.addEventListener('dblclick', function (e) {
+    var bar = e.target.closest('main.page:not(.ghost) .window > .titlebar');
+    if (bar && !e.target.closest('button')) toggleShade(bar.parentElement);
+  });
 
   function setDesktop() {
     document.documentElement.classList.toggle('can-move', desktop.matches);
     if (desktop.matches) { bindWindows(); return; }
     document.querySelectorAll('.desk .window').forEach(function (w) {
+      w.classList.remove('active');
       w.style.transform = w.style.zIndex = '';
       delete w.dataset.x; delete w.dataset.y;
     });
@@ -492,10 +582,11 @@
     if (!win) return;
     var key = keyOf(win);
     var p = placed[key] || (placed[key] = [0, 0, 0]);
-    win.style.zIndex = p[2] = ++front;
+    bringToFront(win);
+    p[2] = front;
     save();
     var bar = e.target.closest('.titlebar');
-    if (!bar || bar.parentElement !== win) return;
+    if (!bar || bar.parentElement !== win || e.target.closest('button')) return;
     e.preventDefault(); // no text selection while dragging
     var x0 = e.clientX, y0 = e.clientY;
     var box = layoutBox(win);
@@ -518,12 +609,67 @@
     bar.addEventListener('pointercancel', end);
   });
 
+  // ---------- interface sound ----------
+
+  // The mouse: Yves' recording of a press and a release (sounds/mouse.wav,
+  // the press at the start, the release from 0.14s), played on pointer down
+  // and up over anything you can click. The speaker in the header turns it
+  // off (remembered in localStorage ys-sound). Short enough to sit on top of
+  // whatever is playing, so it does not take turns with the music.
+  var click = { ctx: null, buf: null, data: null, on: true, down: false };
+  try { click.on = localStorage.getItem('ys-sound') !== 'off'; } catch (e) {}
+  var AC = window.AudioContext || window.webkitAudioContext;
+  if (AC) fetch('/sounds/mouse.wav').then(function (r) { return r.arrayBuffer(); }).then(function (b) { click.data = b; }).catch(function () {});
+
+  function clickSound(part) {
+    if (!click.on || !AC) return;
+    if (!click.ctx) click.ctx = new AC(); // created on a gesture, so it may start
+    if (click.ctx.state === 'suspended') click.ctx.resume();
+    if (!click.buf) {
+      if (click.data && !click.decoding) {
+        click.decoding = true;
+        click.ctx.decodeAudioData(click.data, function (d) { click.buf = d; });
+      }
+      return;
+    }
+    var src = click.ctx.createBufferSource();
+    var gain = click.ctx.createGain();
+    gain.gain.value = 0.55;
+    src.buffer = click.buf;
+    src.connect(gain).connect(click.ctx.destination);
+    if (part === 'down') src.start(0, 0, 0.06);
+    else src.start(0, 0.14, 0.05);
+  }
+  var CLICKABLE = 'a[href], button, summary, .titlebar, .rows .row';
+  document.addEventListener('pointerdown', function (e) {
+    click.down = e.button === 0 && !!e.target.closest(CLICKABLE);
+    if (click.down) clickSound('down');
+  }, true);
+  document.addEventListener('pointerup', function () {
+    if (click.down) clickSound('up');
+    click.down = false;
+  }, true);
+  document.addEventListener('click', function (e) {
+    var btn = e.target.closest('.ui-sound');
+    if (!btn) return;
+    click.on = !click.on;
+    try { localStorage.setItem('ys-sound', click.on ? 'on' : 'off'); } catch (err) {}
+    bindSoundToggle();
+    if (click.on) clickSound('up');
+  });
+  function bindSoundToggle() {
+    document.querySelectorAll('main.page:not(.ghost) .ui-sound').forEach(function (b) {
+      b.setAttribute('aria-pressed', String(click.on));
+    });
+  }
+
   function bindPage() {
     bindPlayer();
     bindThemes();
     bindGlitch();
     bindClips();
     bindWindows();
+    bindSoundToggle();
   }
   bindPage();
 })();
