@@ -321,15 +321,14 @@ ${themes
 `;
 
 // Runs before first paint, so a chosen theme never flashes the default.
-const THEME_BOOT = `<script>try{var t=localStorage.getItem("ys-theme");if(t&&t!=="${defaultTheme}")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>`;
+const THEME_BOOT = `<script>try{var t=localStorage.getItem("ys-theme");if(t)document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>`;
 
 const themeSwitcher = () => `
     <div class="themes" role="group" aria-label="Appearance and sound" data-default="${defaultTheme}">
       <span aria-hidden="true">appearance</span>
       <span class="swatches">${themes
         .map(
-          (t, i) =>
-            (t.experimental && !themes[i - 1].experimental ? `<span class="swatch-gap" aria-hidden="true"></span>` : "") +
+          (t) =>
             `<button type="button" class="swatch" data-theme-id="${t.id}" aria-pressed="false" aria-label="${esc(t.label)}" title="${esc(t.label)}" style="--a:${t.swatch[0]};--b:${t.swatch[1]}"></button>`,
         )
         .join("")}<button type="button" class="ui-sound" aria-pressed="true" aria-label="Interface sounds" title="Interface sounds">${SPEAKER}</button></span>
@@ -367,7 +366,7 @@ const page = ({ path, title, description = siteMeta.description, desk, canonical
   const home = path === "/";
   const name = home ? siteMeta.name : `<a href="/">${siteMeta.name}</a>`;
   return `<!doctype html>
-<html lang="en">
+<html lang="en" data-theme="${defaultTheme}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">

@@ -424,8 +424,7 @@
     swatches.forEach(function (b) {
       b.addEventListener('click', function () {
         var id = b.getAttribute('data-theme-id');
-        if (id === defaultTheme()) document.documentElement.removeAttribute('data-theme');
-        else document.documentElement.setAttribute('data-theme', id);
+        document.documentElement.setAttribute('data-theme', id);
         try { localStorage.setItem('ys-theme', id); } catch (e) {}
         mark();
       });

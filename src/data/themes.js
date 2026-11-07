@@ -7,7 +7,7 @@
 // ("rust" in token names) from their most saturated colour. Text stays dark on light in every theme, and the
 // build checks every text/surface pair for at least 4.5:1 contrast.
 
-export const defaultTheme = "dumbo";
+export const defaultTheme = "riso";
 
 export const themes = [
   {

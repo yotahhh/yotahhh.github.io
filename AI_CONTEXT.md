@@ -127,11 +127,11 @@ source, `sounds/click.wav`, is git-ignored; the web file was made with
 `ffmpeg -ss 0.011 -i sounds/click.wav -t 0.19 -ac 1 -c:a pcm_s16le -af "afade=t=out:st=0.17:d=0.02" sounds/mouse.wav`.
 
 ## Themes
-- Four colour themes, switched by the swatches in every page header: `dumbo` (default),
+- Four colour themes, switched by the swatches in every page header: `dumbo`,
   `glitter`, `backroom` (the original design) and `glare`. All but backroom are drawn
   from reference images in `palettes/`.
-- Three experimental themes after a gap in the swatches (`experimental: true` in
-  `themes.js`): each is one way of making a picture with almost no colour, and gets
+- Three experimental themes after them in the swatches (`experimental: true` in
+  `themes.js`), `riso` the default: each is one way of making a picture with almost no colour, and gets
   more than tokens (site.css, "experimental themes"). They drop the CRT glass and the
   hum and bring their own surface and distortion:
   - `copier`: black toner on grey paper, toner specks over everything, drum streaks,
@@ -146,13 +146,14 @@ source, `sounds/click.wav`, is git-ignored; the web file was made with
   dither, then a few discrete tones). An SVG filter blanks cross-origin iframes, so the
   Bandcamp and Vimeo embeds get CSS filter functions that come close. Pixelating the
   LCD pictures was tried and dropped (the SVG trick does not work on HTML elements).
-  On phones the swatches wrap to two rows: colour themes, then experimental and sound.
+  On phones the swatches wrap to two rows of four.
 - Each theme in `themes.js` has its full token set; `defaultTheme` picks the default.
   The build appends them to `assets/site.css`: the default as the base `:root`, the
   others as `:root[data-theme="…"]` overrides. Derived colours (shadow, scanlines,
   glitched rows) use `color-mix()`/`var()`, so they follow the theme.
 - The choice is stored in `localStorage` (`ys-theme`); an inline script in `<head>`
-  applies it before first paint. The favicon uses the default theme's accent.
+  applies it before first paint. `<html>` always carries `data-theme` (the default is
+  written into the page), so a theme's extra rules apply when it is the default too. The favicon uses the default theme's accent.
 - The build fails if a text colour is below 4.5:1 on a surface it is used on (the
   `USED` table in `build-site.mjs`). Embeds keep a fixed paper background; Bandcamp
   cannot be recoloured without reloading the player.

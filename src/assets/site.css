@@ -653,7 +653,6 @@ main.ghost .inset.docked .undock {
    in their few inks (#fx-<id>, SVG filters in the page shell). An SVG
    filter blanks a cross-origin iframe, so the embeds get plain CSS filters
    that come close instead. */
-.swatch-gap { width: 6px; }
 :root:is([data-theme="copier"], [data-theme="riso"], [data-theme="lcd"]) .crt { display: none; }
 :root:is([data-theme="copier"], [data-theme="riso"], [data-theme="lcd"]) body::before { animation: none; }
 
@@ -736,10 +735,8 @@ main.ghost .inset.docked .undock {
   /* the theme picker shrinks into the header's top-right corner */
   .themes { position: absolute; top: 0; right: 0; }
   .themes > span[aria-hidden] { display: none; }
-  /* two short rows in the corner, so they stay clear of the name: the
-     colour themes, then the experimental ones and the sound button */
+  /* two short rows of four in the corner, so they stay clear of the name */
   .themes .swatches { flex-wrap: wrap; width: 76px; gap: 4px; justify-content: flex-end; }
-  .swatch-gap { flex-basis: 100%; height: 0; width: auto; }
   .swatch, .ui-sound { width: 16px; height: 16px; border-width: 1.5px; box-shadow: none; }
   .ui-sound svg { width: 11px; height: 10px; }
   .swatch[aria-pressed="true"] { outline-width: 1.5px; outline-offset: 1.5px; }
