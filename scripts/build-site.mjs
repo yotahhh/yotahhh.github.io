@@ -328,13 +328,34 @@ const themeSwitcher = () => `
       <span aria-hidden="true">appearance</span>
       <span class="swatches">${themes
         .map(
-          (t) =>
+          (t, i) =>
+            (t.experimental && !themes[i - 1].experimental ? `<span class="swatch-gap" aria-hidden="true"></span>` : "") +
             `<button type="button" class="swatch" data-theme-id="${t.id}" aria-pressed="false" aria-label="${esc(t.label)}" title="${esc(t.label)}" style="--a:${t.swatch[0]};--b:${t.swatch[1]}"></button>`,
         )
         .join("")}<button type="button" class="ui-sound" aria-pressed="true" aria-label="Interface sounds" title="Interface sounds">${SPEAKER}</button></span>
     </div>`;
 
 // ---------- page shell ----------
+
+// The experimental themes redraw every image, clip and embed in their own few
+// inks (site.css: filter: url(#fx-<id>)). Each filter reduces the picture to
+// grey, then to a handful of tones mapped onto the theme's colours.
+const hexRGB = (h) => h.match(/[0-9a-f]{2}/gi).map((x) => (parseInt(x, 16) / 255).toFixed(3));
+const tones = (...hexes) => {
+  const ch = [0, 1, 2].map((c) => hexes.map((h) => hexRGB(h)[c]).join(" "));
+  return `<feComponentTransfer><feFuncR type="discrete" tableValues="${ch[0]}"/><feFuncG type="discrete" tableValues="${ch[1]}"/><feFuncB type="discrete" tableValues="${ch[2]}"/></feComponentTransfer>`;
+};
+// grey, lifted a little, so dark pictures (most covers) keep their detail
+const GREY = `<feColorMatrix type="matrix" values="0.42 0.83 0.15 0 0.06 0.42 0.83 0.15 0 0.06 0.42 0.83 0.15 0 0.06 0 0 0 1 0"/>`;
+// fine noise added before the tones are cut: a dither instead of flat bands
+const DITHER = (amount, seed) => `<feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="1" seed="${seed}" result="noise"/><feColorMatrix in="noise" type="matrix" values="0.33 0.33 0.33 0 0 0.33 0.33 0.33 0 0 0.33 0.33 0.33 0 0 0 0 0 0 1" result="grain"/><feComposite in="grey" in2="grain" operator="arithmetic" k2="1" k3="${amount}" k4="${-amount / 2}"/>`;
+// keep the result inside the picture: the noise would otherwise fill the margins
+const INSIDE = `<feComposite in2="SourceGraphic" operator="in"/>`;
+const FX = `<svg class="fx" width="0" height="0" aria-hidden="true" focusable="false">
+  <filter id="fx-copier" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">${GREY.replace("/>", ' result="grey"/>')}${DITHER(0.5, 3)}${tones("#121212", "#F1EFE8")}${INSIDE}</filter>
+  <filter id="fx-riso" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">${GREY.replace("/>", ' result="grey"/>')}${DITHER(0.22, 7)}${tones("#1F3478", "#FF4F9A", "#F6F1E3")}${INSIDE}</filter>
+  <filter id="fx-lcd" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">${GREY.replace("/>", ' result="grey"/>')}${DITHER(0.18, 11)}${tones("#182014", "#56633F", "#8E9A72", "#C6CEA9")}${INSIDE}</filter>
+</svg>`;
 
 const FAVICON_FILL = themes.find((t) => t.id === defaultTheme).swatch[1];
 const FAVICON = `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 16"><path d="M1 2h7l2 2h9v11H1z" fill="${FAVICON_FILL}" stroke="#1E211C" stroke-width="1.5"/></svg>`)}`;
@@ -376,6 +397,7 @@ ${desk}
 </main>
 ${dock()}
 <div class="crt" aria-hidden="true"></div>
+${FX}
 <script src="/assets/site.js"></script>
 </body>
 </html>

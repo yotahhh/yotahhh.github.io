@@ -130,6 +130,23 @@ source, `sounds/click.wav`, is git-ignored; the web file was made with
 - Four colour themes, switched by the swatches in every page header: `dumbo` (default),
   `glitter`, `backroom` (the original design) and `glare`. All but backroom are drawn
   from reference images in `palettes/`.
+- Three experimental themes after a gap in the swatches (`experimental: true` in
+  `themes.js`): each is one way of making a picture with almost no colour, and gets
+  more than tokens (site.css, "experimental themes"). They drop the CRT glass and the
+  hum and bring their own surface and distortion:
+  - `copier`: black toner on grey paper, toner specks over everything, drum streaks,
+    the lid's shadow on the left, hard black shadows, windows slightly crooked
+    (`rotate`, which adds to the drag `transform`).
+  - `riso`: fluorescent pink and blue on cream, the pink out of register (a pink copy
+    beside every window and letter), a pink halftone over the sheet.
+  - `lcd`: four greens, a pixel grid instead of scanlines, letters shadowed on the
+    backing, one dim pixel row, row highlights that change slowly.
+  Images and clips are redrawn in the theme's inks by SVG filters (`#fx-copier`,
+  `#fx-riso`, `#fx-lcd`, built in `build-site.mjs` as `FX`: grey, lifted, a noise
+  dither, then a few discrete tones). An SVG filter blanks cross-origin iframes, so the
+  Bandcamp and Vimeo embeds get CSS filter functions that come close. Pixelating the
+  LCD pictures was tried and dropped (the SVG trick does not work on HTML elements).
+  On phones the swatches wrap to two rows: colour themes, then experimental and sound.
 - Each theme in `themes.js` has its full token set; `defaultTheme` picks the default.
   The build appends them to `assets/site.css`: the default as the base `:root`, the
   others as `:root[data-theme="…"]` overrides. Derived colours (shadow, scanlines,

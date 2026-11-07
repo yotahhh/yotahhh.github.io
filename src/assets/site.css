@@ -645,6 +645,70 @@ main.ghost .inset.docked .undock {
 }
 .swatch[aria-pressed="true"] { outline: 2px solid var(--ink); outline-offset: 2px; }
 
+/* ---------- experimental themes ---------- */
+
+/* copier, riso and lcd are more than colours: each is one way of making a
+   picture with almost no colour. They drop the CRT glass and its hum, bring
+   their own surface and distortion, and redraw every image, clip and embed
+   in their few inks (#fx-<id>, SVG filters in the page shell). An SVG
+   filter blanks a cross-origin iframe, so the embeds get plain CSS filters
+   that come close instead. */
+.swatch-gap { width: 6px; }
+:root:is([data-theme="copier"], [data-theme="riso"], [data-theme="lcd"]) .crt { display: none; }
+:root:is([data-theme="copier"], [data-theme="riso"], [data-theme="lcd"]) body::before { animation: none; }
+
+/* copier: a worn photocopy. Black toner on grey paper, toner specks over
+   everything, streaks from a dirty drum, the lid's shadow down the left
+   edge, hard black shadows, windows laid on the glass a little crooked,
+   pictures cut to two tones with a dither. */
+:root[data-theme="copier"] { --shadow: 4px 4px 0 #121212; }
+:root[data-theme="copier"] body { text-shadow: 0 0 0.6px rgba(18, 18, 18, 0.7); }
+:root[data-theme="copier"] body::before {
+  background:
+    linear-gradient(90deg, rgba(18, 18, 18, 0.22), transparent 5%),
+    repeating-linear-gradient(90deg, transparent 0 211px, rgba(18, 18, 18, 0.05) 211px 213px, transparent 213px 377px, rgba(18, 18, 18, 0.035) 377px 378px, transparent 378px 590px);
+}
+:root[data-theme="copier"] body::after {
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='2' seed='5'/%3E%3CfeColorMatrix values='0 0 0 0 0.07 0 0 0 0 0.07 0 0 0 0 0.07 9 0 0 0 -6.6'/%3E%3C/filter%3E%3Crect width='260' height='260' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.55;
+}
+:root[data-theme="copier"] .desk .window:nth-child(odd) { rotate: -0.4deg; }
+:root[data-theme="copier"] .desk .window:nth-child(even) { rotate: 0.35deg; }
+:root[data-theme="copier"] :is(.inset img, .inset video) { filter: url(#fx-copier); }
+:root[data-theme="copier"] .inset iframe { filter: grayscale(1) contrast(1.5); }
+
+/* riso: a two-ink risograph print. Fluorescent pink and blue on cream, the
+   pink drum slipped out of register (every window and letter has a pink
+   copy beside it), a pink halftone over the whole sheet, pictures in three
+   tones: blue, pink, paper. */
+:root[data-theme="riso"] body { text-shadow: 1px 0.5px 0 rgba(255, 79, 154, 0.55); }
+:root[data-theme="riso"] body::before { background: none; }
+:root[data-theme="riso"] body::after {
+  background: radial-gradient(circle, rgba(255, 79, 154, 0.2) 0.9px, transparent 1.3px) 0 0 / 6px 6px;
+  mix-blend-mode: multiply;
+}
+:root[data-theme="riso"] .window { box-shadow: 5px 4px 0 var(--rust-btn); }
+:root[data-theme="riso"] :is(.inset img, .inset video) { filter: url(#fx-riso); }
+:root[data-theme="riso"] .inset iframe { filter: grayscale(1) sepia(1) hue-rotate(195deg) saturate(2.6) contrast(1.05); }
+
+/* lcd: an old handheld screen. Four greens, a visible pixel grid, letters
+   casting a shadow on the reflective backing, one row of pixels gone dim,
+   flat windows, pictures in four greens under the same grid, and slow to
+   change. */
+:root[data-theme="lcd"] { --shadow: 3px 3px 0 color-mix(in srgb, var(--ink) 25%, transparent); }
+:root[data-theme="lcd"] body { text-shadow: 2px 2px 0 rgba(24, 32, 20, 0.16); }
+:root[data-theme="lcd"] body::before {
+  background: linear-gradient(transparent calc(37% - 1px), rgba(24, 32, 20, 0.09) calc(37% - 1px) 37%, transparent 37%);
+}
+:root[data-theme="lcd"] body::after {
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--ink) 10%, transparent) 1px, transparent 1px) 0 0 / 3px 3px,
+    linear-gradient(color-mix(in srgb, var(--ink) 10%, transparent) 1px, transparent 1px) 0 0 / 3px 3px;
+}
+:root[data-theme="lcd"] .rows a.row { transition: background-color 0.24s steps(3); }
+:root[data-theme="lcd"] :is(.inset img, .inset video) { filter: url(#fx-lcd); }
+:root[data-theme="lcd"] .inset iframe { filter: grayscale(1) sepia(1) hue-rotate(35deg) saturate(0.55) contrast(1.05) brightness(0.92); }
+
 /* ---------- responsive ---------- */
 
 @media (max-width: 760px) {
@@ -672,8 +736,11 @@ main.ghost .inset.docked .undock {
   /* the theme picker shrinks into the header's top-right corner */
   .themes { position: absolute; top: 0; right: 0; }
   .themes > span[aria-hidden] { display: none; }
-  .themes .swatches { gap: 5px; }
-  .swatch, .ui-sound { width: 18px; height: 18px; border-width: 1.5px; box-shadow: none; }
+  /* two short rows in the corner, so they stay clear of the name: the
+     colour themes, then the experimental ones and the sound button */
+  .themes .swatches { flex-wrap: wrap; width: 76px; gap: 4px; justify-content: flex-end; }
+  .swatch-gap { flex-basis: 100%; height: 0; width: auto; }
+  .swatch, .ui-sound { width: 16px; height: 16px; border-width: 1.5px; box-shadow: none; }
   .ui-sound svg { width: 11px; height: 10px; }
   .swatch[aria-pressed="true"] { outline-width: 1.5px; outline-offset: 1.5px; }
 }
@@ -684,6 +751,7 @@ main.ghost .inset.docked .undock {
   body::before, .led.alarm,
   .row.glitch-jitter, .row.glitch-flicker > span, .row.glitch-slip, .row.glitch-chroma,
   .row.glitch-stutter .name-cell svg, .window.called, .name::after { animation: none; }
+  :root[data-theme="lcd"] .rows a.row { transition: none; }
   .row.glitch-jitter { transform: translateX(12px); }
 }
 
